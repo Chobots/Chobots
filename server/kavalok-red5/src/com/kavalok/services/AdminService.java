@@ -558,7 +558,6 @@ public class AdminService extends DataServiceBase {
     UserUtil.restoreUser(getSession(), userId);
   }
 
-  /** Returns only the fields needed by the Flash client. */
   public ClientServerConfigTO getClientConfig() {
     KavalokApplication kavalokApp = KavalokApplication.getInstance();
     return new ClientServerConfigTO(
@@ -568,32 +567,30 @@ public class AdminService extends DataServiceBase {
   public String adminLogin(String login, String password) {
     AdminDAO adminDAO = new AdminDAO(getSession());
     Admin admin = adminDAO.findByLogin(login.toLowerCase());
+
     if (admin == null) {
-      logger.warn("Admin login failed: no admin found for login '{}'.", login);
-      return "unknown";
+      return "error";
     }
-    logger.debug(String.format("Admin login attempt: login='%s', submitted password='%s', stored hash='%s', salt='%s'", login, password, admin.getPassword(), admin.getSalt()));
-    boolean passwordOk = admin.checkPassword(password, admin.getSalt());
-    logger.debug(String.format("Password check result for admin '%s': %s", login, passwordOk));
-    if (passwordOk) {
-      // Migrate legacy admins
+
+    boolean validLogin = admin.checkPassword(password, admin.getSalt());
+
+    if (validLogin) {
       if (admin.getSalt() == null) {
         String newSalt = com.kavalok.utils.StringUtil.generateSalt(32);
         String newHash = com.kavalok.utils.StringUtil.hashPassword(password, newSalt);
         admin.setSalt(newSalt);
         admin.setPassword(newHash);
         adminDAO.makePersistent(admin);
-        logger.info(String.format("Migrated legacy admin '%s' to salted hash.", login));
       }
+
       UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
       userAdapter.setUserId(admin.getId());
       userAdapter.setLogin(login);
       userAdapter.setAccessType(admin.getAccessType());
-      logger.info(String.format("Admin '%s' login successful.", login));
+
       return "success";
     } else {
-      logger.warn("Admin login failed: bad password for login '{}'.", login);
-      return "unknown";
+      return "error";
     }
   }
 }
