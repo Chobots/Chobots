@@ -29,12 +29,6 @@ public class UserManager {
     super();
   }
 
-  /**
-   * Returns the UserAdapter for the current Red5 client session.
-   * If none exists, creates one and attaches it to the client.
-   * Always returns a non-null UserAdapter.
-   * Logs creation and retrieval for debugging.
-   */
   public UserAdapter getCurrentUser() {
     IClient client = null;
     try {
@@ -48,11 +42,8 @@ public class UserManager {
     }
     UserAdapter adapter = getUser(client);
     if (adapter == null) {
-      logger.info("Creating new UserAdapter for client: {}", client.getId());
       adapter = new UserAdapter();
       client.setAttribute(ADAPTER, adapter);
-    } else {
-      logger.info("Found existing UserAdapter for client: {} userId: {}", client.getId(), adapter.getUserId());
     }
     return adapter;
   }

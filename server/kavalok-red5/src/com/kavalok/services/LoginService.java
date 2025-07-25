@@ -94,7 +94,7 @@ public class LoginService extends DataServiceBase {
 //       login = prefix + prefixedCont.toString();
 //       prefixedCont++;
 //     }
-//     UserAdapter adapter = registerAdapter(login, getCurrentServer(), -1L);
+//     UserAdapter adapter = getUserAdapter(login, getCurrentServer(), -1L);
 //     adapter.setUserId(-1l);
 //     adapter.setPersistent(false);
 //     return login;
@@ -143,29 +143,29 @@ public class LoginService extends DataServiceBase {
     return new ServerPropertiesTO();
   }
 
-  public String adminLogin(String login, String password) {
-    return tryLogin(new AdminDAO(getSession()), login, password);
-  }
+//   public String adminLogin(String login, String password) {
+//     return tryLogin(new AdminDAO(getSession()), login, password);
+//   }
+//
+//   public String partnerLogin(String login, String password) {
+//     return tryLogin(new PartnerDAO(getSession()), login, password);
+//   }
 
-  public String partnerLogin(String login, String password) {
-    return tryLogin(new PartnerDAO(getSession()), login, password);
-  }
-
-  @SuppressWarnings("unchecked")
-  private String tryLogin(LoginDAOBase dao, String login, String password) {
-    LoginModelBase model = dao.findByLogin(login.toLowerCase());
-    if (model != null && model instanceof com.kavalok.db.User) {
-      com.kavalok.db.User user = (com.kavalok.db.User) model;
-      if (user.checkPassword(password, user.getSalt())) {
-        UserAdapter currentUser = UserManager.getInstance().getCurrentUser();
-        currentUser.setUserId(model.getId());
-        currentUser.setLogin(login);
-        currentUser.setAccessType(model.getAccessType());
-        return SUCCESS;
-      }
-    }
-    return ERROR_UNKNOWN;
-  }
+//   @SuppressWarnings("unchecked")
+//   private String tryLogin(LoginDAOBase dao, String login, String password) {
+//     LoginModelBase model = dao.findByLogin(login.toLowerCase());
+//     if (model != null && model instanceof com.kavalok.db.User) {
+//       com.kavalok.db.User user = (com.kavalok.db.User) model;
+//       if (user.checkPassword(password, user.getSalt())) {
+//         UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
+//         userAdapter.setUserId(model.getId());
+//         userAdapter.setLogin(login);
+//         userAdapter.setAccessType(model.getAccessType());
+//         return SUCCESS;
+//       }
+//     }
+//     return ERROR_UNKNOWN;
+//   }
 
   private Server getCurrentServer() {
     return KavalokApplication.getInstance().getServer();
@@ -194,12 +194,7 @@ public class LoginService extends DataServiceBase {
 //     }
   }
 
-  /**
-   * Main login method. Handles authentication, session setup, and migration of legacy users.
-   * Ensures UserAdapter is always set up with userId. Logs all critical steps.
-   */
   public LoginResultTO login(String login, String password, String locale) {
-    logger.info("login called for user: {}", login);
     LoginResultTO resultTO = new LoginResultTO();
     UserDAO userDAO = new UserDAO(getSession());
     BlackIPDAO blackIPDAO = new BlackIPDAO(getSession());
@@ -208,14 +203,12 @@ public class LoginService extends DataServiceBase {
       user = userDAO.findByLogin(login.toLowerCase());
     }
     if (user == null || user.getDeleted()) {
-      logger.warn("Login failed: user not found or deleted for login: {}", login);
       resultTO.setSuccess(false);
       resultTO.setReason(ERROR_BAD_LOGIN);
       return resultTO;
     }
 
     if (!user.checkPassword(password, user.getSalt())) {
-      logger.warn("Login failed: bad password for user: {}", login);
       resultTO.setSuccess(false);
       resultTO.setReason(ERROR_BAD_PASSW);
       return resultTO;
@@ -228,40 +221,43 @@ public class LoginService extends DataServiceBase {
       user.setSalt(newSalt);
       user.setPassword(newHash);
       userDAO.makePersistent(user);
-      logger.info("Migrated legacy user to salted hash: {}", login);
     }
+
     if (user.isBaned()) {
-      logger.warn("Login failed: user banned: {}", login);
       resultTO.setSuccess(false);
       resultTO.setReason(ERROR_LOGIN_BANNED);
       return resultTO;
     }
+
     if (!user.isEnabled()) {
-      logger.warn("Login failed: user disabled: {}", login);
       resultTO.setSuccess(false);
       resultTO.setReason(ERROR_LOGIN_DISABLED);
       return resultTO;
     }
+
     UserExtraInfo uei = user.getUserExtraInfo();
     String lastIp = null;
     if (uei != null) {
       lastIp = uei.getLastIp();
     }
+
     BlackIP blackIP = blackIPDAO.findByIp(lastIp);
     if (blackIP != null && blackIP.isBaned()) {
-      logger.warn("Login failed: IP banned: {}", login);
       resultTO.setSuccess(false);
       resultTO.setReason(ERROR_IP_BANNED);
       return resultTO;
     }
+
     boolean updateUser = false;
     if (uei == null) {
       updateUser = true;
       uei = new UserExtraInfo();
     }
+
     UserServerDAO userServerDAO = new UserServerDAO(getSession());
     UserServer currentUs = userServerDAO.getUserServer(user);
     Server server = getCurrentServer();
+
     if (currentUs != null) {
       Server currentServer = currentUs.getServer();
       if (!currentServer.getId().equals(server.getId())) {
@@ -273,36 +269,46 @@ public class LoginService extends DataServiceBase {
         }
       }
     }
+
     if (currentUs == null) {
       currentUs = new UserServer(user, server);
     }
+
     userServerDAO.makePersistent(currentUs);
     if (locale != null && !locale.equals(user.getLocale())) {
       user.setLocale(locale);
       updateUser = true;
     }
-    // Always set up UserAdapter with userId
-    UserAdapter currentUser = registerAdapter(login, server, user.getId());
-    if (user.getId() == null) {
-      logger.error("User ID is null after login for login: {}", login);
-      throw new IllegalStateException("User ID is null on login");
+
+    UserManager manager = UserManager.getInstance();
+    UserAdapter priorUserAdapter = manager.getUser(login);
+
+    if (priorUserAdapter != null) {
+      logger.info("Kicking out prior existing session for user: {}", login);
+      priorUserAdapter.kickOut(SOMEONE_USED_YOUR_LOGIN, false);
     }
-    if (currentUser.getUserId() == null || !currentUser.getUserId().equals(user.getId())) {
-      logger.error(String.format("UserAdapter userId mismatch after login for login: %s. Adapter userId: %s DB userId: %s", login, currentUser.getUserId(), user.getId()));
-      throw new IllegalStateException("UserAdapter userId mismatch after login");
-    }
-    currentUser.setAccessType(AccessUser.class);
-    boolean updateUei = processComboLogin(user, uei); // giving some stuff for login 10-20-30 days in row
-    String currentIP = currentUser.getConnection().getRemoteAddress();
+
+    // Get adapter for current session
+    UserAdapter userAdapter = manager.getCurrentUser();
+
+    userAdapter.setLogin(login);
+    userAdapter.setServer(server);
+    userAdapter.setUserId(user.getId());
+
+    userAdapter.setAccessType(AccessUser.class);
+    boolean updateUei = processComboLogin(user, uei); // Consecutive login days rewards e.g. (10, 20, 30) days in row
+
+    String currentIP = userAdapter.getConnection().getRemoteAddress();
     if (updateUei || !currentIP.equals(uei.getLastIp())) {
       uei.setLastIp(currentIP);
       new UserExtraInfoDAO(getSession()).makePersistent(uei);
     }
+
     if (updateUser) {
       user.setUserExtraInfo(uei);
       userDAO.makePersistent(user);
     }
-    logger.info("User {} login, ip: {}", login, currentIP);
+
     return new LoginResultTO(true, user.isActive(), UserUtil.getAge(user), SUCCESS);
   }
 
@@ -355,26 +361,6 @@ public class LoginService extends DataServiceBase {
 
       // new RemoteClient(getSession(), user).sendCommand(command);
     }
-  }
-
-  private UserAdapter registerAdapter(String login, Server server, Long userId) {
-    UserManager manager = UserManager.getInstance();
-    UserAdapter userAdapter = manager.getUser(login);
-    if (userAdapter != null) {
-      logger.info("Kicking out previous session for login: {}", login);
-      userAdapter.kickOut(SOMEONE_USED_YOUR_LOGIN, false);
-    }
-    UserAdapter currentUser = manager.getCurrentUser();
-    if (currentUser != null) {
-      logger.info("Setting up UserAdapter for login: {}, userId: {}", login, userId);
-      currentUser.setLogin(login);
-      currentUser.setServer(server);
-      currentUser.setUserId(userId);
-    } else {
-      logger.error("Current UserAdapter is null after login for login: {}", login);
-      throw new IllegalStateException("Current UserAdapter is null after login");
-    }
-    return currentUser;
   }
 
   public String register(

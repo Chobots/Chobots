@@ -519,18 +519,21 @@ public class CharService extends DataServiceBase {
 
     result.setClothes(clothes);
     result.setLogin(user.getLogin());
-    if (!checkCurrentUserCache) return result;
 
-    UserAdapter currentUser = UserManager.getInstance().getCurrentUser();
+    if (!checkCurrentUserCache) {
+        return result;
+    }
+
+    UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
     if (setCurrentUserLogin) {
-      currentUser.setLogin(user.getLogin());
-      currentUser.setUserId(user.getId());
+      userAdapter.setLogin(user.getLogin());
+      userAdapter.setUserId(user.getId());
     }
     Long currentServerId = null;
-    if (currentUser != null && currentUser.getServer() != null) {
-      currentServerId = currentUser.getServer().getId();
+    if (userAdapter != null && userAdapter.getServer() != null) {
+      currentServerId = userAdapter.getServer().getId();
     }
-    String currentUserLogin = currentUser.getLogin();
+    String currentUserLogin = userAdapter.getLogin();
     boolean cacheUser = true;
     if (!user.getLogin().equals(currentUserLogin)) {
       if (server == null) cacheUser = false;

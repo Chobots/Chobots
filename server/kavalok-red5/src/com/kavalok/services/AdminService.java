@@ -585,10 +585,10 @@ public class AdminService extends DataServiceBase {
         adminDAO.makePersistent(admin);
         logger.info(String.format("Migrated legacy admin '%s' to salted hash.", login));
       }
-      UserAdapter currentUser = UserManager.getInstance().getCurrentUser();
-      currentUser.setUserId(admin.getId());
-      currentUser.setLogin(login);
-      currentUser.setAccessType(admin.getAccessType());
+      UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
+      userAdapter.setUserId(admin.getId());
+      userAdapter.setLogin(login);
+      userAdapter.setAccessType(admin.getAccessType());
       logger.info(String.format("Admin '%s' login successful.", login));
       return "success";
     } else {

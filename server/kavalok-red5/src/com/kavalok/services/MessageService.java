@@ -182,18 +182,18 @@ public class MessageService extends DataServiceNotTransactionBase {
     }
 
     UserManager userMan = UserManager.getInstance();
-    UserAdapter currUser = userMan.getCurrentUser();
+    UserAdapter userAdapter = userMan.getCurrentUser();
     if (message instanceof String) {
       MessageChecker checker = new MessageChecker(getSession());
 
       if (checker.checkMessage(
-          null, currUser.getUserId(), currUser.getLogin(), (String) message, true, true)) return;
+          null, userAdapter.getUserId(), userAdapter.getLogin(), (String) message, true, true)) return;
     }
 
     SOListener listener = SOListener.getListener(sharedObject);
     List<String> connectedChars = listener.getConnectedChars();
     // ObjectMap<String, Object> command;
-    if (connectedChars.size() > 1 && connectedChars.contains(currUser.getLogin())) {
+    if (connectedChars.size() > 1 && connectedChars.contains(userAdapter.getLogin())) {
       List<String> connChars = new ArrayList<String>(connectedChars);
       for (Iterator<String> iterator = connChars.iterator(); iterator.hasNext(); ) {
         String login = (String) iterator.next();
@@ -201,9 +201,9 @@ public class MessageService extends DataServiceNotTransactionBase {
         if (user != null
             && user.getLogin() != null
             && user.getUserId() != null
-            && !currUser.getUserId().equals(user.getUserId())) {
+            && !userAdapter.getUserId().equals(user.getUserId())) {
 
-          user.sendLocationChat(currUser.getUserId().intValue(), currUser.getLogin(), message);
+          user.sendLocationChat(userAdapter.getUserId().intValue(), userAdapter.getLogin(), message);
         }
       }
     }
