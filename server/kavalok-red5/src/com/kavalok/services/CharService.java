@@ -566,30 +566,11 @@ public class CharService extends DataServiceBase {
     return new UserDAO(getSession()).findById(userAdapter.getUserId());
   }
 
-  /**
-   * Gets the GameChar for the current session's user. Throws clear error if userId is null.
-   */
   private GameChar getGameChar() {
     UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
-    if (userAdapter == null) {
-      logger.error("getGameChar: UserAdapter is null");
-      throw new IllegalStateException("No UserAdapter for current session");
-    }
-    if (userAdapter.getUserId() == null) {
-      logger.error("getGameChar: userId is null on UserAdapter");
-      throw new IllegalStateException("UserAdapter userId is null in getGameChar");
-    }
     User user = new UserDAO(getSession()).findById(userAdapter.getUserId());
-    if (user == null) {
-      logger.error("getGameChar: No User found for userId {}", userAdapter.getUserId());
-      throw new IllegalStateException("No User found for userId " + userAdapter.getUserId());
-    }
-    GameChar gameChar = user.getGameChar();
-    if (gameChar == null) {
-      logger.error("getGameChar: No GameChar found for userId {}", userAdapter.getUserId());
-      throw new IllegalStateException("No GameChar found for userId " + userAdapter.getUserId());
-    }
-    return gameChar;
+
+    return user.getGameChar();
   }
 
   public void saveCharBody(String body, Integer color) {
@@ -672,20 +653,11 @@ public class CharService extends DataServiceBase {
   }
 
   public GameEnterTO enterGame(String charName) {
-    logger.info("enterGame called for charName: {}", charName);
     long nowTot = System.currentTimeMillis();
 
     long start = System.currentTimeMillis();
 
     UserAdapter userAdapter = getAdapter();
-    if (userAdapter == null) {
-      logger.error("enterGame: UserAdapter is null");
-      throw new IllegalStateException("No UserAdapter for current session in enterGame");
-    }
-    if (userAdapter.getUserId() == null) {
-      logger.error("enterGame: userId is null on UserAdapter");
-      throw new IllegalStateException("UserAdapter userId is null in enterGame");
-    }
     userAdapter.enterGame();
 
     long finish = System.currentTimeMillis();
@@ -694,17 +666,17 @@ public class CharService extends DataServiceBase {
     GameEnterTO result = new GameEnterTO();
     result.setSecurityKey(userAdapter.newSecurityKey());
     populateStaticData(result);
-    if (!userAdapter.getPersistent()) return result;
+
+    if (!userAdapter.getPersistent()) {
+        return result;
+    }
+
     result.setIsGuest(false);
     finish = System.currentTimeMillis();
 
     start = System.currentTimeMillis();
     UserDAO userDAO = new UserDAO(getSession());
-    User user = userDAO.findByLogin(charName);
-    if (user == null) {
-      // fixing stupid case sensitive problem :(
-      user = userDAO.findByLogin(charName.toLowerCase());
-    }
+    User user = userDAO.findByLogin(charName.toLowerCase());
     finish = System.currentTimeMillis();
 
     start = System.currentTimeMillis();
