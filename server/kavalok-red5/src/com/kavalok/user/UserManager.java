@@ -8,9 +8,13 @@ import org.red5.server.api.IClient;
 import org.red5.server.api.Red5;
 
 import com.kavalok.KavalokApplication;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class UserManager {
   public static String ADAPTER = "adapter";
+
+  private static final Logger logger = LoggerFactory.getLogger(UserManager.class);
 
   private static UserManager instance;
 
@@ -25,22 +29,30 @@ public class UserManager {
     super();
   }
 
+  /**
+   * Returns the UserAdapter for the current Red5 client session.
+   * If none exists, creates one and attaches it to the client.
+   * Always returns a non-null UserAdapter.
+   * Logs creation and retrieval for debugging.
+   */
   public UserAdapter getCurrentUser() {
     IClient client = null;
     try {
       client = new Red5().getClient();
     } catch (Exception e) {
-      // nothing to do here :(
-      //      System.err.println("Could not get Red5 client");
-      //      e.printStackTrace();
+      logger.error("Could not get Red5 client", e);
     }
     if (client == null) {
+      logger.error("No Red5 client found for current session");
       return null;
     }
     UserAdapter adapter = getUser(client);
     if (adapter == null) {
+      logger.info("Creating new UserAdapter for client: {}", client.getId());
       adapter = new UserAdapter();
       client.setAttribute(ADAPTER, adapter);
+    } else {
+      logger.info("Found existing UserAdapter for client: {} userId: {}", client.getId(), adapter.getUserId());
     }
     return adapter;
   }

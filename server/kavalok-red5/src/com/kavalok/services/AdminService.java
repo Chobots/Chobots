@@ -92,10 +92,13 @@ public class AdminService extends DataServiceBase {
     Long id = UserManager.getInstance().getCurrentUser().getUserId();
     User user = userDAO.findById(id);
 
-    if (!user.getPassword().equals(oldPassword)) {
+    if (!user.checkPassword(oldPassword, user.getSalt())) {
       return PASSW_INVALID;
     } else {
-      user.setPassword(newPassword);
+      String newSalt = com.kavalok.utils.StringUtil.generateSalt(32);
+      String newHash = com.kavalok.utils.StringUtil.hashPassword(newPassword, newSalt);
+      user.setSalt(newSalt);
+      user.setPassword(newHash);
       userDAO.makePersistent(user);
       return PASSW_CHANGED;
     }

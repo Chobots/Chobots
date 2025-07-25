@@ -31,6 +31,17 @@ public class LoginModelBase extends ModelBase {
     this.password = password;
   }
 
+  public boolean checkPassword(String inputPassword, String salt) {
+    if (salt == null) {
+      // Legacy: compare plaintext
+      return password != null && password.equals(inputPassword);
+    } else {
+      // Salted hash
+      String hashed = com.kavalok.utils.StringUtil.hashPassword(inputPassword, salt);
+      return password != null && password.equals(hashed);
+    }
+  }
+
   @SuppressWarnings("unchecked")
   @Transient
   public Class getAccessType() {

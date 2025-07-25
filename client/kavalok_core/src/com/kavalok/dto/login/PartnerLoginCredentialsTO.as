@@ -11,7 +11,6 @@ package com.kavalok.dto.login
 		}
 
 		public var login : String;
-		public var password : String;
 		public var needRegistartion : Boolean;
 		public var userId : int;
 

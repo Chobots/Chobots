@@ -139,37 +139,19 @@ package com.kavalok.login
 			_partnerUid=Global.startupInfo.partnerUid;
 			var service:LoginService=new LoginService(onLoginSuccess, onLoginFault);
 
-			if (_info.prefix)
-			{
-				if (!_serverSelected)
-				{
-					if(Global.charManager.age<=10)
-						chooseServerAuto();
-					else
-						chooseServerManual();
-				}
-				else
-					service.freeLoginByPrefix(_info.prefix);
-			}
-			else if (_info.login)
-			{
-				if (_autoLogin)
-					service.freeLogin(_info.login, CharManager.DEFAULT_BODY, 0, Localiztion.locale);
-				else
-					service.login(_info.login, _info.password, Localiztion.locale);
-			}
-			else if (_partnerUid)
-			{
+			if (_info.prefix && !_info.login) {
+				// Only use freeLoginByPrefix for true guests
+				service.freeLoginByPrefix(_info.prefix);
+			} else if (_info.login) {
+				// Always use login for authenticated users
+				service.login(_info.login, Global.startupInfo.password, Localiztion.locale);
+			} else if (_partnerUid) {
 				new LoginService(onGetPartnerCredentials, onLoginFault).getPartnerLoginInfo(_partnerUid);
-			}
-			else if (_info.moduleId)
-			{
+			} else if (_info.moduleId) {
 				if (Global.moduleManager.loading)
 					Global.moduleManager.abortLoading();
 				Global.moduleManager.loadModule(_info.moduleId, {info:_info});
-			}
-			else
-			{
+			} else {
 				if (Global.moduleManager.loading)
 					Global.moduleManager.abortLoading();
 				var events:ModuleEvents=Global.moduleManager.loadModule(Modules.LOGIN, {info:_info});

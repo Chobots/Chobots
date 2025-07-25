@@ -29,6 +29,8 @@ import com.kavalok.db.statistics.LoginStatistics;
 import com.kavalok.db.statistics.MoneyStatistics;
 import com.kavalok.dto.stuff.StuffItemLightTO;
 import com.kavalok.services.common.SimpleEncryptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class UserAdapter {
 
@@ -81,6 +83,8 @@ public class UserAdapter {
   @SuppressWarnings("unchecked")
   private Class accessType;
 
+  private static final Logger logger = LoggerFactory.getLogger(UserAdapter.class);
+
   public UserAdapter() {
     super();
     messagesStack.setSize(MESSAGES_TO_LOG_COUNT);
@@ -91,6 +95,7 @@ public class UserAdapter {
       String el = trace[i].toString();
       this.creationStackTrace = this.creationStackTrace + el + "\n<br>";
     }
+    logger.info("UserAdapter created for client: {}", client != null ? client.getId() : "null");
   }
 
   public IServiceCapableConnection getConnection() {
@@ -284,7 +289,11 @@ public class UserAdapter {
     return userId;
   }
 
+  /**
+   * Sets the userId for this adapter. Logs the change for debugging.
+   */
   public void setUserId(Long userId) {
+    logger.info("UserAdapter setUserId called. Old: {} New: {}", this.userId, userId);
     this.userId = userId;
   }
 
