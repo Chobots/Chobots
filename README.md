@@ -22,7 +22,7 @@ Goals of this project are as follows but not limited to:
  - [ ] Ensuring that XMLRPC calls require authentication
  - [ ] Ensuring that sensitive client RTMP calls (many) such as `retriveItem` are server validated to avoid abuse
  - [ ] Produce detailed software architecture documents
- - [ ] Salt and hash passwords
+ - [x] Salt and hash passwords
  - [ ] Server-side validation of superuser commands
 
 ## Running the code
