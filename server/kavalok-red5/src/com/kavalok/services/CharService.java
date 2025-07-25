@@ -850,7 +850,7 @@ public class CharService extends DataServiceBase {
     result.setHelpEnabled(user.isHelpEnabled());
     result.setNotActivated(!user.isActive());
     result.setChatEnabledByParent(user.isChatEnabled());
-    // result.setIsGuest(user.getGuest());
+    result.setIsGuest(user.getGuest());
     result.setEmail(user.getEmail());
     result.setIsAgent(user.isAgent());
     result.setIsCitizen(user.isCitizen());

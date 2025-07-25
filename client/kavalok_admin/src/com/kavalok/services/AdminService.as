@@ -220,5 +220,10 @@ package com.kavalok.services
 			doCall("restoreUser", arguments);
 		}
 		
+		public function adminLogin(login:String, password:String):void
+		{
+			doCall("adminLogin", arguments);
+		}
+		
 	}
 }

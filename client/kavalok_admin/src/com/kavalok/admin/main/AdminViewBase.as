@@ -30,7 +30,7 @@ package com.kavalok.admin.main
 		
 		override public function tryLogin(login : String, pass : String) : void
 		{
-			new LoginService(onLoginResult, onLoginFault).adminLogin(login, pass);
+			new AdminService(onLoginResult, onLoginFault).adminLogin(login, pass);
 			new AdminService(onGetPermissions).getPermissionLevel(login);
 		}
 		
