@@ -185,11 +185,7 @@ public class UserUtil {
       family = new ArrayList<User>();
     }
 
-    // Generate salt and hash password
-    String salt = StringUtil.generateSalt(32);
-    String hashedPassword = StringUtil.hashPassword(passw, salt);
-    User user = new User(login, hashedPassword);
-    user.setSalt(salt);
+    User user = new User(login, passw);
     user.setEnabled(true);
     user.setEmail(email);
 
@@ -435,7 +431,7 @@ public class UserUtil {
             ? String.format(
                 email.content,
                 user.getLogin(),
-                user.getPassword(), // WARNING: user.getPassword() returns the password hash, not the real password.
+                user.getPassword(),
                 link1,
                 link2,
                 partner.getPortalUrl())
@@ -471,16 +467,19 @@ public class UserUtil {
 
   @SuppressWarnings("deprecation")
   public Boolean sendPassword(String address, String locale, Session session) {
-    // Do not send the password (hash) to the user. Instead, send a reset link or a generic message.
+
     UserDAO userDAO = new UserDAO(session);
     List<User> users = userDAO.findByEmail(address.toLowerCase(), true);
+
     if (users.isEmpty()) return false;
+
     EmailExtraInfoDAO eD = new EmailExtraInfoDAO(session);
     EmailExtraInfo eei = eD.findByEmail(address);
     if (eei == null) {
       eei = new EmailExtraInfo();
       eei.setEmail(address);
     }
+
     Date now = new Date();
     String nowStr = now.getYear() + "" + now.getMonth() + "" + now.getDate();
     if (!nowStr.equals(eei.getLastRemindPasswordDate())) {
@@ -492,10 +491,19 @@ public class UserUtil {
       eei.setRemindPasswordCount(2);
     }
     eD.makePersistent(eei);
-    // Send a generic password reset message instead of the password itself
+
+    StringBuilder list = new StringBuilder();
+
+    int counter = 1;
+    for (User user : users) {
+      list.append(counter + ": " + user.getLogin() + " / " + user.getPassword() + '\n');
+      counter++;
+    }
+
     Email email = MailUtil.getMail(MailUtil.PASSWORD_FILE, locale);
-    email.content = "A password reset was requested for your account. If this was not you, please ignore this email.";
+    email.content = String.format(email.content, list);
     MailUtil.sendMail(getMailServerConfig(session), address, email);
+
     return true;
   }
 
