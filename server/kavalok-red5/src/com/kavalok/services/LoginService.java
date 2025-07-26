@@ -75,52 +75,64 @@ public class LoginService extends DataServiceBase {
 
   private static String ERROR_LOGIN_DISABLED = "disabled";
 
-  private static Logger logger = LoggerFactory.getLogger(LoginService.class);
+  private static final Logger logger = LoggerFactory.getLogger(LoginService.class);
 
   private static Integer prefixedCont = 0;
 
   public String freeLoginByPrefix(String prefix) throws FileNotFoundException {
-    String login;
-
-    MessageCheck messageCheck = new MessageCheck(getSession());
-    if (messageCheck.check(prefix).getSafety() != MessageSafety.SAFE
-        || messageCheck.check(" " + prefix).getSafety() != MessageSafety.SAFE
-        || messageCheck.check(prefix + " ").getSafety() != MessageSafety.SAFE
-        || messageCheck.check(" " + prefix + " ").getSafety() != MessageSafety.SAFE) {
-      return null;
-    }
-    synchronized (LoginService.class) {
-      login = prefix + prefixedCont.toString();
-      prefixedCont++;
-    }
-    UserAdapter adapter = registerAdapter(login, getCurrentServer());
-    adapter.setUserId(-1l);
-    adapter.setPersistent(false);
-    return login;
+    return null;
+//     String login;
+//
+//     MessageCheck messageCheck = new MessageCheck(getSession());
+//     if (messageCheck.check(prefix).getSafety() != MessageSafety.SAFE
+//         || messageCheck.check(" " + prefix).getSafety() != MessageSafety.SAFE
+//         || messageCheck.check(prefix + " ").getSafety() != MessageSafety.SAFE
+//         || messageCheck.check(" " + prefix + " ").getSafety() != MessageSafety.SAFE) {
+//       return null;
+//     }
+//     synchronized (LoginService.class) {
+//       login = prefix + prefixedCont.toString();
+//       prefixedCont++;
+//     }
+//     UserAdapter adapter = getUserAdapter(login, getCurrentServer(), -1L);
+//     adapter.setUserId(-1l);
+//     adapter.setPersistent(false);
+//     return login;
   }
 
-  public LoginResultTO freeLogin(String name, String body, Integer color, String locale)
-      throws FileNotFoundException {
-    UserDAO userDAO = new UserDAO(getSession());
-    User user = userDAO.findByLogin(name);
-    if (user == null) {
-      user = userDAO.findByLogin(name.toLowerCase());
-    }
-    LoginResultTO result = null;
-    if (user == null) {
-      String registartionResult =
-          register(name, "", GUEST_EMAIL, body, color, true, false, locale, null, null);
-      if (registartionResult.equals(SUCCESS)) {
-        user = userDAO.findByLogin(name);
-        user.setActivationKey(null);
-        user.setEnabled(true);
-        userDAO.makePersistent(user);
-        result = login20110523(name, user.getPassword(), locale);
-      }
-    } else {
-      result = login20110523(name, user.getPassword(), locale);
-    }
-    return result;
+  public LoginResultTO freeLogin(String name, String body, Integer color, String locale) throws FileNotFoundException {
+    // TODO: Enable this in a safe way to facilitate guests
+
+    LoginResultTO resultTO = new LoginResultTO();
+    resultTO.setSuccess(false);
+    resultTO.setReason(ERROR_LOGIN_DISABLED);
+
+    return resultTO;
+
+//     UserDAO userDAO = new UserDAO(getSession());
+//     User user = userDAO.findByLogin(name);
+//
+//     if (user == null) {
+//       user = userDAO.findByLogin(name.toLowerCase());
+//     }
+//
+//     LoginResultTO result = null;
+//
+//     if (user == null) {
+//       String registartionResult = register(name, "", GUEST_EMAIL, body, color, true, false, locale, null, null);
+//       if (registartionResult.equals(SUCCESS)) {
+//         user = userDAO.findByLogin(name);
+//         user.setActivationKey(null);
+//         user.setEnabled(true);
+//         userDAO.makePersistent(user);
+//         // Instead of sending the password, require the client to login with their password
+//         result = login(name, "", locale); // Empty password, should only be used for guests
+//       }
+//     } else {
+//       // Do not send the password to the client
+//       result = login(name, "", locale); // Empty password, should only be used for guests
+//     }
+//     return result;
   }
 
   public boolean activateAccount(String login, String activationKey, Boolean chatEnabled) {
@@ -131,75 +143,84 @@ public class LoginService extends DataServiceBase {
     return new ServerPropertiesTO();
   }
 
-  public String adminLogin(String login, String password) {
-    return tryLogin(new AdminDAO(getSession()), login, password);
-  }
+//   public String adminLogin(String login, String password) {
+//     return tryLogin(new AdminDAO(getSession()), login, password);
+//   }
+//
+//   public String partnerLogin(String login, String password) {
+//     return tryLogin(new PartnerDAO(getSession()), login, password);
+//   }
 
-  public String partnerLogin(String login, String password) {
-    return tryLogin(new PartnerDAO(getSession()), login, password);
-  }
-
-  @SuppressWarnings("unchecked")
-  private String tryLogin(LoginDAOBase dao, String login, String password) {
-    LoginModelBase model = dao.findByLogin(login.toLowerCase());
-    if (model != null && model.getPassword().equals(password)) {
-      UserAdapter currentUser = UserManager.getInstance().getCurrentUser();
-      currentUser.setUserId(model.getId());
-      currentUser.setLogin(login);
-      currentUser.setAccessType(model.getAccessType());
-      return SUCCESS;
-    } else {
-      return ERROR_UNKNOWN;
-    }
-  }
+//   @SuppressWarnings("unchecked")
+//   private String tryLogin(LoginDAOBase dao, String login, String password) {
+//     LoginModelBase model = dao.findByLogin(login.toLowerCase());
+//     if (model != null && model instanceof com.kavalok.db.User) {
+//       com.kavalok.db.User user = (com.kavalok.db.User) model;
+//       if (user.checkPassword(password, user.getSalt())) {
+//         UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
+//         userAdapter.setUserId(model.getId());
+//         userAdapter.setLogin(login);
+//         userAdapter.setAccessType(model.getAccessType());
+//         return SUCCESS;
+//       }
+//     }
+//     return ERROR_UNKNOWN;
+//   }
 
   private Server getCurrentServer() {
     return KavalokApplication.getInstance().getServer();
   }
 
   public PartnerLoginCredentialsTO getPartnerLoginInfo(String uid) {
-    System.out.println("uid: " + uid);
-    LoginFromPartnerDAO dao = new LoginFromPartnerDAO(getSession());
-    LoginFromPartner loginFromPartner = dao.findByUid(uid);
-    if (loginFromPartner != null) {
-      User user = loginFromPartner.getUser();
-      System.out.println(
-          "loginFromPartner: "
-              + loginFromPartner
-              + " loginFromPartnerId: "
-              + loginFromPartner.getId());
-      System.out.println("user: " + user + " userId: " + user.getId());
-      boolean needRegistartion = user.getGameChar_id() == null;
-      if (!needRegistartion) dao.makeTransient(loginFromPartner);
-
-      return new PartnerLoginCredentialsTO(
-          user.getId().intValue(), user.getLogin(), user.getPassword(), needRegistartion);
-    } else {
-      throw new IllegalStateException(String.format("unknown login uid %1s", uid));
-    }
+    return null;
+//     System.out.println("uid: " + uid);
+//     LoginFromPartnerDAO dao = new LoginFromPartnerDAO(getSession());
+//     LoginFromPartner loginFromPartner = dao.findByUid(uid);
+//     if (loginFromPartner != null) {
+//       User user = loginFromPartner.getUser();
+//       System.out.println(
+//           "loginFromPartner: "
+//               + loginFromPartner
+//               + " loginFromPartnerId: "
+//               + loginFromPartner.getId());
+//       System.out.println("user: " + user + " userId: " + user.getId());
+//       boolean needRegistartion = user.getGameChar_id() == null;
+//       if (!needRegistartion) dao.makeTransient(loginFromPartner);
+//
+//       return new PartnerLoginCredentialsTO(
+//           user.getId().intValue(), user.getLogin(), needRegistartion);
+//     } else {
+//       throw new IllegalStateException(String.format("unknown login uid %1s", uid));
+//     }
   }
 
-  public LoginResultTO login20110523(String login, String password, String locale) {
-
+  public LoginResultTO login(String login, String password, String locale) {
     LoginResultTO resultTO = new LoginResultTO();
-
     UserDAO userDAO = new UserDAO(getSession());
     BlackIPDAO blackIPDAO = new BlackIPDAO(getSession());
     User user = userDAO.findByLogin(login);
     if (user == null) {
       user = userDAO.findByLogin(login.toLowerCase());
     }
-
     if (user == null || user.getDeleted()) {
       resultTO.setSuccess(false);
       resultTO.setReason(ERROR_BAD_LOGIN);
       return resultTO;
     }
 
-    if (!user.getPassword().equals(password)) {
+    if (!user.checkPassword(password, user.getSalt())) {
       resultTO.setSuccess(false);
       resultTO.setReason(ERROR_BAD_PASSW);
       return resultTO;
+    }
+
+    // Migrate legacy users (salt not present, has plaintext password)
+    if (user.getSalt() == null) {
+      String newSalt = com.kavalok.utils.StringUtil.generateSalt(32);
+      String newHash = com.kavalok.utils.StringUtil.hashPassword(password, newSalt);
+      user.setSalt(newSalt);
+      user.setPassword(newHash);
+      userDAO.makePersistent(user);
     }
 
     if (user.isBaned()) {
@@ -213,12 +234,13 @@ public class LoginService extends DataServiceBase {
       resultTO.setReason(ERROR_LOGIN_DISABLED);
       return resultTO;
     }
-    UserExtraInfo uei = user.getUserExtraInfo();
 
+    UserExtraInfo uei = user.getUserExtraInfo();
     String lastIp = null;
     if (uei != null) {
       lastIp = uei.getLastIp();
     }
+
     BlackIP blackIP = blackIPDAO.findByIp(lastIp);
     if (blackIP != null && blackIP.isBaned()) {
       resultTO.setSuccess(false);
@@ -235,6 +257,7 @@ public class LoginService extends DataServiceBase {
     UserServerDAO userServerDAO = new UserServerDAO(getSession());
     UserServer currentUs = userServerDAO.getUserServer(user);
     Server server = getCurrentServer();
+
     if (currentUs != null) {
       Server currentServer = currentUs.getServer();
       if (!currentServer.getId().equals(server.getId())) {
@@ -246,26 +269,36 @@ public class LoginService extends DataServiceBase {
         }
       }
     }
+
     if (currentUs == null) {
       currentUs = new UserServer(user, server);
     }
-    userServerDAO.makePersistent(currentUs);
 
+    userServerDAO.makePersistent(currentUs);
     if (locale != null && !locale.equals(user.getLocale())) {
       user.setLocale(locale);
       updateUser = true;
     }
 
-    UserAdapter currentUser = registerAdapter(login, server);
-    currentUser.setUserId(user.getId());
-    currentUser.setAccessType(AccessUser.class);
+    UserManager manager = UserManager.getInstance();
+    UserAdapter priorUserAdapter = manager.getUser(login);
 
-    boolean updateUei = processComboLogin(user, uei); // giving some stuff
-    // for
-    // login 10-20-30 days in
-    // row
+    if (priorUserAdapter != null) {
+      logger.info("Kicking out prior existing session for user: {}", login);
+      priorUserAdapter.kickOut(SOMEONE_USED_YOUR_LOGIN, false);
+    }
 
-    String currentIP = currentUser.getConnection().getRemoteAddress();
+    // Get adapter for current session
+    UserAdapter userAdapter = manager.getCurrentUser();
+
+    userAdapter.setLogin(login);
+    userAdapter.setServer(server);
+    userAdapter.setUserId(user.getId());
+
+    userAdapter.setAccessType(AccessUser.class);
+    boolean updateUei = processComboLogin(user, uei); // Consecutive login days rewards e.g. (10, 20, 30) days in row
+
+    String currentIP = userAdapter.getConnection().getRemoteAddress();
     if (updateUei || !currentIP.equals(uei.getLastIp())) {
       uei.setLastIp(currentIP);
       new UserExtraInfoDAO(getSession()).makePersistent(uei);
@@ -275,8 +308,6 @@ public class LoginService extends DataServiceBase {
       user.setUserExtraInfo(uei);
       userDAO.makePersistent(user);
     }
-
-    logger.info("User {} login, ip: {}", login, currentIP);
 
     return new LoginResultTO(true, user.isActive(), UserUtil.getAge(user), SUCCESS);
   }
@@ -330,21 +361,6 @@ public class LoginService extends DataServiceBase {
 
       // new RemoteClient(getSession(), user).sendCommand(command);
     }
-  }
-
-  private UserAdapter registerAdapter(String login, Server server) {
-    UserManager manager = UserManager.getInstance();
-    UserAdapter userAdapter = manager.getUser(login);
-    if (userAdapter != null) {
-      userAdapter.kickOut(SOMEONE_USED_YOUR_LOGIN, false);
-    }
-
-    UserAdapter currentUser = manager.getCurrentUser();
-    if (currentUser != null) {
-      currentUser.setLogin(login);
-      currentUser.setServer(server);
-    }
-    return currentUser;
   }
 
   public String register(
@@ -401,68 +417,68 @@ public class LoginService extends DataServiceBase {
             false);
   }
 
-  public String registerGirls(
-      String login,
-      String passw,
-      String email,
-      String body,
-      Integer color,
-      Boolean isParent,
-      Boolean familyMode,
-      String locale,
-      Object invitedBy,
-      MarketingInfoTO marketingInfo)
-      throws FileNotFoundException {
-    return registerGirls(
-        login,
-        passw,
-        email,
-        body,
-        color,
-        isParent,
-        familyMode,
-        locale,
-        (String) invitedBy,
-        marketingInfo);
-  }
+//   public String registerGirls(
+//       String login,
+//       String passw,
+//       String email,
+//       String body,
+//       Integer color,
+//       Boolean isParent,
+//       Boolean familyMode,
+//       String locale,
+//       Object invitedBy,
+//       MarketingInfoTO marketingInfo)
+//       throws FileNotFoundException {
+//     return registerGirls(
+//         login,
+//         passw,
+//         email,
+//         body,
+//         color,
+//         isParent,
+//         familyMode,
+//         locale,
+//         (String) invitedBy,
+//         marketingInfo);
+//   }
 
-  public String registerGirls(
-      String login,
-      String passw,
-      String email,
-      String body,
-      Integer color,
-      Boolean isParent,
-      Boolean familyMode,
-      String locale,
-      String invitedBy,
-      MarketingInfoTO marketingInfo)
-      throws FileNotFoundException {
-
-    return new UserUtil()
-        .register(
-            getSession(),
-            login,
-            passw,
-            email,
-            body,
-            color,
-            isParent,
-            familyMode,
-            locale,
-            invitedBy,
-            marketingInfo,
-            true);
-  }
-
-  public String registerFromPartner(String uid, String body, Integer color, Boolean isParent) {
-    LoginFromPartnerDAO dao = new LoginFromPartnerDAO(getSession());
-    LoginFromPartner loginFromPartner = dao.findByUid(uid);
-    User user = loginFromPartner.getUser();
-    GameCharDAO charDAO = new GameCharDAO(getSession());
-    new UserUtil().fillUser(charDAO, getSession(), user, body, color, isParent, true);
-    return SUCCESS;
-  }
+//   public String registerGirls(
+//       String login,
+//       String passw,
+//       String email,
+//       String body,
+//       Integer color,
+//       Boolean isParent,
+//       Boolean familyMode,
+//       String locale,
+//       String invitedBy,
+//       MarketingInfoTO marketingInfo)
+//       throws FileNotFoundException {
+//
+//     return new UserUtil()
+//         .register(
+//             getSession(),
+//             login,
+//             passw,
+//             email,
+//             body,
+//             color,
+//             isParent,
+//             familyMode,
+//             locale,
+//             invitedBy,
+//             marketingInfo,
+//             true);
+//   }
+//
+//   public String registerFromPartner(String uid, String body, Integer color, Boolean isParent) {
+//     LoginFromPartnerDAO dao = new LoginFromPartnerDAO(getSession());
+//     LoginFromPartner loginFromPartner = dao.findByUid(uid);
+//     User user = loginFromPartner.getUser();
+//     GameCharDAO charDAO = new GameCharDAO(getSession());
+//     new UserUtil().fillUser(charDAO, getSession(), user, body, color, isParent, true);
+//     return SUCCESS;
+//   }
 
   public ActivationTO getActivationInfo(String login) {
     UserDAO userDAO = new UserDAO(getSession());
@@ -472,29 +488,32 @@ public class LoginService extends DataServiceBase {
   }
 
   public String sendActivationMail(String host, String login, String locale) {
-    return new UserUtil()
-        .sendActivationMail(
-            KavalokApplication.getInstance().getApplicationConfig().getHost(),
-            login,
-            locale,
-            getSession());
+    return null;
+//     return new UserUtil()
+//         .sendActivationMail(
+//             KavalokApplication.getInstance().getApplicationConfig().getHost(),
+//             login,
+//             locale,
+//             getSession());
   }
 
   public Boolean sendPassword(String email, String locale) {
-    return new UserUtil().sendPassword(email, locale, getSession());
+    return null;
+    //return new UserUtil().sendPassword(email, locale, getSession());
   }
 
   public String guestLogin(MarketingInfoTO marketingInfoTO) {
-    UserDAO userDAO = new UserDAO(getSession());
-    User user = userDAO.getGuest();
-    MarketingInfo info = MarketingInfo.fromTO(marketingInfoTO, getSession());
-    GuestMarketingInfo guestMarketingInfo = new GuestMarketingInfo();
-    guestMarketingInfo.setUser(user);
-    guestMarketingInfo.setMarketingInfo(info);
-    new MarketingInfoDAO(getSession()).makePersistent(info);
-    new GuestMarketingInfoDAO(getSession()).makePersistent(guestMarketingInfo);
-    login20110523(user.getLogin(), user.getPassword(), null);
-    return user.getLogin();
+    return null;
+//     UserDAO userDAO = new UserDAO(getSession());
+//     User user = userDAO.getGuest();
+//     MarketingInfo info = MarketingInfo.fromTO(marketingInfoTO, getSession());
+//     GuestMarketingInfo guestMarketingInfo = new GuestMarketingInfo();
+//     guestMarketingInfo.setUser(user);
+//     guestMarketingInfo.setMarketingInfo(info);
+//     new MarketingInfoDAO(getSession()).makePersistent(info);
+//     new GuestMarketingInfoDAO(getSession()).makePersistent(guestMarketingInfo);
+//     login(user.getLogin(), user.getPassword(), null);
+//     return user.getLogin();
   }
 
   public String getMostLoadedServer(String location) {

@@ -60,9 +60,9 @@ package com.kavalok.services
 			doCall("freeLogin", arguments);
 		}
 		
-		public function login(login : String, passw : String, locale : String) : void 
+		public function login(login : String, passw : String, locale : String) : void
 		{
-			doCall("login20110523", arguments);
+			doCall("login", arguments);
 		}
 		
 		public function getPartnerLoginInfo(uid : String) : void

@@ -84,6 +84,8 @@ public class User extends LoginModelBase {
 
   private Long gameChar_id;
 
+  private String salt;
+
   public User() {
     super();
   }
@@ -420,5 +422,14 @@ public class User extends LoginModelBase {
 
   public void setGameChar_id(Long gameChar_id) {
     this.gameChar_id = gameChar_id;
+  }
+
+  @Column(length = 64)
+  public String getSalt() {
+    return salt;
+  }
+
+  public void setSalt(String salt) {
+    this.salt = salt;
   }
 }

@@ -56,6 +56,7 @@
 		private var _previousLocId:String;
 		private var _previousLocParams:Object;
 		private var _lastView:ViewStackPage;
+		private var _userEnteredPassword:String;
 
 		public function Login()
 		{
@@ -210,6 +211,7 @@
 			_skipActivation=skipRegistration;
 			_login=login;
 			_pass=password;
+			Global.startupInfo.password = password;
 			Global.isLocked=true;
 			Global.authManager.loginEvent.addListener(onLogin);
 			Global.authManager.tryLogin(login, password);
@@ -303,7 +305,7 @@
 
 		private function onLoginFromPartner(result:PartnerLoginCredentialsTO):void
 		{
-			login(result.login, result.password, true);
+			login(result.login, _userEnteredPassword, true);
 		}
 
 		private function onRegisterBack():void

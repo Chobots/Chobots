@@ -123,8 +123,8 @@ public class StuffServiceNT extends DataServiceNotTransactionBase {
   }
 
   private StuffItem createItem(Integer id, StuffItemDAO itemDao) {
-    UserAdapter currentUser = UserManager.getInstance().getCurrentUser();
-    GameChar gameChar = currentUser.getChar(getSession());
+    UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
+    GameChar gameChar = userAdapter.getChar(getSession());
     StuffType type = new StuffTypeDAO(getSession()).findById(id.longValue());
     StuffItem item = null;
     if (type.getRainable()) {
@@ -136,8 +136,8 @@ public class StuffServiceNT extends DataServiceNotTransactionBase {
     if (item == null) item = new StuffItem(type);
 
     item.setGameChar(gameChar);
-    CharTOCache.getInstance().removeCharTO(currentUser.getUserId());
-    CharTOCache.getInstance().removeCharTO(currentUser.getLogin());
+    CharTOCache.getInstance().removeCharTO(userAdapter.getUserId());
+    CharTOCache.getInstance().removeCharTO(userAdapter.getLogin());
     return item;
   }
 

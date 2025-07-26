@@ -3,16 +3,14 @@ package com.kavalok.dto.login;
 public class PartnerLoginCredentialsTO {
 
   private String login;
-  private String password;
   private Boolean needRegistartion;
   private Integer userId;
 
   public PartnerLoginCredentialsTO(
-      Integer userId, String login, String password, Boolean needRegistartion) {
+      Integer userId, String login, Boolean needRegistartion) {
     super();
     this.userId = userId;
     this.login = login;
-    this.password = password;
     this.needRegistartion = needRegistartion;
   }
 
@@ -22,14 +20,6 @@ public class PartnerLoginCredentialsTO {
 
   public void setLogin(String login) {
     this.login = login;
-  }
-
-  public String getPassword() {
-    return password;
-  }
-
-  public void setPassword(String password) {
-    this.password = password;
   }
 
   public Boolean getNeedRegistartion() {
