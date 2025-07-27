@@ -41,7 +41,7 @@ LOCK TABLES `Admin` WRITE;
     DISABLE KEYS */;
 
 INSERT INTO `Admin` (`id`, `created`, `login`, `password`, `permissionLevel`, `salt`)
-VALUES (1, '2025-01-01 00:00:00', 'admin', '59bb1d5ccc384c90f50cea164abec2bbd069e1a78ed35b80c79bbdd1248dbf8a', 4,
+VALUES (1, '2025-01-01 00:00:00', 'admin', '59bb1d5ccc384c90f50cea164abec2bbd069e1a78ed35b80c79bbdd1248dbf8a', 5,
         'vNkshlQFOHkDkdlBGiGosBHXoYeTswja');
 /*!40000 ALTER TABLE `Admin`
     ENABLE KEYS */;
