@@ -47,6 +47,9 @@ import com.kavalok.user.UserUtil;
 import com.kavalok.utils.StringUtil;
 import com.kavalok.xmlrpc.AdminClient;
 import com.kavalok.xmlrpc.RemoteClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.kavalok.user.UserAdapter;
 
 public class AdminService extends DataServiceBase {
 
@@ -84,19 +87,20 @@ public class AdminService extends DataServiceBase {
 
   private static final String PASSW_INVALID = "invalidCurrentPassword";
 
-  // private static final Logger logger =
-  // LoggerFactory.getLogger(AdminService.class);
+  private static final Logger logger = LoggerFactory.getLogger(AdminService.class);
 
   public String changePassword(String oldPassword, String newPassword) {
-    UserDAO userDAO = new UserDAO(getSession());
+    AdminDAO adminDAO = new AdminDAO(getSession());
     Long id = UserManager.getInstance().getCurrentUser().getUserId();
-    User user = userDAO.findById(id);
-
-    if (!user.getPassword().equals(oldPassword)) {
+    Admin admin = adminDAO.findById(id);
+    if (!admin.checkPassword(oldPassword, admin.getSalt())) {
       return PASSW_INVALID;
     } else {
-      user.setPassword(newPassword);
-      userDAO.makePersistent(user);
+      String newSalt = com.kavalok.utils.StringUtil.generateSalt(32);
+      String newHash = com.kavalok.utils.StringUtil.hashPassword(newPassword, newSalt);
+      admin.setSalt(newSalt);
+      admin.setPassword(newHash);
+      adminDAO.makePersistent(admin);
       return PASSW_CHANGED;
     }
   }
@@ -554,10 +558,39 @@ public class AdminService extends DataServiceBase {
     UserUtil.restoreUser(getSession(), userId);
   }
 
-  /** Returns only the fields needed by the Flash client. */
   public ClientServerConfigTO getClientConfig() {
     KavalokApplication kavalokApp = KavalokApplication.getInstance();
     return new ClientServerConfigTO(
         kavalokApp.isGuestEnabled(), kavalokApp.isRegistrationEnabled());
+  }
+
+  public String adminLogin(String login, String password) {
+    AdminDAO adminDAO = new AdminDAO(getSession());
+    Admin admin = adminDAO.findByLogin(login.toLowerCase());
+
+    if (admin == null) {
+      return "error";
+    }
+
+    boolean validLogin = admin.checkPassword(password, admin.getSalt());
+
+    if (validLogin) {
+      if (admin.getSalt() == null) {
+        String newSalt = com.kavalok.utils.StringUtil.generateSalt(32);
+        String newHash = com.kavalok.utils.StringUtil.hashPassword(password, newSalt);
+        admin.setSalt(newSalt);
+        admin.setPassword(newHash);
+        adminDAO.makePersistent(admin);
+      }
+
+      UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
+      userAdapter.setUserId(admin.getId());
+      userAdapter.setLogin(login);
+      userAdapter.setAccessType(admin.getAccessType());
+
+      return "success";
+    } else {
+      return "error";
+    }
   }
 }

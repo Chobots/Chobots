@@ -9,4 +9,8 @@ public class AdminDAO extends LoginDAOBase<Admin> {
   public AdminDAO(Session session) {
     super(session);
   }
+
+  public Admin findByLogin(String login) {
+    return findByParameter("login", login);
+  }
 }

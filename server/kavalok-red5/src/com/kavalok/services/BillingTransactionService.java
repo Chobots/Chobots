@@ -33,9 +33,9 @@ public class BillingTransactionService extends DataServiceBase {
     CitizenMembershipProduct product = new CitizenMembershipProduct(sku.getTerm());
     UserDAO userDAO = new UserDAO(getSession());
     User user = null;
-    UserAdapter currentUser = UserManager.getInstance().getCurrentUser();
-    if (currentUser != null) {
-      user = userDAO.findById(currentUser.getUserId());
+    UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
+    if (userAdapter != null) {
+      user = userDAO.findById(userAdapter.getUserId());
     }
     if (user == null && partnerUserId > 0) {
       user = userDAO.findById(partnerUserId.longValue());
@@ -50,9 +50,9 @@ public class BillingTransactionService extends DataServiceBase {
   public ObjectMap<String, Object> requestRobotsItem(Integer skuId, String source)
       throws Exception {
     User user = null;
-    UserAdapter currentUser = UserManager.getInstance().getCurrentUser();
-    if (currentUser != null) {
-      user = new UserDAO(getSession()).findById(currentUser.getUserId());
+    UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
+    if (userAdapter != null) {
+      user = new UserDAO(getSession()).findById(userAdapter.getUserId());
     }
     RobotTransaction trans =
         BillingTransactionUtil.createRobotTransaction(getSession(), user, skuId, source);
@@ -64,9 +64,9 @@ public class BillingTransactionService extends DataServiceBase {
 
   public ObjectMap<String, Object> requestPayedItem(Integer skuId, String source) throws Exception {
     User user = null;
-    UserAdapter currentUser = UserManager.getInstance().getCurrentUser();
-    if (currentUser != null) {
-      user = new UserDAO(getSession()).findById(currentUser.getUserId());
+    UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
+    if (userAdapter != null) {
+      user = new UserDAO(getSession()).findById(userAdapter.getUserId());
     }
     Transaction trans = makeNewTransaction(user, skuId, source);
     return KavalokApplication.getInstance()

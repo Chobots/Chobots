@@ -519,18 +519,21 @@ public class CharService extends DataServiceBase {
 
     result.setClothes(clothes);
     result.setLogin(user.getLogin());
-    if (!checkCurrentUserCache) return result;
 
-    UserAdapter currentUser = UserManager.getInstance().getCurrentUser();
+    if (!checkCurrentUserCache) {
+        return result;
+    }
+
+    UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
     if (setCurrentUserLogin) {
-      currentUser.setLogin(user.getLogin());
-      currentUser.setUserId(user.getId());
+      userAdapter.setLogin(user.getLogin());
+      userAdapter.setUserId(user.getId());
     }
     Long currentServerId = null;
-    if (currentUser != null && currentUser.getServer() != null) {
-      currentServerId = currentUser.getServer().getId();
+    if (userAdapter != null && userAdapter.getServer() != null) {
+      currentServerId = userAdapter.getServer().getId();
     }
-    String currentUserLogin = currentUser.getLogin();
+    String currentUserLogin = userAdapter.getLogin();
     boolean cacheUser = true;
     if (!user.getLogin().equals(currentUserLogin)) {
       if (server == null) cacheUser = false;
@@ -565,7 +568,9 @@ public class CharService extends DataServiceBase {
 
   private GameChar getGameChar() {
     UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
-    return new UserDAO(getSession()).findById(userAdapter.getUserId()).getGameChar();
+    User user = new UserDAO(getSession()).findById(userAdapter.getUserId());
+
+    return user.getGameChar();
   }
 
   public void saveCharBody(String body, Integer color) {
@@ -661,17 +666,17 @@ public class CharService extends DataServiceBase {
     GameEnterTO result = new GameEnterTO();
     result.setSecurityKey(userAdapter.newSecurityKey());
     populateStaticData(result);
-    if (!userAdapter.getPersistent()) return result;
+
+    if (!userAdapter.getPersistent()) {
+        return result;
+    }
+
     result.setIsGuest(false);
     finish = System.currentTimeMillis();
 
     start = System.currentTimeMillis();
     UserDAO userDAO = new UserDAO(getSession());
-    User user = userDAO.findByLogin(charName);
-    if (user == null) {
-      // fixing stupid case sensitive problem :(
-      user = userDAO.findByLogin(charName.toLowerCase());
-    }
+    User user = userDAO.findByLogin(charName.toLowerCase());
     finish = System.currentTimeMillis();
 
     start = System.currentTimeMillis();
@@ -820,7 +825,7 @@ public class CharService extends DataServiceBase {
     result.setHelpEnabled(user.isHelpEnabled());
     result.setNotActivated(!user.isActive());
     result.setChatEnabledByParent(user.isChatEnabled());
-    // result.setIsGuest(user.getGuest());
+    result.setIsGuest(user.getGuest());
     result.setEmail(user.getEmail());
     result.setIsAgent(user.isAgent());
     result.setIsCitizen(user.isCitizen());

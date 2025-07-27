@@ -22,19 +22,19 @@ public class LocationService extends ServiceBase {
     }
 
     UserManager userMan = UserManager.getInstance();
-    UserAdapter currUser = userMan.getCurrentUser();
+    UserAdapter userAdapter = userMan.getCurrentUser();
     SOListener listener = SOListener.getListener(sharedObject);
     List<String> connectedChars = listener.getConnectedChars();
     // ObjectMap<String, Object> command;
-    if (connectedChars.size() > 1 && connectedChars.contains(currUser.getLogin())) {
+    if (connectedChars.size() > 1 && connectedChars.contains(userAdapter.getLogin())) {
       List<String> connChars = new ArrayList<String>(connectedChars);
       for (Iterator<String> iterator = connChars.iterator(); iterator.hasNext(); ) {
         String login = (String) iterator.next();
         UserAdapter user = userMan.getUser(login);
-        if (user != null && !currUser.getUserId().equals(user.getUserId())) {
+        if (user != null && !userAdapter.getUserId().equals(user.getUserId())) {
 
           user.sendLocationMove(
-              currUser.getUserId().intValue(), currUser.getLogin(), x, y, petBusy);
+              userAdapter.getUserId().intValue(), userAdapter.getLogin(), x, y, petBusy);
         }
       }
     }
