@@ -889,8 +889,7 @@ package com.kavalok.location
 		
 		public function rExecuteCommand(commandData:Object):void
 		{
-			var command:RemoteLocationCommand = RemoteCommand.createInstance(commandData)
-				as RemoteLocationCommand;
+			var command:RemoteLocationCommand = RemoteCommand.createInstance(commandData) as RemoteLocationCommand;
 			command.location = this;
 			command.execute();
 		}

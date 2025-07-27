@@ -165,12 +165,19 @@ public class SOListener implements ISharedObjectListener {
   }
 
   protected void executeServerMethods(
-      String clientId, String methodName, LinkedHashMap<Integer, Object> args) {
-    if (methodName == null) // Dont know wtf its null
-    return;
+    String clientId, String methodName, LinkedHashMap<Integer, Object> args) {
+
+    if (methodName == null) {
+      logger.warn("Method name was null");
+      return;
+    }
+
     try {
       Boolean interrup = (Boolean) ReflectUtil.callMethod(this, methodName, args.values());
-      if (interrup != null && interrup) preventClientInvocation(args);
+      if (interrup != null && interrup) {
+        logger.warn("interrup");
+        preventClientInvocation(args);
+      }
     } catch (NoSuchMethodException e) {
       // OK
     } catch (Exception e) {
@@ -271,20 +278,26 @@ public class SOListener implements ISharedObjectListener {
       UserAdapter adapter = UserManager.getInstance().getCurrentUser();
       synchronized (this) {
         if (adapter != null && !connectedUsers.contains(adapter.getLogin())) {
-          if (args.size() > 1) // not prevented allready
-          preventClientInvocation(getMethodArgs(args));
+          if (args.size() > 1) {
+            preventClientInvocation(getMethodArgs(args));
+          }
           return;
         }
       }
 
       String clientId = (String) args.get(0);
       String clientMethodName = (String) args.get(1);
+
       LinkedHashMap<Integer, Object> methodArgs = getMethodArgs(args);
       if (methodName.equals(SEND_STATE)) {
         String stateName = (String) methodArgs.get(0);
         processSendState(methodArgs, clientId, stateName);
       }
-      if (!isPrevent(methodArgs)) executeServerMethods(clientId, clientMethodName, methodArgs);
+      if (!isPrevent(methodArgs)) {
+        executeServerMethods(clientId, clientMethodName, methodArgs);
+      } else {
+        logger.warn("prevented: " + clientId + " - " + clientMethodName);
+      }
     }
     if (methodName.equals(CLEAR)) {
       state.clear();
