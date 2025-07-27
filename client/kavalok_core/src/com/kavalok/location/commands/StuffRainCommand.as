@@ -66,14 +66,14 @@
 		
 		override public function execute():void
 		{
-			/*var info:StuffTypeTO = new StuffTypeTO();
+			var info:StuffTypeTO = new StuffTypeTO();
 			info.fileName = fileName;
 			info.id = itemId;
 			info.type = stuffType;
 			
 			_stuff = info.createModel();
 			_stuff.readyEvent.addListener(onReady);
-			_stuff.loadContent();*/
+			_stuff.loadContent();
 		}
 		
 	}
