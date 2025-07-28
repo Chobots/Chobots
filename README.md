@@ -32,7 +32,7 @@ Goals of this project are as follows but not limited to:
  - [ ] Fix Cinema
  - [ ] Add database rows required to fix missions, pets, robots
  - [ ] Fix login error message on duplicate login
- - [ ] Fix chat history bar not displaying
+ - [ ] [Fix chat history bar not displaying](https://github.com/Chobots/Chobots/issues/6)
 
 ## Running the code
 
