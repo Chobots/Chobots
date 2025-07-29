@@ -1,0 +1,78 @@
+/* CSS Document */
+#play_b{
+	position:absolute;
+	font-family:Verdana, Arial, Helvetica, sans-serif;
+	font-size:15pt;
+	color:#075b01;
+	text-decoration:none;
+	left: 593px;
+	top: 228px;
+}
+
+*.flag{
+	position:absolute;
+	top: 354px;
+}
+
+*.main_menu{
+	position:absolute; 
+	font-family:Arial; 
+	font-size:16pt; 
+	color:#1fa6f3; 
+	text-decoration:none;
+}
+
+*.main_menu_active{
+	position:absolute; 
+	font-family:Arial; 
+	font-size:16pt; 
+	color:#f09600;
+	text-decoration:none;
+}
+
+*.small_menu{
+	position:absolute; 
+	font-family:Arial; 
+	font-size:11pt; 
+	color:#1fa6f3; 
+	text-decoration:none;
+	font-weight:bold
+}
+
+*.small_menu_active{
+	position:absolute; 
+	font-family:Arial; 
+	font-size:11pt; 
+	color:#f09600;
+	text-decoration:none;
+	font-weight:bold
+}
+
+*.page_title{
+	position:absolute;
+	font-family:Arial;
+	font-size:20pt; 
+	color:#1fa6f3;
+	font-weight:bold;
+}
+
+#chobot{
+	position:absolute;
+	font-family:arial;
+	font-size:20pt;
+	color:#f09600;
+	font-weight:bold;
+	}
+	
+*.content{
+	position:absolute;
+	font-family:arial;
+	font-size:12pt;
+}
+
+*.dl{
+	font-family:arial;
+	font-size:12pt; 
+	color:#e9c05c; 
+	text-decoration:none;
+}
