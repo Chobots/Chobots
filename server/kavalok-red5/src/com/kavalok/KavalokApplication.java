@@ -232,35 +232,36 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
     Class<?> type = Class.forName(className);
     ITransactionStrategy service = (ITransactionStrategy) ReflectUtils.newInstance(type);
     
-    if (!isAuthorized(className, method)) {
+    Boolean authorized = isAuthorized(className, method);
+    if (Boolean.FALSE.equals(authorized)) {
       logger.warn("Unauthorized access attempt to " + className + "." + method);
+      return null;
+    } else if (authorized == null) {
+      logger.warn("Undefined permission level for '" + className + "." + method + "' - access denied");
       return null;
     }
     
     return TransactionUtil.callTransaction(service, method, args);
   }
 
-  private boolean isAuthorized(String className, String methodName) {
+  private Boolean isAuthorized(String className, String methodName) {
     Integer requiredLevel = getRequiredPermissionLevel(className + "." + methodName);
 
     if (requiredLevel == null) {
-      logger.warn("Undefined permission level for '" + className + "." + methodName + "' - access denied");
-      return false;
+      return null;
     }
 
     return userHasPermissionLevel(requiredLevel);
   }
 
   private Integer getRequiredPermissionLevel(String method) {
-    logger.warn(method);
-
-    // Strip the 'com.kavalok.services.' prefix if present
-    String normalizedMethod = method;
-    if (method.startsWith("com.kavalok.services.")) {
-      normalizedMethod = method.substring("com.kavalok.services.".length());
+    if (!method.startsWith("com.kavalok.services.")) {
+      return null;
     }
+
+    String permission = method.substring("com.kavalok.services.".length());
     
-    switch (normalizedMethod) {    
+    switch (permission) {
       // SUPER_ADMIN level methods (level 5) - Super Admin users only
       case "StatisticsService.getMembersAge":
       case "StatisticsService.getTotalLogins":
