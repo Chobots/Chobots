@@ -29,6 +29,9 @@ Goals of this project are as follows but not limited to:
  - [ ] Safely enable guest accounts & patch specific guest exploits
  - [ ] Fix partner login
  - [ ] Reauthenticate client server moves (including first login) via auth tokens rather than client stored password
+ - [ ] Fix Cinema
+ - [ ] Add database rows required to fix missions, pets, robots
+ - [ ] Fix login error message on duplicate login
 
 ## Running the code
 

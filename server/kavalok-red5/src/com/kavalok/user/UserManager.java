@@ -34,10 +34,9 @@ public class UserManager {
     try {
       client = new Red5().getClient();
     } catch (Exception e) {
-      logger.error("Could not get Red5 client", e);
+      return null;
     }
     if (client == null) {
-      logger.error("No Red5 client found for current session");
       return null;
     }
     UserAdapter adapter = getUser(client);

@@ -114,7 +114,6 @@ public class RemoteClient extends ClientBase {
   }
 
   public void sendCommand(ObjectMap<String, Object> command) {
-    // logger.info("send command " + command.toString());
     invoke("RemoteServer.sendCommand", new Object[] {charName, HibernateUtil.serialize(command)});
   }
 

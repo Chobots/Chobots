@@ -16,7 +16,7 @@
 	 */
 	public class AnimationBase extends MagicViewBase
 	{
-		static public const URL_PREFIX:String = 'resources/magic/';
+		static public const URL_PREFIX:String = '/game/resources/magic/';
 		
 		[Bindable] public var urlField:TextInput;
 		[Bindable] public var urlCombo:ComboBox;
