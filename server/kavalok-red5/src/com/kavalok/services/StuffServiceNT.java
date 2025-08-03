@@ -33,8 +33,8 @@ public class StuffServiceNT extends DataServiceNotTransactionBase {
 
   private static final SimpleDateFormat ITEM_OF_THE_MONTH_FORMAT = new SimpleDateFormat("yyyyMM");
 
-  private static final Set<String> ALLOWED_QUEST_ITEMS = new HashSet<String>(
-      Arrays.asList("globus", "glasses_professor")
+  private static final Set<String> ALLOW_CLIENT_REQUEST_ITEMS = new HashSet<String>(
+      Arrays.asList("globus", "glasses_professor", "okuliari_chopix", "cleaner_pot", "cleaner_pylesos", "cleaner_kaska", "cleaner_board")
   );
 
   public StuffServiceNT() {
@@ -63,7 +63,7 @@ public class StuffServiceNT extends DataServiceNotTransactionBase {
 
   public StuffItemLightTO retriveItemWithColor(String fileName, Integer color) {
     // SECURITY CHECK: Only allow retrieval of permitted quest items
-    if (!ALLOWED_QUEST_ITEMS.contains(fileName.toLowerCase())) {
+    if (!ALLOW_CLIENT_REQUEST_ITEMS.contains(fileName.toLowerCase())) {
         throw new SecurityException("Unauthorized item retrieval: " + fileName);
     }
     StuffItemDAO stuffItemDAO = new StuffItemDAO(getSession());
@@ -75,7 +75,7 @@ public class StuffServiceNT extends DataServiceNotTransactionBase {
 
   public StuffItemLightTO retriveItem(String fileName) {
     // SECURITY CHECK: Only allow retrieval of permitted quest items
-    if (!ALLOWED_QUEST_ITEMS.contains(fileName.toLowerCase())) {
+    if (!ALLOW_CLIENT_REQUEST_ITEMS.contains(fileName.toLowerCase())) {
         throw new SecurityException("Unauthorized item retrieval: " + fileName);
     }
     StuffItemDAO stuffItemDAO = new StuffItemDAO(getSession());

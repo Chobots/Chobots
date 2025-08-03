@@ -978,10 +978,9 @@ CREATE TABLE `Quest`
 --
 
 LOCK TABLES `Quest` WRITE;
-/*!40000 ALTER TABLE `Quest`
-    DISABLE KEYS */;
-/*!40000 ALTER TABLE `Quest`
-    ENABLE KEYS */;
+/*!40000 ALTER TABLE `Quest` DISABLE KEYS */;
+INSERT INTO `Quest` (id, created, name, enabled, server_id) VALUES (2,NULL,'questChopix',1,NULL),(3,NULL,'questAcademy',1,NULL),(4,NULL,'questNichos',1,NULL),(5,NULL,'questHoover',1,NULL),(8,NULL,'questMusic',0,NULL),(15,NULL,'betaNPC',0,NULL),(16,NULL,'questPatrick',0,NULL),(17,NULL,'questPets',0,NULL),(18,NULL,'questCowboy',0,NULL),(19,NULL,'santaNPC',0,NULL),(20,NULL,'questHalloween',0,NULL);
+/*!40000 ALTER TABLE `Quest` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --

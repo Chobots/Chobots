@@ -313,6 +313,7 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       case "AdminService.addStuff":
       case "InfoPanelService.getEntities":
       case "QuestService.getQuests":
+      case "QuestService.saveQuest":
       case "InfoPanelService.saveEntity":
         return 3;
       
@@ -393,6 +394,10 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       case "CharService.removeCharFriends":
       case "MessageService.sendCommand":
       case "RobotServiceNT.getTeamTopScores":
+      case "StuffServiceNT.retriveItem": // Requires finer permission control
+      case "CharService.getCharMoney":
+      case "CharService.getMoneyReport":
+      case "SystemService.getSystemDate":
         return -1;
       
       default:
