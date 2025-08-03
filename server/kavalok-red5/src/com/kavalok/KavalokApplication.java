@@ -252,109 +252,146 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
   }
 
   private Integer getRequiredPermissionLevel(String method) {
-    switch (method) {    
+    logger.warn(method);
+
+    // Strip the 'com.kavalok.services.' prefix if present
+    String normalizedMethod = method;
+    if (method.startsWith("com.kavalok.services.")) {
+      normalizedMethod = method.substring("com.kavalok.services.".length());
+    }
+    
+    switch (normalizedMethod) {    
       // SUPER_ADMIN level methods (level 5) - Super Admin users only
-      case "test":
+      case "StatisticsService.getMembersAge":
+      case "StatisticsService.getTotalLogins":
+      case "StatisticsService.getActivationChart":
+      case "StatisticsService.getLoadChart":
+      case "StatisticsService.getPurchaseStatistics":
+      case "AdminService.moveUsers":
+      case "AdminService.reboot":
+      case "AdminService.setServerLimit":
+      case "AdminService.saveConfig":
+      case "AdminService.setServerAvailable":
+      case "AdminService.setMailServerAvailable":
+      case "AdminService.refreshServersConfig":
+      case "AdminService.getMailServers":
+      case "ErrorService.getErrors":
+
         return 5;
         
       // SUPER_MOD level methods (level 4) - Super moderators and above
-      case "com.kavalok.services.AdminService.reboot":
-      case "com.kavalok.services.AdminService.setServerLimit":
-      case "com.kavalok.services.AdminService.saveConfig":
-      case "com.kavalok.services.AdminService.setServerAvailable":
-      case "com.kavalok.services.AdminService.setMailServerAvailable":
-      case "com.kavalok.services.AdminService.saveWorldConfig":
-      case "com.kavalok.services.AdminService.refreshServersConfig":
-      case "com.kavalok.services.AdminService.saveStuffGroupNum":
+      case "AdminService.saveStuffGroupNum":
+      case "MessageService.getBlockWords":
+      case "MessageService.addBlockWord":
+      case "MessageService.removeBlockWord":
+      case "MessageService.getSkipWords":
+      case "MessageService.addSkipWord":
+      case "MessageService.removeSkipWord":
+      case "MessageService.getAllowedWords":
+      case "MessageService.removeAllowedWord":
+      case "MessageService.addAllowedWord":
+      case "MessageService.getReviewWords":
+      case "MessageService.removeReviewWord":
+      case "MessageService.addReviewWord":
+      case "AdminService.sendGlobalMessage":
+      case "AdminService.addCitizenship":
+      case "AdminService.addMoney":
+      case "AdminService.deleteUser":
+      case "AdminService.restoreUser":
+      case "StuffTypeService.saveItem":
+      case "CompetitionDataService.getCompetitions":
+      case "CompetitionDataService.startCompetition":
+      case "CompetitionDataService.clearCompetition":
         return 4;
       
       // MOD level methods (level 3) - Full moderators and above
-      case "com.kavalok.services.AdminService.setBanDate":
-      case "com.kavalok.services.AdminService.setDisableChatPeriod":
-      case "com.kavalok.services.AdminService.kickOut":
-      case "com.kavalok.services.AdminService.saveUserData":
-      case "com.kavalok.services.AdminService.saveUserBan":
-      case "com.kavalok.services.AdminService.saveIPBan":
-      case "com.kavalok.services.AdminService.addMoney":
-      case "com.kavalok.services.AdminService.sendRules":
-      case "com.kavalok.services.AdminService.addCitizenship":
-      case "com.kavalok.services.AdminService.addStuff":
-      case "com.kavalok.services.AdminService.deleteUser":
-      case "com.kavalok.services.AdminService.restoreUser":
+      case "AdminService.setBanDate":
+      case "AdminService.kickOut":
+      case "AdminService.saveUserData":
+      case "AdminService.saveIPBan":
+      case "AdminService.addStuff":
+      case "InfoPanelService.getEntities":
+      case "QuestService.getQuests":
+      case "InfoPanelService.saveEntity":
         return 3;
       
       // HALF_MOD level methods (level 2) - Half moderators and above
-      case "com.kavalok.services.AdminService.moderateChat":
-      case "com.kavalok.services.AdminService.setReportProcessed":
-      case "com.kavalok.services.AdminService.getLastChatMessages":
-      case "com.kavalok.services.AdminService.getUser":
-      case "com.kavalok.services.AdminService.getUsers":
+      case "AdminService.moderateChat":
+      case "AdminService.setReportProcessed":
+      case "AdminService.getLastChatMessages":
+      case "AdminService.getUser":
+      case "AdminService.getUsers":
+      case "AdminService.setDisableChatPeriod":
+      case "AdminService.saveUserBan":
+      case "AdminService.sendRules":
+      case "AdminService.saveWorldConfig":
         return 2;
       
       // PARTNER level methods (level 1) - Partners and above
-      case "com.kavalok.services.AdminService.viewStatistics":
-      case "com.kavalok.services.AdminService.viewPartnerData":
+      case "AdminService.viewStatistics":
+      case "AdminService.viewPartnerData":
+      case "StatisticsService.getTransactionStatistics":
+      case "StatisticsService.getRobotTransactionStatistics":
         return 1;
       
       // EXTERNAL_MOD level methods (level 0) - External moderators and above
-      case "com.kavalok.services.AdminService.getGraphity":
-      case "com.kavalok.services.AdminService.clearGraphity":
-      case "com.kavalok.services.AdminService.viewReports":
-      case "com.kavalok.services.AdminService.getReports":
-      case "com.kavalok.services.ServerService.getAllServers":
-      case "com.kavalok.services.StuffTypeService.getShops":
-      case "com.kavalok.services.AdminService.clearSharedObject":
-      case "com.kavalok.services.AdminService.sendState":
-      case "com.kavalok.services.AdminService.removeState":
-      case "com.kavalok.services.AdminService.sendLocationCommand":
-      case "com.kavalok.services.StuffTypeService.getStuffListByShop":
-      case "com.kavalok.services.AdminService.getRainableStuffs":
+      case "AdminService.getGraphity":
+      case "AdminService.clearGraphity":
+      case "AdminService.viewReports":
+      case "AdminService.getReports":
+      case "ServerService.getAllServers":
+      case "StuffTypeService.getShops":
+      case "AdminService.clearSharedObject":
+      case "AdminService.sendState":
+      case "AdminService.removeState":
+      case "AdminService.sendLocationCommand":
+      case "StuffTypeService.getStuffListByShop":
+      case "AdminService.getRainableStuffs":
         return 0;
       
       // Public methods (no permission required)
-      case "com.kavalok.services.AdminService.adminLogin":
-      case "com.kavalok.services.AdminService.changePassword":
-      case "com.kavalok.services.AdminService.getPermissionLevel":
-      case "com.kavalok.services.AdminService.getMailServers":
-      case "com.kavalok.services.AdminService.getServerLimit":
-      case "com.kavalok.services.AdminService.getConfig":
-      case "com.kavalok.services.AdminService.getClientConfig":
-      case "com.kavalok.services.AdminService.getWorldConfig":
-      case "com.kavalok.services.AdminService.getStuffGroupNum":
-      case "com.kavalok.services.LoginService.getServerProperties":
-      case "com.kavalok.services.SystemService.clientTick":
-      case "com.kavalok.services.CharService.getCharViewLogin":
-      case "com.kavalok.services.LoginService.login":
+      case "AdminService.adminLogin":
+      case "AdminService.changePassword":
+      case "AdminService.getPermissionLevel":
+      case "AdminService.getServerLimit":
+      case "AdminService.getConfig":
+      case "AdminService.getClientConfig":
+      case "AdminService.getWorldConfig":
+      case "AdminService.getStuffGroupNum":
+      case "LoginService.getServerProperties":
+      case "SystemService.clientTick":
+      case "CharService.getCharViewLogin":
+      case "LoginService.login":
       // Logged in
-      case "com.kavalok.services.LoginService.getMostLoadedServer":
-      case "com.kavalok.services.ServerService.getServers":
-      case "com.kavalok.services.ServerService.getServerAddress":
-      case "com.kavalok.services.CharService.enterGame":
-      case "com.kavalok.services.SOService.getState":
-      case "com.kavalok.services.MessageService.lPC":
-      case "com.kavalok.services.SOService.getNumConnectedChars":
-      case "com.kavalok.services.CompetitionDataService.getMyCompetitionResult":
-      case "com.kavalok.services.CharService.getCharFriends":
-      case "com.kavalok.services.CharService.getRobotTeam":
-      case "com.kavalok.services.CharService.getCharHome":
-      case "com.kavalok.services.MoneyService.addMoney":
-      case "com.kavalok.services.BillingTransactionService.getMembershipSKUs":
-      case "com.kavalok.services.StuffServiceNT.getItemOfTheMonthType":
-      case "com.kavalok.services.CharService.getCharView":
-      case "com.kavalok.services.StuffServiceNT.getItem":
-      case "com.kavalok.services.MessageService.deleteCommand":
-      case "com.kavalok.services.CharService.getFamilyInfo":
-      case "com.kavalok.services.GraphityService.getShapes":
-      case "com.kavalok.services.GraphityService.sendShape":
-      case "com.kavalok.services.CharService.saveSettings":
-      case "com.kavalok.services.UserServiceNT.setHelpEnabled":
-      case "com.kavalok.services.CharService.saveCharStuffs":
-      case "com.kavalok.services.StuffServiceNT.getStuffTypes":
-      case "com.kavalok.services.CharService.saveCharBody":
-      case "com.kavalok.services.CompetitionService.addResult":
-      case "com.kavalok.services.CharService.removeCharFriends":
-      case "com.kavalok.services.MessageService.sendCommand":
-      case "com.kavalok.services.RobotServiceNT.getTeamTopScores":
+      case "LoginService.getMostLoadedServer":
+      case "ServerService.getServers":
+      case "ServerService.getServerAddress":
+      case "CharService.enterGame":
+      case "SOService.getState":
+      case "MessageService.lPC":
+      case "SOService.getNumConnectedChars":
+      case "CompetitionDataService.getMyCompetitionResult":
+      case "CharService.getCharFriends":
+      case "CharService.getRobotTeam":
+      case "CharService.getCharHome":
+      case "MoneyService.addMoney":
+      case "BillingTransactionService.getMembershipSKUs":
+      case "StuffServiceNT.getItemOfTheMonthType":
+      case "CharService.getCharView":
+      case "StuffServiceNT.getItem":
+      case "MessageService.deleteCommand":
+      case "CharService.getFamilyInfo":
+      case "GraphityService.getShapes":
+      case "GraphityService.sendShape":
+      case "CharService.saveSettings":
+      case "UserServiceNT.setHelpEnabled":
+      case "CharService.saveCharStuffs":
+      case "StuffServiceNT.getStuffTypes":
+      case "CharService.saveCharBody":
+      case "CompetitionService.addResult":
+      case "CharService.removeCharFriends":
+      case "MessageService.sendCommand":
+      case "RobotServiceNT.getTeamTopScores":
         return -1;
       
       default:

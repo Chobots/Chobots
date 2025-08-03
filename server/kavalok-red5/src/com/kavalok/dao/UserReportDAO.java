@@ -22,7 +22,8 @@ public class UserReportDAO extends DAO<UserReport> {
   public Integer notProcessedSize() {
     Criteria criteria = createNotProcessedCriteria();
     criteria.setProjection(Projections.rowCount());
-    return (Integer) criteria.uniqueResult();
+    Object result = criteria.uniqueResult();
+    return result != null ? ((Number) result).intValue() : 0;
   }
 
   @SuppressWarnings("unchecked")

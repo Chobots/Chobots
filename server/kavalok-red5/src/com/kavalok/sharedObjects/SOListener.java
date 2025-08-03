@@ -168,7 +168,7 @@ public class SOListener implements ISharedObjectListener {
     String clientId, String methodName, LinkedHashMap<Integer, Object> args) {
 
     if (methodName == null) {
-      logger.warn("Method name was null");
+      logger.warn("Method name was null - clientId: {}, args: {}", clientId, args);
       return;
     }
 
