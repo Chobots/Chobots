@@ -176,8 +176,6 @@ package com.kavalok.location
 		
 		private function setCharsScale(value:Number):void
 		{
-			 trace('numChars:', remote.connectedChars.length, 'scale:', value);
-			
 			_charsScale = value;
 			
 			for each (var char:LocationChar in _chars)
@@ -241,7 +239,6 @@ package com.kavalok.location
 				
 			for each (var item:Sprite in items)
 			{
-				trace('optimize:', item.name);
 				GraphUtils.optimizeSprite(item);
 			}
 		}
