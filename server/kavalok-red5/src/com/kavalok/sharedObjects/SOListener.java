@@ -20,6 +20,11 @@ import com.kavalok.user.UserAdapter;
 import com.kavalok.user.UserManager;
 import com.kavalok.utils.ReflectUtil;
 import com.kavalok.utils.SOUtil;
+import com.kavalok.services.stuff.RainTokenManager;
+import com.kavalok.dao.StuffTypeDAO;
+import com.kavalok.db.StuffType;
+import com.kavalok.transactions.DefaultTransactionStrategy;
+import com.kavalok.transactions.ITransactionStrategy;
 
 public class SOListener implements ISharedObjectListener {
 
@@ -72,6 +77,15 @@ public class SOListener implements ISharedObjectListener {
     checkArgs.add(true);
     MessageChecker checker = new MessageChecker();
     return (Boolean) TransactionUtil.callTransaction(checker, "checkMessage", checkArgs);
+  }
+
+  public Boolean rExecuteCommand(ObjectMap<String, Object> command) {
+    String className = (String) command.get("className");
+    
+    logger.info("Received command: className=" + className + ", command=" + command);
+    
+    // For now, just pass through all commands without special processing
+    return false;
   }
 
   public ObjectMap<String, Object> getState() {
@@ -168,7 +182,6 @@ public class SOListener implements ISharedObjectListener {
     String clientId, String methodName, LinkedHashMap<Integer, Object> args) {
 
     if (methodName == null) {
-      logger.warn("Method name was null - clientId: {}, args: {}", clientId, args);
       return;
     }
 

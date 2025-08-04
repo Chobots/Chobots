@@ -50,6 +50,7 @@ import com.kavalok.xmlrpc.RemoteClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.kavalok.user.UserAdapter;
+import com.kavalok.services.RainCommandService;
 
 public class AdminService extends DataServiceBase {
 
@@ -592,5 +593,9 @@ public class AdminService extends DataServiceBase {
     } else {
       return "error";
     }
+  }
+
+  public void triggerRainEventWithLocation(String fileName, Integer count, Integer serverId, String remoteId) {
+    RainCommandService.triggerRainEvent(getSession(), fileName, count, "admin", serverId, remoteId);
   }
 }

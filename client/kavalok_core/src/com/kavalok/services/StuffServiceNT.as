@@ -9,21 +9,21 @@ package com.kavalok.services
 			super(resultHandler, faultHandler);
 		}
 		
-		public function retriveItemWithColor(staffName:String, color : int):void
+		public function retriveItemWithColor(stuffName:String, color : int):void
 		{
 			doCall("retriveItemWithColor", arguments);
 		}
-		public function retriveItemByIdWithColor(staffId:int, color : int):void
+		public function retriveItemByIdWithColor(stuffId:int, color : int, rainToken:String = null):void
 		{
-			doCall("retriveItemByIdWithColor", arguments);
+			doCall("retriveItemByIdWithColor", [stuffId, color, rainToken]);
 		}
-		public function retriveItem(staffName:String):void
+		public function retriveItem(stuffName:String):void
 		{
 			doCall("retriveItem", arguments);
 		}
-		public function retriveItemById(staffId:int):void
+		public function retriveItemById(stuffId:int, rainToken:String = null):void
 		{
-			doCall("retriveItemById", arguments);
+			doCall("retriveItemById", [stuffId, rainToken]);
 		}
 
 		public function updateStuffItem(item : StuffItemLightTO) : void 

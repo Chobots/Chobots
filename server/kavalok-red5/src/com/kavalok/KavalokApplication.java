@@ -44,6 +44,9 @@ import java.lang.reflect.Method;
 import com.kavalok.dao.AdminDAO;
 import com.kavalok.db.Admin;
 import com.kavalok.permissions.AccessAdmin;
+import com.kavalok.services.stuff.RainTokenManager;
+import java.security.SecureRandom;
+import java.math.BigInteger;
 
 public class KavalokApplication extends MultiThreadedApplicationAdapter {
 
@@ -72,6 +75,8 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
   private Timer clientsCleanerTimer;
 
   private Timer shopCacheCleanerTimer;
+
+  private String rainServerSecret;
 
   public static KavalokApplication getInstance() {
     return instance;
@@ -150,6 +155,11 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
 
     shopCacheCleanerTimer = new Timer("ShopCacheCleaner timer", true);
     shopCacheCleanerTimer.schedule(new ShopCacheCleaner(), 0, ShopCacheCleaner.DELAY);
+
+    // Generate a random server secret for rain tokens
+    SecureRandom random = new SecureRandom();
+    rainServerSecret = new BigInteger(130, random).toString(32);
+    RainTokenManager.initialize(rainServerSecret);
 
     started = true;
     refreshConfig();
@@ -349,6 +359,7 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       case "AdminService.sendLocationCommand":
       case "StuffTypeService.getStuffListByShop":
       case "AdminService.getRainableStuffs":
+      case "AdminService.triggerRainEventWithLocation":
         return 0;
       
       // Public methods (no permission required)
@@ -394,10 +405,14 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       case "CharService.removeCharFriends":
       case "MessageService.sendCommand":
       case "RobotServiceNT.getTeamTopScores":
-      case "StuffServiceNT.retriveItem": // Requires finer permission control
+      case "StuffServiceNT.retriveItem": // Also has finer permission control
+      case "StuffServiceNT.retriveItemByIdWithColor": // Also has finer permission control
       case "CharService.getCharMoney":
       case "CharService.getMoneyReport":
       case "SystemService.getSystemDate":
+      case "MagicServiceNT.getMagicPeriod":
+      case "MagicServiceNT.executeMagicRain":
+      case "StuffServiceNT.removeItem":
         return -1;
       
       default:

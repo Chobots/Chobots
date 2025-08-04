@@ -8,7 +8,9 @@
 	import com.kavalok.utils.GraphUtils;
 	import com.kavalok.utils.Maths;
 	import com.kavalok.utils.SpriteTweaner;
+	import com.kavalok.utils.SpriteDecorator;
 	
+	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
 	
@@ -17,6 +19,8 @@
 		public var itemId:int;
 		public var fileName:String;
 		public var stuffType:String
+		public var rainToken:String;
+		public var color:int;
 		
 		private var _stuff:ResourceSprite;
 		private var _speed:int = 5;
@@ -56,7 +60,7 @@
 			_stuff.mouseEnabled = false;
 			
 			new SpriteTweaner(_stuff, {scaleX: 0, scaleY: 0}, 10, null, onDown);
-			new RetriveStuffByIdCommand(itemId, 'chobots', Maths.random(0xffffff)).execute();
+			new RetriveStuffByIdCommand(itemId, 'chobots', color, rainToken).execute();
 		}
 		
 		private function onDown(e:Object = null):void
@@ -70,7 +74,9 @@
 			info.fileName = fileName;
 			info.id = itemId;
 			info.type = stuffType;
-			
+			info.rainToken = rainToken;
+			info.color = color;
+			info.hasColor = true;
 			_stuff = info.createModel();
 			_stuff.readyEvent.addListener(onReady);
 			_stuff.loadContent();

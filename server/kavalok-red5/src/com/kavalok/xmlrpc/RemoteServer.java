@@ -94,10 +94,14 @@ public class RemoteServer extends DefaultTransactionStrategy {
   public void sendCommand(String login, String commandName, Object parameter) {
     try {
       UserAdapter user = UserManager.getInstance().getUser(login);
+      if (user == null) {
+        return;
+      }
+      
       user.executeCommand(commandName, parameter);
     } catch (Exception e) {
-      System.out.println("Error exectuing command: " + commandName + "\n parameter: " + parameter);
-      logger.error(e.getMessage(), e);
+      logger.error("Error exectuing command: " + commandName + "\n parameter: " + parameter);
+      logger.error("RemoteServer.sendCommand: Error sending command to user '" + login + "': " + e.getMessage(), e);
     }
   }
 

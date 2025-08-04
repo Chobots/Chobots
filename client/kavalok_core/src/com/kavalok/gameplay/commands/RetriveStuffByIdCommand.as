@@ -11,21 +11,23 @@ package com.kavalok.gameplay.commands
 		private var _itemId:int;
 		private var _from:String;
 		private var _color:Number;
+		private var _rainToken:String;
 		
-		public function RetriveStuffByIdCommand(id:int, from:String, color : Number = NaN)
+		public function RetriveStuffByIdCommand(id:int, from:String, color : Number = NaN, rainToken:String = null)
 		{
 			_itemId = id;
 			_from = from;
 			_color = color;
+			_rainToken = rainToken;
 		}
 		
 		public function execute():void
 		{
 			Global.isLocked = true;
 			if(isNaN(_color))
-				new StuffServiceNT(onResult).retriveItemById(_itemId);
+				new StuffServiceNT(onResult).retriveItemById(_itemId, _rainToken);
 			else
-				new StuffServiceNT(onResult).retriveItemByIdWithColor(_itemId, _color);
+				new StuffServiceNT(onResult).retriveItemByIdWithColor(_itemId, _color, _rainToken);
 			
 		}
 		

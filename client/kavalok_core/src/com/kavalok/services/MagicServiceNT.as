@@ -17,5 +17,10 @@ package com.kavalok.services
 		{
 			doCall("updateMagicDate", arguments);
 		}
+		
+		public function executeMagicRain():void
+		{
+			doCall("executeMagicRain", arguments);
+		}
 	}
 }

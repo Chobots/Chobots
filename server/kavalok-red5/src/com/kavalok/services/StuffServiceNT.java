@@ -2,13 +2,17 @@ package com.kavalok.services;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.HashSet;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.kavalok.dao.GameCharDAO;
 import com.kavalok.dao.StuffItemDAO;
 import com.kavalok.dao.StuffTypeDAO;
 import com.kavalok.db.GameChar;
@@ -18,12 +22,13 @@ import com.kavalok.dto.CharTOCache;
 import com.kavalok.dto.stuff.StuffItemLightTO;
 import com.kavalok.dto.stuff.StuffTypeTO;
 import com.kavalok.services.common.DataServiceNotTransactionBase;
+import com.kavalok.services.stuff.IShopProcessor;
 import com.kavalok.services.stuff.DefaultShopProcessor;
 import com.kavalok.services.stuff.ExchangeShopProcessor;
-import com.kavalok.services.stuff.IShopProcessor;
 import com.kavalok.services.stuff.PayedShopProcessor;
 import com.kavalok.services.stuff.RobotShopProcessor;
 import com.kavalok.services.stuff.UniqueItemsProcessor;
+import com.kavalok.services.stuff.RainTokenManager;
 import com.kavalok.user.UserAdapter;
 import com.kavalok.user.UserManager;
 
@@ -36,6 +41,8 @@ public class StuffServiceNT extends DataServiceNotTransactionBase {
   private static final Set<String> ALLOW_CLIENT_REQUEST_ITEMS = new HashSet<String>(
       Arrays.asList("globus", "glasses_professor", "okuliari_chopix", "cleaner_pot", "cleaner_pylesos", "cleaner_kaska", "cleaner_board")
   );
+
+  private static final Logger logger = LoggerFactory.getLogger(StuffServiceNT.class);
 
   public StuffServiceNT() {
     super();
@@ -62,7 +69,6 @@ public class StuffServiceNT extends DataServiceNotTransactionBase {
   }
 
   public StuffItemLightTO retriveItemWithColor(String fileName, Integer color) {
-    // SECURITY CHECK: Only allow retrieval of permitted quest items
     if (!ALLOW_CLIENT_REQUEST_ITEMS.contains(fileName.toLowerCase())) {
         throw new SecurityException("Unauthorized item retrieval: " + fileName);
     }
@@ -74,7 +80,6 @@ public class StuffServiceNT extends DataServiceNotTransactionBase {
   }
 
   public StuffItemLightTO retriveItem(String fileName) {
-    // SECURITY CHECK: Only allow retrieval of permitted quest items
     if (!ALLOW_CLIENT_REQUEST_ITEMS.contains(fileName.toLowerCase())) {
         throw new SecurityException("Unauthorized item retrieval: " + fileName);
     }
@@ -84,19 +89,31 @@ public class StuffServiceNT extends DataServiceNotTransactionBase {
     return new StuffItemLightTO(item);
   }
 
-  public StuffItemLightTO retriveItemByIdWithColor(Integer id, Integer color) {
+  public StuffItemLightTO retriveItemByIdWithColor(Integer id, Integer color, String rainToken) {
+    // Extract the color from the token instead of using the client-provided color
+    Integer tokenColor = RainTokenManager.getInstance().getTokenColor(rainToken);
+    if (tokenColor == null) {
+      throw new SecurityException("Token validation failed for item: id=" + id + ", rainToken=" + rainToken);
+    }
+    
+    if (!RainTokenManager.getInstance().validateAndSpendToken(rainToken, id, tokenColor)) {
+      throw new SecurityException("Token validation failed for item: id=" + id + ", color=" + tokenColor + ", rainToken=" + rainToken);
+    }
     StuffItemDAO stuffItemDAO = new StuffItemDAO(getSession());
     StuffItem item = createItem(id, stuffItemDAO);
-    item.setColor(color);
+    item.setColor(tokenColor);
     stuffItemDAO.makePersistent(item);
     return new StuffItemLightTO(item);
   }
 
-  public StuffItemLightTO retriveItemById(Integer id) {
+  public StuffItemLightTO retriveItemById(Integer id, String rainToken) {
+    if (!RainTokenManager.getInstance().validateAndSpendToken(rainToken, id, null)) {
+      throw new SecurityException("Token validation failed for item: id=" + id + ", rainToken=" + rainToken);
+    }
+    
     StuffItemDAO stuffItemDAO = new StuffItemDAO(getSession());
     StuffItem item = createItem(id, stuffItemDAO);
     stuffItemDAO.makePersistent(item);
-
     return new StuffItemLightTO(item);
   }
 
@@ -126,16 +143,10 @@ public class StuffServiceNT extends DataServiceNotTransactionBase {
     UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
     GameChar gameChar = userAdapter.getChar(getSession());
     StuffType type = new StuffTypeDAO(getSession()).findById(id.longValue());
-    StuffItem item = null;
-    if (type.getRainable()) {
-      List<StuffItem> items = itemDao.findItems(type, gameChar);
-      if (items.size() > 1) {
-        item = items.get(0);
-      }
-    }
-    if (item == null) item = new StuffItem(type);
-
+    
+    StuffItem item = new StuffItem(type);
     item.setGameChar(gameChar);
+    
     CharTOCache.getInstance().removeCharTO(userAdapter.getUserId());
     CharTOCache.getInstance().removeCharTO(userAdapter.getLogin());
     return item;
