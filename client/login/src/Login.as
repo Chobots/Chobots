@@ -72,7 +72,7 @@
 		override public function initialize():void
 		{
 			Global.externalCalls.changeModeEvent.addListener(setMode);
-			Global.authManager.faultEvent.addListener(onLoginFault);
+			Global.authManager.faultEvent.addListenerIfHasNot(onLoginFault);
 			_content=new McMainContainer();
 			new ResourceScanner().apply(_content);
 			addChild(_content);
@@ -211,16 +211,15 @@
 			_skipActivation=skipRegistration;
 			_login=login;
 			_pass=password;
-			Global.startupInfo.password = password;
 			Global.isLocked=true;
-			Global.authManager.loginEvent.addListener(onLogin);
+			Global.authManager.loginEvent.addListenerIfHasNot(onLogin);
 			Global.authManager.tryLogin(login, password);
 		}
 
 		private function onLoginFault(loginResult:LoginResultTO):void
 		{
 			Global.isLocked=false;
-			Global.authManager.loginEvent.removeListener(onLogin);
+			Global.authManager.loginEvent.removeListenerIfHas(onLogin);
 
 			var messages:Object={};
 			messages[AuthenticationManager.ERROR_LOCAL_CONNECTION]=bundle.messages.localConnectionExists;
@@ -245,10 +244,10 @@
 
 		private function onLogin(loginResult:LoginResultTO):void
 		{
-			Global.authManager.loginEvent.removeListener(onLogin);
+			Global.authManager.loginEvent.removeListenerIfHas(onLogin);
 			Global.isLocked=false;
 			Global.startupInfo.login=_login;
-			Global.startupInfo.password=_pass;
+			Global.startupInfo.loginToken=loginResult.loginToken;
 			if (!loginResult.active && !_skipActivation)
 			{
 				_activationView.login=_login;

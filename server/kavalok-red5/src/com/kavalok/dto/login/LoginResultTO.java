@@ -10,6 +10,8 @@ public class LoginResultTO {
 
   private Long age;
 
+  private String loginToken;
+
   public LoginResultTO(Boolean success, Boolean active, long age, String reason) {
     super();
     this.success = success;
@@ -52,5 +54,13 @@ public class LoginResultTO {
 
   public void setAge(Long age) {
     this.age = age;
+  }
+
+  public String getLoginToken() {
+    return loginToken;
+  }
+
+  public void setLoginToken(String loginToken) {
+    this.loginToken = loginToken;
   }
 }
