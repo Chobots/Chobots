@@ -18,18 +18,18 @@ Goals of this project are as follows but not limited to:
  - [x] Docker Compose setup to allow code to be easily compiled and run
  - [ ] Replicating the .com website
  - [ ] Replicating the .com blog
- - [ ] Pre-population of minimal database including servers, clothes, word lists, sensible configuration
+ - [x] Pre-population of minimal database including servers, clothes, word lists, sensible configuration
  - [ ] Upgrading ancient dependencies or implementing patches to mitigate CVEs
- - [ ] Ensuring that admin RTMP calls (many) can only be made by authorised users
+ - [x] Ensuring that admin RTMP calls (many) can only be made by authorised users
  - [ ] Ensuring that XMLRPC calls require authentication
- - [ ] Ensuring that sensitive client RTMP calls (many) such as `retriveItem` are server validated to avoid abuse
+ - [x] Ensuring that sensitive client RTMP calls (many) such as `retriveItem` are server validated to avoid abuse
  - [ ] Produce detailed software architecture documents
  - [x] Salt and hash passwords
  - [x] Implement token-based authentication (replaces client-side password storage)
  - [ ] Server-side validation of superuser commands
  - [ ] Safely enable guest accounts & patch specific guest exploits
  - [ ] Fix partner login
- - [ ] Reauthenticate client server moves (including first login) via auth tokens rather than client stored password
+ - [x] Reauthenticate client server moves (including first login) via auth tokens rather than client stored password
  - [ ] Fix Cinema
  - [ ] Add database rows required to fix missions, pets, robots
  - [ ] Fix login error message on duplicate login
