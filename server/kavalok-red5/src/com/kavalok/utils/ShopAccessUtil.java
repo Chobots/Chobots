@@ -4,29 +4,57 @@ import org.hibernate.Session;
 
 import com.kavalok.dao.ShopDAO;
 import com.kavalok.dao.UserDAO;
+import com.kavalok.dao.AdminDAO;
 import com.kavalok.db.Shop;
 import com.kavalok.db.User;
+import com.kavalok.db.Admin;
 import com.kavalok.db.UserPermission;
 import com.kavalok.user.UserAdapter;
 import com.kavalok.user.UserManager;
+import com.kavalok.permissions.AccessAdmin;
+import com.kavalok.utils.HibernateUtil;
 
 public class ShopAccessUtil {
 
   /**
    * Gets the user's permission level based on their status
-   * @param user The user to check
+   * @param userAdapter The user adapter to check
    * @return The user's permission level
    */
-  private static UserPermission getUserPermission(User user) {
-    if (Boolean.TRUE.equals(user.getSuperUser())) {
+  private static UserPermission getUserPermission(UserAdapter userAdapter) {
+    // Check if user is logged in as an admin - admins get full access
+    if (AccessAdmin.class.equals(userAdapter.getAccessType())) {
       return UserPermission.SUPERUSER;
-    } else if (user.isModerator()) {
-      return UserPermission.MODERATOR;
-    } else if (user.isAgent()) {
-      return UserPermission.AGENT;
-    } else {
-      return UserPermission.PUBLIC;
     }
+    
+    // Regular user permission checks
+    Session session = null;
+    try {
+      session = HibernateUtil.getSessionFactory().openSession();
+      UserDAO userDAO = new UserDAO(session);
+      User user = userDAO.findById(userAdapter.getUserId());
+      
+      if (user != null) {
+        if (Boolean.TRUE.equals(user.getSuperUser())) {
+          return UserPermission.SUPERUSER;
+        } else if (user.isModerator()) {
+          return UserPermission.MODERATOR;
+        } else if (user.isAgent()) {
+          return UserPermission.AGENT;
+        } else {
+          return UserPermission.PUBLIC;
+        }
+      }
+    } catch (Exception e) {
+      org.slf4j.LoggerFactory.getLogger(ShopAccessUtil.class).error("Error checking user privileges", e);
+    } finally {
+      if (session != null && session.isOpen()) {
+        session.close();
+      }
+    }
+    
+    // Default to PUBLIC if we can't determine the user's permission
+    return UserPermission.PUBLIC;
   }
 
   /**
@@ -37,10 +65,9 @@ public class ShopAccessUtil {
    */
   public static void checkShopAccess(Session session, String shopName) {
     UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
-    User user = new UserDAO(session).findById(userAdapter.getUserId());
     
     // Get user's permission level
-    UserPermission userPermission = getUserPermission(user);
+    UserPermission userPermission = getUserPermission(userAdapter);
     
     // Check if shop is public
     ShopDAO shopDAO = new ShopDAO(session);
@@ -64,10 +91,9 @@ public class ShopAccessUtil {
    */
   public static void checkShopAccessForBuy(Session session, Shop shop) {
     UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
-    User user = new UserDAO(session).findById(userAdapter.getUserId());
     
     // Get user's permission level
-    UserPermission userPermission = getUserPermission(user);
+    UserPermission userPermission = getUserPermission(userAdapter);
     
     // Check if user has sufficient permission
     if (!userPermission.isSufficient(shop.getRequiredPermission())) {

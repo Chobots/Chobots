@@ -15,6 +15,7 @@ import com.kavalok.db.StuffType;
 import com.kavalok.dto.stuff.StuffTypeAdminTO;
 import com.kavalok.services.common.DataServiceBase;
 import com.kavalok.utils.ReflectUtil;
+import com.kavalok.utils.ShopAccessUtil;
 import com.kavalok.xmlrpc.RemoteClient;
 
 public class StuffTypeService extends DataServiceBase {
@@ -34,6 +35,9 @@ public class StuffTypeService extends DataServiceBase {
 
   @SuppressWarnings("unchecked")
   public List<StuffTypeAdminTO> getStuffListByShop(String shopName) {
+    // Check if user has access to this shop
+    ShopAccessUtil.checkShopAccess(getSession(), shopName);
+    
     StuffTypeDAO dao = new StuffTypeDAO(getSession());
     List<StuffTypeWrapper> typeList = dao.findByShopName(shopName);
     List<StuffTypeAdminTO> toList =
@@ -46,7 +50,14 @@ public class StuffTypeService extends DataServiceBase {
     List<Shop> shops = dao.findAll();
     List<String> result = new ArrayList<String>();
     for (Shop shop : shops) {
-      result.add(shop.getName());
+      // Check if user has access to each shop before adding it to the list
+      try {
+        ShopAccessUtil.checkShopAccess(getSession(), shop.getName());
+        result.add(shop.getName());
+      } catch (SecurityException e) {
+        // Skip shops the user doesn't have access to
+        continue;
+      }
     }
     return result;
   }
@@ -57,6 +68,10 @@ public class StuffTypeService extends DataServiceBase {
         || StringUtils.isBlank(item.getType())) {
       return;
     }
+    
+    // Check if user has access to the shop before saving
+    ShopAccessUtil.checkShopAccess(getSession(), item.getShopName());
+    
     StuffTypeDAO stuffDAO = new StuffTypeDAO(getSession());
     StuffType stuff = new StuffType();
     if (item.getId() != null && item.getId() > 0) stuff = stuffDAO.findById(item.getId());
