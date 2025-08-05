@@ -86,6 +86,8 @@ public class User extends LoginModelBase {
 
   private String salt;
 
+  private String loginToken;
+
   public User() {
     super();
   }
@@ -431,5 +433,13 @@ public class User extends LoginModelBase {
 
   public void setSalt(String salt) {
     this.salt = salt;
+  }
+
+  public String getLoginToken() {
+    return loginToken;
+  }
+
+  public void setLoginToken(String loginToken) {
+    this.loginToken = loginToken;
   }
 }

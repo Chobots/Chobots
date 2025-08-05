@@ -25,6 +25,7 @@ Goals of this project are as follows but not limited to:
  - [ ] Ensuring that sensitive client RTMP calls (many) such as `retriveItem` are server validated to avoid abuse
  - [ ] Produce detailed software architecture documents
  - [x] Salt and hash passwords
+ - [x] Implement token-based authentication (replaces client-side password storage)
  - [ ] Server-side validation of superuser commands
  - [ ] Safely enable guest accounts & patch specific guest exploits
  - [ ] Fix partner login
@@ -32,6 +33,7 @@ Goals of this project are as follows but not limited to:
  - [ ] Fix Cinema
  - [ ] Add database rows required to fix missions, pets, robots
  - [ ] Fix login error message on duplicate login
+ - [ ] [Fix chat history bar not displaying](https://github.com/Chobots/Chobots/issues/6)
 
 ## Running the code
 

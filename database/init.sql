@@ -2892,6 +2892,7 @@ CREATE TABLE `User`
     `guest`                 bit(1)              DEFAULT NULL,
     `helpEnabled`           tinyint(1)          DEFAULT 1,
     `locale`                varchar(255)        DEFAULT NULL,
+    `loginToken`            varchar(255)        DEFAULT NULL,
     `moderator`             tinyint(1)          DEFAULT 0,
     `musicVolume`           int(3)     NOT NULL DEFAULT 50,
     `parent`                tinyint(1)          DEFAULT 0,

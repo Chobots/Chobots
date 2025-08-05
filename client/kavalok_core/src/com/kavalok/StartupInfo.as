@@ -8,7 +8,7 @@ package com.kavalok
 		public var prefix:String = null;
 		public var login:String;
 		public var server:String;
-		public var password:String;
+		public var loginToken:String;
 		public var moduleId:String;
 		public var moduleParams:Object;
 		public var isBot:Boolean = false;

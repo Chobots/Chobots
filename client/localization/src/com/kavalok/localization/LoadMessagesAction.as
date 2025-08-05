@@ -60,7 +60,6 @@ package com.kavalok.localization {
 				_bundle.messages[child.name()] = text;
 			}
 			_loaded.sendEvent();
-			trace("resource bundle loaded: " + _url);
 		}
 		
 		private function onHttpStatus(event : HTTPStatusEvent) : void

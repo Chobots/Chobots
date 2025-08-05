@@ -12,15 +12,17 @@ import com.kavalok.mail.MailUtil;
 public class StringUtil {
 
   private static final String ID_CHARS = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM_";
+  private static final SecureRandom secureRandom = new SecureRandom();
 
   public static boolean isEmptyOrNull(String string) {
     return string == null || string.trim().length() == 0;
   }
 
   public static String generateRandomString(Integer length) {
+    // Use SecureRandom for cryptographically secure token generation
     StringBuilder result = new StringBuilder();
     for (int i = 0; i < length; i++) {
-      int index = ((Double) (Math.random() * ID_CHARS.length())).intValue();
+      int index = secureRandom.nextInt(ID_CHARS.length());
       result.append(ID_CHARS.charAt(index));
     }
     return result.toString();

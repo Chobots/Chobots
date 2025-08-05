@@ -54,7 +54,6 @@ package
 			var swfURL:String = root.loaderInfo.url.split('?')[0];
 			Global.urlPrefix = swfURL.substr(0, swfURL.lastIndexOf('/') + 1);
 			GraphUtils.stage = root.stage;
-			Global.version = startupInfo.version;
 			Global.startupInfo=startupInfo;
 			Global.initialize(root);
 
@@ -64,7 +63,7 @@ package
 			Debug.traceObject(startupInfo);
 
 			SafeLoader.rootUrl = Global.urlPrefix;
-			Localiztion.urlFormat = Global.urlPrefix + KavalokConstants.LOCALIZATION_URL_FORMAT + "?" + Global.version;
+			Localiztion.urlFormat = Global.urlPrefix + KavalokConstants.LOCALIZATION_URL_FORMAT;
 
 			initRemoteObjects();
 			initLocalization();

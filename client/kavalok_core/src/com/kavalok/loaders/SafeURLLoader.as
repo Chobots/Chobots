@@ -30,12 +30,7 @@ package com.kavalok.loaders
 		
 		override public function load(request:URLRequest):void
 		{
-			_url = request.url;
-			
-			var versionURL:String = SafeLoader.rootUrl + _url + '?' + Global.version 
-			
-			super.load(new URLRequest(versionURL));
-			trace(versionURL);
+			super.load(new URLRequest(SafeLoader.rootUrl + request.url));
 		}
 		
 		private function onLoadComplete(e:Event):void

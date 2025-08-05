@@ -91,17 +91,18 @@ public class AdminService extends DataServiceBase {
   private static final Logger logger = LoggerFactory.getLogger(AdminService.class);
 
   public String changePassword(String oldPassword, String newPassword) {
-    AdminDAO adminDAO = new AdminDAO(getSession());
+    UserDAO userDAO = new UserDAO(getSession());
     Long id = UserManager.getInstance().getCurrentUser().getUserId();
-    Admin admin = adminDAO.findById(id);
-    if (!admin.checkPassword(oldPassword, admin.getSalt())) {
+    User user = userDAO.findById(id);
+
+    if (!user.checkPassword(oldPassword, user.getSalt())) {
       return PASSW_INVALID;
     } else {
       String newSalt = com.kavalok.utils.StringUtil.generateSalt(32);
       String newHash = com.kavalok.utils.StringUtil.hashPassword(newPassword, newSalt);
-      admin.setSalt(newSalt);
-      admin.setPassword(newHash);
-      adminDAO.makePersistent(admin);
+      user.setSalt(newSalt);
+      user.setPassword(newHash);
+      userDAO.makePersistent(user);
       return PASSW_CHANGED;
     }
   }

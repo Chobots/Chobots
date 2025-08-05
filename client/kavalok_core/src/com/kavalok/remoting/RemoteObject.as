@@ -128,7 +128,6 @@ package com.kavalok.remoting
 		{
 			if(_stateLoaded)
 				return;
-			trace("remote state loaded: " + _id);
 			_stateLoaded = true;
 			if(stateInfo != null)
 			{
@@ -315,7 +314,6 @@ package com.kavalok.remoting
 		}
 		private function onSync(event : SyncEvent) : void
 		{
-			trace("remote object synced: " + _id);
 			if(!_synced)
 			{
 				_synced = true;

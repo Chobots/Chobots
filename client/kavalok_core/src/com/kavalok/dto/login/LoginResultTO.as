@@ -13,6 +13,7 @@ package com.kavalok.dto.login
 		public var active : Boolean;
 		public var reason : String;
 		public var age : Number;
+		public var loginToken : String;
 
 		public function LoginResultTO()
 		{
