@@ -421,9 +421,8 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       case "MagicServiceNT.getMagicPeriod":
       case "MagicServiceNT.executeMagicRain":
       case "StuffServiceNT.removeItem":
-      case "com.kavalok.services.StuffService.buyItem":
+      case "StuffService.buyItem":
       case "CharService.makePresent":
-      case "com.kavalok.services.StuffService.buyItem":
         return -1;
       
       default:
