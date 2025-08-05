@@ -87,15 +87,37 @@ package com.kavalok.remoting
 		
 		private function connectToSO() : void
 		{
-			_sharedObject.connect(RemoteConnection.instance.netConnection);
-			if(!_stateLoaded)
-				new SOService(onGetState).getState(id);
-			_timer = new Timer(TIMEOUT, 1);
-			_timer.addEventListener(TimerEvent.TIMER, onTimer);
-			_timer.start();
+			// Check if user is still connected before attempting connection
+			if (!RemoteConnection.instance.connected) {
+				trace(_id + " user disconnected, skipping shared object connection");
+				return;
+			}
+			
+			try {
+				_sharedObject.connect(RemoteConnection.instance.netConnection);
+				if(!_stateLoaded)
+					new SOService(onGetState).getState(id);
+				_timer = new Timer(TIMEOUT, 1);
+				_timer.addEventListener(TimerEvent.TIMER, onTimer);
+				_timer.start();
+			} catch (error:Error) {
+				trace(_id + " shared object connection failed: " + error.message);
+				// Don't retry if user is disconnected
+				if (RemoteConnection.instance.connected) {
+					_timer = new Timer(TIMEOUT, 1);
+					_timer.addEventListener(TimerEvent.TIMER, onTimer);
+					_timer.start();
+				}
+			}
 		}
 		private function onTimer(event : TimerEvent) : void
 		{
+			// Check if user is still connected before attempting reconnection
+			if (!RemoteConnection.instance.connected) {
+				trace(_id + " user disconnected, stopping reconnection attempts");
+				return;
+			}
+			
 			if(!_stateLoaded || !_synced)
 			{
 				trace(_id + " connection fault retrying");

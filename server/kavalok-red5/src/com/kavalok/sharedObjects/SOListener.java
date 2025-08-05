@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hibernate.Session;
 import org.red5.io.utils.ObjectMap;
 import org.red5.server.api.IAttributeStore;
 import org.red5.server.api.so.ISharedObject;
@@ -14,6 +15,9 @@ import org.red5.threadmonitoring.ThreadMonitorServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.kavalok.utils.HibernateUtil;
+import com.kavalok.dao.UserDAO;
+import com.kavalok.db.User;
 import com.kavalok.messages.MessageChecker;
 import com.kavalok.transactions.TransactionUtil;
 import com.kavalok.user.UserAdapter;
@@ -47,6 +51,17 @@ public class SOListener implements ISharedObjectListener {
   public static final String SEND = "oS";
 
   private static Logger logger = LoggerFactory.getLogger(SOListener.class);
+
+  // Array of restricted rooms that require superuser access
+  private static final String[] RESTRICTED_ROOMS = {
+    "locSecret",
+    "locSecret2", 
+    "locSecret3",
+    "locAdmin",
+    "locModerator",
+    "locTest",
+    "locPrivate"
+  };
 
   public static SOListener getListener(ISharedObject sharedObject) {
     return (SOListener) sharedObject.getAttribute(LISTENER);
@@ -84,6 +99,16 @@ public class SOListener implements ISharedObjectListener {
     
     logger.info("Received command: className=" + className + ", command=" + command);
     
+    // Check for superuser-only commands
+    if ("com.kavalok.location.commands::MoveCharCommand".equals(className) ||
+        "com.kavalok.location.commands::MoveToLocCommand".equals(className) ||
+        "com.kavalok.location.commands::FlyingPromoCommand".equals(className)) {
+      if (!isUserSuperUser()) {
+        logger.warn("Non-superuser attempted command: " + className + " - " + getCurrentUserLogin());
+        return true; // Prevent execution
+      }
+    }
+    
     // For now, just pass through all commands without special processing
     return false;
   }
@@ -106,6 +131,16 @@ public class SOListener implements ISharedObjectListener {
 
   public void onSharedObjectConnect(ISharedObjectBase sharedObject) {
     UserAdapter adapter = UserManager.getInstance().getCurrentUser();
+    String roomName = ((org.red5.server.api.IBasicScope) sharedObject).getName();
+    
+    if (isRestrictedRoom(roomName)) {
+      if (!isUserSuperUser()) {
+        logger.warn("Non-superuser attempted to connect to restricted room: " + roomName + " - " + getCurrentUserLogin());
+        adapter.kickOut("Unauthorized access to restricted room", false);
+        return;
+      }
+    }
+    
     connectedUsers.add(adapter.getLogin());
     ArrayList<Object> list = new ArrayList<Object>();
     list.add(adapter.getLogin());
@@ -260,6 +295,55 @@ public class SOListener implements ISharedObjectListener {
     }
   }
 
+  /**
+   * Check if the current user is a superuser
+   * @return true if user is superuser, false otherwise
+   */
+  private boolean isUserSuperUser() {
+    UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
+    if (userAdapter == null) {
+      logger.warn("Unauthorized access attempt by unknown user");
+      return false;
+    }
+
+    Session session = null;
+    try {
+      session = HibernateUtil.getSessionFactory().openSession();
+      UserDAO userDAO = new UserDAO(session);
+      User user = userDAO.findById(userAdapter.getUserId());
+      
+      if (user != null) {
+        return Boolean.TRUE.equals(user.getSuperUser());
+      }
+    } catch (Exception e) {
+      logger.error("Error checking superuser status", e);
+    } finally {
+      if (session != null && session.isOpen()) {
+        session.close();
+      }
+    }
+    
+    return false;
+  }
+
+  /**
+   * Get the current user's login name
+   * @return login name or "unknown" if not available
+   */
+  private String getCurrentUserLogin() {
+    UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
+    return userAdapter != null ? userAdapter.getLogin() : "unknown";
+  }
+
+  private boolean isRestrictedRoom(String roomName) {
+    for (String restrictedRoom : RESTRICTED_ROOMS) {
+      if (roomName.equals(restrictedRoom)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public void onSharedObjectUpdate(ISharedObjectBase arg0, IAttributeStore arg1) {
     // TODO Auto-generated method stub
 
@@ -287,6 +371,84 @@ public class SOListener implements ISharedObjectListener {
     ThreadMonitorServices.setJobDetails(
         "SOListenerbeforeSharedObjectSend(ISharedObjectBase arg0 {0}, String methodName {1}, List args {2})",
         arg0, methodName, args);
+    
+    logger.info("beforeSharedObjectSend: methodName=" + methodName + ", args=" + args);
+    
+    // Check for rCharAction messages (char property modifications)
+    if ("oS".equals(methodName) && args.size() > 1) {
+      String actualMethodName = (String) args.get(1);
+      logger.info("Checking rCharAction: actualMethodName=" + actualMethodName + ", args.size()=" + args.size());
+      if ("rCharAction".equals(actualMethodName) && args.size() > 2) {
+        // Extract the action class name from the parameters
+        Object parameters = args.get(2);
+        logger.info("rCharAction parameters: " + parameters);
+        logger.info("rCharAction parameters type: " + (parameters != null ? parameters.getClass().getName() : "null"));
+        if (parameters instanceof java.util.Map) {
+          java.util.Map<Object, Object> params = (java.util.Map<Object, Object>) parameters;
+          logger.info("rCharAction params keys: " + params.keySet());
+          String className = (String) params.get(1); // The action class name (Integer key)
+          
+          logger.info("rCharAction className: " + className);
+          logger.info("rCharAction className null check: " + (className != null));
+          
+          // Check for superuser-only action classes
+          if (className != null && (
+              className.contains("::LoadExternalContent") ||
+              className.contains("::CharPropertyAction") ||
+              className.contains("::CharsModifierAction") ||
+              className.contains("::LocationPropertyAction") ||
+              className.contains("::PropertyActionBase") ||
+              className.contains("::CharsPropertyAction"))) {
+            logger.info("rCharAction matched superuser class: " + className);
+            if (!isUserSuperUser()) {
+              logger.warn("Non-superuser attempted rCharAction: " + className + " - " + getCurrentUserLogin());
+              logger.info("BLOCKING rCharAction execution for non-superuser");
+              // Use preventClientInvocation to actually block the execution
+              LinkedHashMap<Integer, Object> methodArgs = getMethodArgs(args);
+              preventClientInvocation(methodArgs);
+              return;
+            }
+          } else {
+            logger.info("rCharAction not matched or className null: " + className);
+          }
+        } else {
+          logger.info("rCharAction parameters is not Map: " + parameters.getClass().getName());
+        }
+      }
+    }
+    
+    // Check for rExecuteCommand messages (MoveCharCommand and other commands)
+    if ("rExecuteCommand".equals(methodName) && args.size() > 0) {
+      Object commandObj = args.get(0);
+      if (commandObj instanceof ObjectMap) {
+        ObjectMap<String, Object> command = (ObjectMap<String, Object>) commandObj;
+        String className = (String) command.get("className");
+        
+        if ("com.kavalok.location.commands::MoveCharCommand".equals(className) ||
+            "com.kavalok.location.commands::MoveToLocCommand".equals(className) ||
+            "com.kavalok.location.commands::FlyingPromoCommand".equals(className)) {
+          if (!isUserSuperUser()) {
+            logger.warn("Non-superuser attempted command: " + className + " - " + getCurrentUserLogin());
+            // Use preventClientInvocation to actually block the execution
+            LinkedHashMap<Integer, Object> methodArgs = getMethodArgs(args);
+            preventClientInvocation(methodArgs);
+            return; // Prevent execution
+          }
+        }
+      }
+    }
+    
+    // Check for rResetObjectPositions (reset command)
+    if ("rResetObjectPositions".equals(methodName)) {
+      if (!isUserSuperUser()) {
+        logger.warn("Non-superuser attempted rResetObjectPositions: " + getCurrentUserLogin());
+        // Use preventClientInvocation to actually block the execution
+        LinkedHashMap<Integer, Object> methodArgs = getMethodArgs(args);
+        preventClientInvocation(methodArgs);
+        return; // Prevent execution
+      }
+    }
+    
     if (SEND_STATE.equals(methodName) || SEND.equals(methodName)) {
       UserAdapter adapter = UserManager.getInstance().getCurrentUser();
       synchronized (this) {
