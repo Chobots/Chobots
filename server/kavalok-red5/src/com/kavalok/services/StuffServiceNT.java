@@ -2,39 +2,34 @@ package com.kavalok.services;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.kavalok.dao.GameCharDAO;
+import com.kavalok.KavalokApplication;
+import com.kavalok.dao.QuestDAO;
 import com.kavalok.dao.StuffItemDAO;
 import com.kavalok.dao.StuffTypeDAO;
-import com.kavalok.dao.QuestDAO;
 import com.kavalok.db.GameChar;
+import com.kavalok.db.Server;
 import com.kavalok.db.StuffItem;
 import com.kavalok.db.StuffType;
-import com.kavalok.db.Quest;
-import com.kavalok.db.Server;
 import com.kavalok.dto.CharTOCache;
 import com.kavalok.dto.stuff.StuffItemLightTO;
 import com.kavalok.dto.stuff.StuffTypeTO;
 import com.kavalok.services.common.DataServiceNotTransactionBase;
-import com.kavalok.services.stuff.IShopProcessor;
 import com.kavalok.services.stuff.DefaultShopProcessor;
 import com.kavalok.services.stuff.ExchangeShopProcessor;
+import com.kavalok.services.stuff.IShopProcessor;
 import com.kavalok.services.stuff.PayedShopProcessor;
+import com.kavalok.services.stuff.RainTokenManager;
 import com.kavalok.services.stuff.RobotShopProcessor;
 import com.kavalok.services.stuff.UniqueItemsProcessor;
-import com.kavalok.services.stuff.RainTokenManager;
 import com.kavalok.user.UserAdapter;
 import com.kavalok.user.UserManager;
-import com.kavalok.KavalokApplication;
 import com.kavalok.utils.ShopAccessUtil;
 
 public class StuffServiceNT extends DataServiceNotTransactionBase {
@@ -44,19 +39,22 @@ public class StuffServiceNT extends DataServiceNotTransactionBase {
   private static final SimpleDateFormat ITEM_OF_THE_MONTH_FORMAT = new SimpleDateFormat("yyyyMM");
 
   // Map each allowed item to its quest name
-  private static final HashMap<String, String> ITEM_QUEST_MAP = new HashMap<String, String>() {{
-      put("globus", "questAcademy");
-      put("glasses_professor", "questAcademy");
-      put("okuliari_chopix", "questChopix");
-      put("cleaner_pot", "questHoover");
-      put("cleaner_board", "questHoover");
-      put("cleaner_kaska", "questHoover");
-      put("shapka_sclaus", "questBetaParty");
-      put("sharphik_sclaus", "questBetaParty");
-      put("shkar_sclaus", "questBetaParty");
-      put("elf", "questSanta2010");
-      put("mask_nichos", "questNichos");
-  }};
+  private static final HashMap<String, String> ITEM_QUEST_MAP =
+      new HashMap<String, String>() {
+        {
+          put("globus", "questAcademy");
+          put("glasses_professor", "questAcademy");
+          put("okuliari_chopix", "questChopix");
+          put("cleaner_pot", "questHoover");
+          put("cleaner_board", "questHoover");
+          put("cleaner_kaska", "questHoover");
+          put("shapka_sclaus", "questBetaParty");
+          put("sharphik_sclaus", "questBetaParty");
+          put("shkar_sclaus", "questBetaParty");
+          put("elf", "questSanta2010");
+          put("mask_nichos", "questNichos");
+        }
+      };
 
   private static final Logger logger = LoggerFactory.getLogger(StuffServiceNT.class);
 
@@ -74,23 +72,24 @@ public class StuffServiceNT extends DataServiceNotTransactionBase {
   }
 
   private void checkQuestEnabledForItem(String fileName) {
-      String questName = ITEM_QUEST_MAP.get(fileName.toLowerCase());
-      if (questName == null) {
-          throw new SecurityException("No quest mapping for item: " + fileName);
+    String questName = ITEM_QUEST_MAP.get(fileName.toLowerCase());
+    if (questName == null) {
+      throw new SecurityException("No quest mapping for item: " + fileName);
+    }
+    Server server = KavalokApplication.getInstance().getServer();
+    QuestDAO questDAO = new QuestDAO(getSession());
+    List<Object> enabledQuests = questDAO.findEnabled(server);
+    boolean found = false;
+    for (Object q : enabledQuests) {
+      if (questName.equalsIgnoreCase(q.toString())) {
+        found = true;
+        break;
       }
-      Server server = KavalokApplication.getInstance().getServer();
-      QuestDAO questDAO = new QuestDAO(getSession());
-      List<Object> enabledQuests = questDAO.findEnabled(server);
-      boolean found = false;
-      for (Object q : enabledQuests) {
-          if (questName.equalsIgnoreCase(q.toString())) {
-              found = true;
-              break;
-          }
-      }
-      if (!found) {
-          throw new SecurityException("Quest not enabled for item: " + fileName + " (quest: " + questName + ")");
-      }
+    }
+    if (!found) {
+      throw new SecurityException(
+          "Quest not enabled for item: " + fileName + " (quest: " + questName + ")");
+    }
   }
 
   public StuffItemLightTO getItem(Integer itemId) {
@@ -106,7 +105,7 @@ public class StuffServiceNT extends DataServiceNotTransactionBase {
 
   public StuffItemLightTO retriveItemWithColor(String fileName, Integer color) {
     if (!ITEM_QUEST_MAP.containsKey(fileName.toLowerCase())) {
-        throw new SecurityException("Unauthorized item retrieval: " + fileName);
+      throw new SecurityException("Unauthorized item retrieval: " + fileName);
     }
     checkQuestEnabledForItem(fileName);
     StuffItemDAO stuffItemDAO = new StuffItemDAO(getSession());
@@ -118,7 +117,7 @@ public class StuffServiceNT extends DataServiceNotTransactionBase {
 
   public StuffItemLightTO retriveItem(String fileName) {
     if (!ITEM_QUEST_MAP.containsKey(fileName.toLowerCase())) {
-        throw new SecurityException("Unauthorized item retrieval: " + fileName);
+      throw new SecurityException("Unauthorized item retrieval: " + fileName);
     }
     checkQuestEnabledForItem(fileName);
     StuffItemDAO stuffItemDAO = new StuffItemDAO(getSession());
@@ -131,11 +130,18 @@ public class StuffServiceNT extends DataServiceNotTransactionBase {
     // Extract the color from the token instead of using the client-provided color
     Integer tokenColor = RainTokenManager.getInstance().getTokenColor(rainToken);
     if (tokenColor == null) {
-      throw new SecurityException("Token validation failed for item: id=" + id + ", rainToken=" + rainToken);
+      throw new SecurityException(
+          "Token validation failed for item: id=" + id + ", rainToken=" + rainToken);
     }
-    
+
     if (!RainTokenManager.getInstance().validateAndSpendToken(rainToken, id, tokenColor)) {
-      throw new SecurityException("Token validation failed for item: id=" + id + ", color=" + tokenColor + ", rainToken=" + rainToken);
+      throw new SecurityException(
+          "Token validation failed for item: id="
+              + id
+              + ", color="
+              + tokenColor
+              + ", rainToken="
+              + rainToken);
     }
     StuffItemDAO stuffItemDAO = new StuffItemDAO(getSession());
     StuffItem item = createItem(id, stuffItemDAO);
@@ -146,9 +152,10 @@ public class StuffServiceNT extends DataServiceNotTransactionBase {
 
   public StuffItemLightTO retriveItemById(Integer id, String rainToken) {
     if (!RainTokenManager.getInstance().validateAndSpendToken(rainToken, id, null)) {
-      throw new SecurityException("Token validation failed for item: id=" + id + ", rainToken=" + rainToken);
+      throw new SecurityException(
+          "Token validation failed for item: id=" + id + ", rainToken=" + rainToken);
     }
-    
+
     StuffItemDAO stuffItemDAO = new StuffItemDAO(getSession());
     StuffItem item = createItem(id, stuffItemDAO);
     stuffItemDAO.makePersistent(item);
@@ -181,10 +188,10 @@ public class StuffServiceNT extends DataServiceNotTransactionBase {
     UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
     GameChar gameChar = userAdapter.getChar(getSession());
     StuffType type = new StuffTypeDAO(getSession()).findById(id.longValue());
-    
+
     StuffItem item = new StuffItem(type);
     item.setGameChar(gameChar);
-    
+
     CharTOCache.getInstance().removeCharTO(userAdapter.getUserId());
     CharTOCache.getInstance().removeCharTO(userAdapter.getLogin());
     return item;

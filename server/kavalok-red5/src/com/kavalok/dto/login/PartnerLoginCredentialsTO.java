@@ -6,8 +6,7 @@ public class PartnerLoginCredentialsTO {
   private Boolean needRegistartion;
   private Integer userId;
 
-  public PartnerLoginCredentialsTO(
-      Integer userId, String login, Boolean needRegistartion) {
+  public PartnerLoginCredentialsTO(Integer userId, String login, Boolean needRegistartion) {
     super();
     this.userId = userId;
     this.login = login;

@@ -37,7 +37,7 @@ public class StuffTypeService extends DataServiceBase {
   public List<StuffTypeAdminTO> getStuffListByShop(String shopName) {
     // Check if user has access to this shop
     ShopAccessUtil.checkShopAccess(getSession(), shopName);
-    
+
     StuffTypeDAO dao = new StuffTypeDAO(getSession());
     List<StuffTypeWrapper> typeList = dao.findByShopName(shopName);
     List<StuffTypeAdminTO> toList =
@@ -68,10 +68,10 @@ public class StuffTypeService extends DataServiceBase {
         || StringUtils.isBlank(item.getType())) {
       return;
     }
-    
+
     // Check if user has access to the shop before saving
     ShopAccessUtil.checkShopAccess(getSession(), item.getShopName());
-    
+
     StuffTypeDAO stuffDAO = new StuffTypeDAO(getSession());
     StuffType stuff = new StuffType();
     if (item.getId() != null && item.getId() > 0) stuff = stuffDAO.findById(item.getId());

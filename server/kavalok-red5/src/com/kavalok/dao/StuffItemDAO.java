@@ -49,7 +49,7 @@ public class StuffItemDAO extends DAO<StuffItem> {
     criteria.add(Restrictions.eq("gameChar", gameChar));
     return criteria.list();
   }
-  
+
   @SuppressWarnings("unchecked")
   public List<StuffItem> findByGameCharAndUsed(GameChar gameChar, boolean used) {
     Criteria criteria = createCriteria();

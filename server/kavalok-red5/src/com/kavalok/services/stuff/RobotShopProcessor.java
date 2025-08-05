@@ -18,7 +18,6 @@ import com.kavalok.db.User;
 import com.kavalok.dto.robot.RobotTipes;
 import com.kavalok.dto.stuff.StuffTypeTO;
 import com.kavalok.user.UserManager;
-import com.kavalok.user.UserAdapter;
 import com.kavalok.utils.ShopAccessUtil;
 
 public class RobotShopProcessor implements IShopProcessor {

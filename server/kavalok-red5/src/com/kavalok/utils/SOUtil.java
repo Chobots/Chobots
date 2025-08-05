@@ -46,7 +46,8 @@ public class SOUtil {
     }
   }
 
-  public static final void callSharedObject(String sharedObjectId, String clientId, String method, Object... params) {
+  public static final void callSharedObject(
+      String sharedObjectId, String clientId, String method, Object... params) {
     ISharedObject so = KavalokApplication.getInstance().getSharedObject(sharedObjectId);
 
     if (so != null) {

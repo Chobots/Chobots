@@ -6,10 +6,10 @@ import java.util.Set;
 
 import org.red5.server.api.IClient;
 import org.red5.server.api.Red5;
-
-import com.kavalok.KavalokApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.kavalok.KavalokApplication;
 
 public class UserManager {
   public static String ADAPTER = "adapter";

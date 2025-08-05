@@ -108,6 +108,7 @@ public class StuffTypeTO extends StuffTOBase {
   public String getRainToken() {
     return rainToken;
   }
+
   public void setRainToken(String rainToken) {
     this.rainToken = rainToken;
   }

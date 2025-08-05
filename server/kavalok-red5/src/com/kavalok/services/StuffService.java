@@ -31,10 +31,10 @@ public class StuffService extends DataServiceBase {
     UserAdapter adapter = UserManager.getInstance().getCurrentUser();
     GameChar gameChar = new GameCharDAO(getSession()).findByUserId(adapter.getUserId());
     StuffType type = new StuffTypeDAO(getSession()).findById(Long.valueOf(id), false);
-    
+
     // Check if user has access to buy from this shop
     ShopAccessUtil.checkShopAccessForBuy(getSession(), type.getShop());
-    
+
     if (SUPERUSER_SHOPS.contains(type.getShop().getName())) {
       User user = new UserDAO(getSession()).findById(adapter.getUserId());
       if (!Boolean.TRUE.equals(user.getSuperUser())) {

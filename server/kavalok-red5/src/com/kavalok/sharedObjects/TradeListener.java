@@ -41,7 +41,7 @@ public class TradeListener extends SOListener implements ISessionDependent {
   public boolean rAddItem(String owner, StuffItemLightTO item) {
 
     if (acceptedChars.size() > 0 || hasItem(item)) return true;
-    
+
     Long userId = getUserId();
     if (items.get(userId) == null) {
       items.put(userId, new ArrayList<Integer>());

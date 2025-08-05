@@ -97,11 +97,16 @@ public class RemoteServer extends DefaultTransactionStrategy {
       if (user == null) {
         return;
       }
-      
+
       user.executeCommand(commandName, parameter);
     } catch (Exception e) {
       logger.error("Error exectuing command: " + commandName + "\n parameter: " + parameter);
-      logger.error("RemoteServer.sendCommand: Error sending command to user '" + login + "': " + e.getMessage(), e);
+      logger.error(
+          "RemoteServer.sendCommand: Error sending command to user '"
+              + login
+              + "': "
+              + e.getMessage(),
+          e);
     }
   }
 

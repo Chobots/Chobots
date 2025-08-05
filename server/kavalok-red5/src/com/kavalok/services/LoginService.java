@@ -11,15 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.kavalok.KavalokApplication;
-import com.kavalok.dao.AdminDAO;
 import com.kavalok.dao.BlackIPDAO;
-import com.kavalok.dao.GameCharDAO;
-import com.kavalok.dao.GuestMarketingInfoDAO;
-import com.kavalok.dao.LoginDAOBase;
-import com.kavalok.dao.LoginFromPartnerDAO;
-import com.kavalok.dao.MarketingInfoDAO;
 import com.kavalok.dao.MessageDAO;
-import com.kavalok.dao.PartnerDAO;
 import com.kavalok.dao.StuffItemDAO;
 import com.kavalok.dao.StuffTypeDAO;
 import com.kavalok.dao.UserDAO;
@@ -27,10 +20,6 @@ import com.kavalok.dao.UserExtraInfoDAO;
 import com.kavalok.dao.UserServerDAO;
 import com.kavalok.db.BlackIP;
 import com.kavalok.db.GameChar;
-import com.kavalok.db.GuestMarketingInfo;
-import com.kavalok.db.LoginFromPartner;
-import com.kavalok.db.LoginModelBase;
-import com.kavalok.db.MarketingInfo;
 import com.kavalok.db.Message;
 import com.kavalok.db.Server;
 import com.kavalok.db.StuffItem;
@@ -43,8 +32,6 @@ import com.kavalok.dto.login.ActivationTO;
 import com.kavalok.dto.login.LoginResultTO;
 import com.kavalok.dto.login.MarketingInfoTO;
 import com.kavalok.dto.login.PartnerLoginCredentialsTO;
-import com.kavalok.messages.MessageCheck;
-import com.kavalok.messages.MessageSafety;
 import com.kavalok.permissions.AccessUser;
 import com.kavalok.services.common.DataServiceBase;
 import com.kavalok.user.UserAdapter;
@@ -81,26 +68,27 @@ public class LoginService extends DataServiceBase {
 
   public String freeLoginByPrefix(String prefix) throws FileNotFoundException {
     return null;
-//     String login;
-//
-//     MessageCheck messageCheck = new MessageCheck(getSession());
-//     if (messageCheck.check(prefix).getSafety() != MessageSafety.SAFE
-//         || messageCheck.check(" " + prefix).getSafety() != MessageSafety.SAFE
-//         || messageCheck.check(prefix + " ").getSafety() != MessageSafety.SAFE
-//         || messageCheck.check(" " + prefix + " ").getSafety() != MessageSafety.SAFE) {
-//       return null;
-//     }
-//     synchronized (LoginService.class) {
-//       login = prefix + prefixedCont.toString();
-//       prefixedCont++;
-//     }
-//     UserAdapter adapter = getUserAdapter(login, getCurrentServer(), -1L);
-//     adapter.setUserId(-1l);
-//     adapter.setPersistent(false);
-//     return login;
+    //     String login;
+    //
+    //     MessageCheck messageCheck = new MessageCheck(getSession());
+    //     if (messageCheck.check(prefix).getSafety() != MessageSafety.SAFE
+    //         || messageCheck.check(" " + prefix).getSafety() != MessageSafety.SAFE
+    //         || messageCheck.check(prefix + " ").getSafety() != MessageSafety.SAFE
+    //         || messageCheck.check(" " + prefix + " ").getSafety() != MessageSafety.SAFE) {
+    //       return null;
+    //     }
+    //     synchronized (LoginService.class) {
+    //       login = prefix + prefixedCont.toString();
+    //       prefixedCont++;
+    //     }
+    //     UserAdapter adapter = getUserAdapter(login, getCurrentServer(), -1L);
+    //     adapter.setUserId(-1l);
+    //     adapter.setPersistent(false);
+    //     return login;
   }
 
-  public LoginResultTO freeLogin(String name, String body, Integer color, String locale) throws FileNotFoundException {
+  public LoginResultTO freeLogin(String name, String body, Integer color, String locale)
+      throws FileNotFoundException {
     // TODO: Enable this in a safe way to facilitate guests
 
     LoginResultTO resultTO = new LoginResultTO();
@@ -109,30 +97,31 @@ public class LoginService extends DataServiceBase {
 
     return resultTO;
 
-//     UserDAO userDAO = new UserDAO(getSession());
-//     User user = userDAO.findByLogin(name);
-//
-//     if (user == null) {
-//       user = userDAO.findByLogin(name.toLowerCase());
-//     }
-//
-//     LoginResultTO result = null;
-//
-//     if (user == null) {
-//       String registartionResult = register(name, "", GUEST_EMAIL, body, color, true, false, locale, null, null);
-//       if (registartionResult.equals(SUCCESS)) {
-//         user = userDAO.findByLogin(name);
-//         user.setActivationKey(null);
-//         user.setEnabled(true);
-//         userDAO.makePersistent(user);
-//         // Instead of sending the password, require the client to login with their password
-//         result = login(name, "", locale); // Empty password, should only be used for guests
-//       }
-//     } else {
-//       // Do not send the password to the client
-//       result = login(name, "", locale); // Empty password, should only be used for guests
-//     }
-//     return result;
+    //     UserDAO userDAO = new UserDAO(getSession());
+    //     User user = userDAO.findByLogin(name);
+    //
+    //     if (user == null) {
+    //       user = userDAO.findByLogin(name.toLowerCase());
+    //     }
+    //
+    //     LoginResultTO result = null;
+    //
+    //     if (user == null) {
+    //       String registartionResult = register(name, "", GUEST_EMAIL, body, color, true, false,
+    // locale, null, null);
+    //       if (registartionResult.equals(SUCCESS)) {
+    //         user = userDAO.findByLogin(name);
+    //         user.setActivationKey(null);
+    //         user.setEnabled(true);
+    //         userDAO.makePersistent(user);
+    //         // Instead of sending the password, require the client to login with their password
+    //         result = login(name, "", locale); // Empty password, should only be used for guests
+    //       }
+    //     } else {
+    //       // Do not send the password to the client
+    //       result = login(name, "", locale); // Empty password, should only be used for guests
+    //     }
+    //     return result;
   }
 
   public boolean activateAccount(String login, String activationKey, Boolean chatEnabled) {
@@ -143,29 +132,29 @@ public class LoginService extends DataServiceBase {
     return new ServerPropertiesTO();
   }
 
-//   public String adminLogin(String login, String password) {
-//     return tryLogin(new AdminDAO(getSession()), login, password);
-//   }
-//
-//   public String partnerLogin(String login, String password) {
-//     return tryLogin(new PartnerDAO(getSession()), login, password);
-//   }
+  //   public String adminLogin(String login, String password) {
+  //     return tryLogin(new AdminDAO(getSession()), login, password);
+  //   }
+  //
+  //   public String partnerLogin(String login, String password) {
+  //     return tryLogin(new PartnerDAO(getSession()), login, password);
+  //   }
 
-//   @SuppressWarnings("unchecked")
-//   private String tryLogin(LoginDAOBase dao, String login, String password) {
-//     LoginModelBase model = dao.findByLogin(login.toLowerCase());
-//     if (model != null && model instanceof com.kavalok.db.User) {
-//       com.kavalok.db.User user = (com.kavalok.db.User) model;
-//       if (user.checkPassword(password, user.getSalt())) {
-//         UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
-//         userAdapter.setUserId(model.getId());
-//         userAdapter.setLogin(login);
-//         userAdapter.setAccessType(model.getAccessType());
-//         return SUCCESS;
-//       }
-//     }
-//     return ERROR_UNKNOWN;
-//   }
+  //   @SuppressWarnings("unchecked")
+  //   private String tryLogin(LoginDAOBase dao, String login, String password) {
+  //     LoginModelBase model = dao.findByLogin(login.toLowerCase());
+  //     if (model != null && model instanceof com.kavalok.db.User) {
+  //       com.kavalok.db.User user = (com.kavalok.db.User) model;
+  //       if (user.checkPassword(password, user.getSalt())) {
+  //         UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
+  //         userAdapter.setUserId(model.getId());
+  //         userAdapter.setLogin(login);
+  //         userAdapter.setAccessType(model.getAccessType());
+  //         return SUCCESS;
+  //       }
+  //     }
+  //     return ERROR_UNKNOWN;
+  //   }
 
   private Server getCurrentServer() {
     return KavalokApplication.getInstance().getServer();
@@ -173,31 +162,31 @@ public class LoginService extends DataServiceBase {
 
   public PartnerLoginCredentialsTO getPartnerLoginInfo(String uid) {
     return null;
-//     System.out.println("uid: " + uid);
-//     LoginFromPartnerDAO dao = new LoginFromPartnerDAO(getSession());
-//     LoginFromPartner loginFromPartner = dao.findByUid(uid);
-//     if (loginFromPartner != null) {
-//       User user = loginFromPartner.getUser();
-//       System.out.println(
-//           "loginFromPartner: "
-//               + loginFromPartner
-//               + " loginFromPartnerId: "
-//               + loginFromPartner.getId());
-//       System.out.println("user: " + user + " userId: " + user.getId());
-//       boolean needRegistartion = user.getGameChar_id() == null;
-//       if (!needRegistartion) dao.makeTransient(loginFromPartner);
-//
-//       return new PartnerLoginCredentialsTO(
-//           user.getId().intValue(), user.getLogin(), needRegistartion);
-//     } else {
-//       throw new IllegalStateException(String.format("unknown login uid %1s", uid));
-//     }
+    //     System.out.println("uid: " + uid);
+    //     LoginFromPartnerDAO dao = new LoginFromPartnerDAO(getSession());
+    //     LoginFromPartner loginFromPartner = dao.findByUid(uid);
+    //     if (loginFromPartner != null) {
+    //       User user = loginFromPartner.getUser();
+    //       System.out.println(
+    //           "loginFromPartner: "
+    //               + loginFromPartner
+    //               + " loginFromPartnerId: "
+    //               + loginFromPartner.getId());
+    //       System.out.println("user: " + user + " userId: " + user.getId());
+    //       boolean needRegistartion = user.getGameChar_id() == null;
+    //       if (!needRegistartion) dao.makeTransient(loginFromPartner);
+    //
+    //       return new PartnerLoginCredentialsTO(
+    //           user.getId().intValue(), user.getLogin(), needRegistartion);
+    //     } else {
+    //       throw new IllegalStateException(String.format("unknown login uid %1s", uid));
+    //     }
   }
 
   public LoginResultTO login(String login, String password, String locale) {
     UserDAO userDAO = new UserDAO(getSession());
     User user = findUserByLogin(login, userDAO);
-    
+
     if (user == null) {
       return createErrorResult(ERROR_BAD_LOGIN);
     }
@@ -218,7 +207,7 @@ public class LoginService extends DataServiceBase {
     // Generate login token
     String loginToken = com.kavalok.utils.StringUtil.generateRandomString(32);
     user.setLoginToken(loginToken);
-    
+
     return performLogin(user, userDAO, locale, loginToken);
   }
 
@@ -434,68 +423,68 @@ public class LoginService extends DataServiceBase {
             false);
   }
 
-//   public String registerGirls(
-//       String login,
-//       String passw,
-//       String email,
-//       String body,
-//       Integer color,
-//       Boolean isParent,
-//       Boolean familyMode,
-//       String locale,
-//       Object invitedBy,
-//       MarketingInfoTO marketingInfo)
-//       throws FileNotFoundException {
-//     return registerGirls(
-//         login,
-//         passw,
-//         email,
-//         body,
-//         color,
-//         isParent,
-//         familyMode,
-//         locale,
-//         (String) invitedBy,
-//         marketingInfo);
-//   }
+  //   public String registerGirls(
+  //       String login,
+  //       String passw,
+  //       String email,
+  //       String body,
+  //       Integer color,
+  //       Boolean isParent,
+  //       Boolean familyMode,
+  //       String locale,
+  //       Object invitedBy,
+  //       MarketingInfoTO marketingInfo)
+  //       throws FileNotFoundException {
+  //     return registerGirls(
+  //         login,
+  //         passw,
+  //         email,
+  //         body,
+  //         color,
+  //         isParent,
+  //         familyMode,
+  //         locale,
+  //         (String) invitedBy,
+  //         marketingInfo);
+  //   }
 
-//   public String registerGirls(
-//       String login,
-//       String passw,
-//       String email,
-//       String body,
-//       Integer color,
-//       Boolean isParent,
-//       Boolean familyMode,
-//       String locale,
-//       String invitedBy,
-//       MarketingInfoTO marketingInfo)
-//       throws FileNotFoundException {
-//
-//     return new UserUtil()
-//         .register(
-//             getSession(),
-//             login,
-//             passw,
-//             email,
-//             body,
-//             color,
-//             isParent,
-//             familyMode,
-//             locale,
-//             invitedBy,
-//             marketingInfo,
-//             true);
-//   }
-//
-//   public String registerFromPartner(String uid, String body, Integer color, Boolean isParent) {
-//     LoginFromPartnerDAO dao = new LoginFromPartnerDAO(getSession());
-//     LoginFromPartner loginFromPartner = dao.findByUid(uid);
-//     User user = loginFromPartner.getUser();
-//     GameCharDAO charDAO = new GameCharDAO(getSession());
-//     new UserUtil().fillUser(charDAO, getSession(), user, body, color, isParent, true);
-//     return SUCCESS;
-//   }
+  //   public String registerGirls(
+  //       String login,
+  //       String passw,
+  //       String email,
+  //       String body,
+  //       Integer color,
+  //       Boolean isParent,
+  //       Boolean familyMode,
+  //       String locale,
+  //       String invitedBy,
+  //       MarketingInfoTO marketingInfo)
+  //       throws FileNotFoundException {
+  //
+  //     return new UserUtil()
+  //         .register(
+  //             getSession(),
+  //             login,
+  //             passw,
+  //             email,
+  //             body,
+  //             color,
+  //             isParent,
+  //             familyMode,
+  //             locale,
+  //             invitedBy,
+  //             marketingInfo,
+  //             true);
+  //   }
+  //
+  //   public String registerFromPartner(String uid, String body, Integer color, Boolean isParent) {
+  //     LoginFromPartnerDAO dao = new LoginFromPartnerDAO(getSession());
+  //     LoginFromPartner loginFromPartner = dao.findByUid(uid);
+  //     User user = loginFromPartner.getUser();
+  //     GameCharDAO charDAO = new GameCharDAO(getSession());
+  //     new UserUtil().fillUser(charDAO, getSession(), user, body, color, isParent, true);
+  //     return SUCCESS;
+  //   }
 
   public ActivationTO getActivationInfo(String login) {
     UserDAO userDAO = new UserDAO(getSession());
@@ -506,31 +495,31 @@ public class LoginService extends DataServiceBase {
 
   public String sendActivationMail(String host, String login, String locale) {
     return null;
-//     return new UserUtil()
-//         .sendActivationMail(
-//             KavalokApplication.getInstance().getApplicationConfig().getHost(),
-//             login,
-//             locale,
-//             getSession());
+    //     return new UserUtil()
+    //         .sendActivationMail(
+    //             KavalokApplication.getInstance().getApplicationConfig().getHost(),
+    //             login,
+    //             locale,
+    //             getSession());
   }
 
   public Boolean sendPassword(String email, String locale) {
     return null;
-    //return new UserUtil().sendPassword(email, locale, getSession());
+    // return new UserUtil().sendPassword(email, locale, getSession());
   }
 
   public String guestLogin(MarketingInfoTO marketingInfoTO) {
     return null;
-//     UserDAO userDAO = new UserDAO(getSession());
-//     User user = userDAO.getGuest();
-//     MarketingInfo info = MarketingInfo.fromTO(marketingInfoTO, getSession());
-//     GuestMarketingInfo guestMarketingInfo = new GuestMarketingInfo();
-//     guestMarketingInfo.setUser(user);
-//     guestMarketingInfo.setMarketingInfo(info);
-//     new MarketingInfoDAO(getSession()).makePersistent(info);
-//     new GuestMarketingInfoDAO(getSession()).makePersistent(guestMarketingInfo);
-//     login(user.getLogin(), user.getPassword(), null);
-//     return user.getLogin();
+    //     UserDAO userDAO = new UserDAO(getSession());
+    //     User user = userDAO.getGuest();
+    //     MarketingInfo info = MarketingInfo.fromTO(marketingInfoTO, getSession());
+    //     GuestMarketingInfo guestMarketingInfo = new GuestMarketingInfo();
+    //     guestMarketingInfo.setUser(user);
+    //     guestMarketingInfo.setMarketingInfo(info);
+    //     new MarketingInfoDAO(getSession()).makePersistent(info);
+    //     new GuestMarketingInfoDAO(getSession()).makePersistent(guestMarketingInfo);
+    //     login(user.getLogin(), user.getPassword(), null);
+    //     return user.getLogin();
   }
 
   public String getMostLoadedServer(String location) {
@@ -564,7 +553,7 @@ public class LoginService extends DataServiceBase {
   public LoginResultTO loginWithToken(String login, String token, String locale) {
     UserDAO userDAO = new UserDAO(getSession());
     User user = findUserByLogin(login, userDAO);
-    
+
     if (user == null) {
       return createErrorResult(ERROR_BAD_LOGIN);
     }
@@ -577,7 +566,7 @@ public class LoginService extends DataServiceBase {
     String newLoginToken = com.kavalok.utils.StringUtil.generateRandomString(32);
     user.setLoginToken(newLoginToken);
     userDAO.makePersistent(user);
-    
+
     return performLogin(user, userDAO, locale, newLoginToken);
   }
 }

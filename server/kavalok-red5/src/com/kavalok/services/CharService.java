@@ -57,7 +57,6 @@ import com.kavalok.services.common.DataServiceBase;
 import com.kavalok.services.stuff.StuffTypes;
 import com.kavalok.user.UserAdapter;
 import com.kavalok.user.UserManager;
-import com.kavalok.services.ClothingValidationService;
 import com.kavalok.user.UserUtil;
 import com.kavalok.utils.DateUtil;
 import com.kavalok.utils.ReflectUtil;
@@ -522,7 +521,7 @@ public class CharService extends DataServiceBase {
     result.setLogin(user.getLogin());
 
     if (!checkCurrentUserCache) {
-        return result;
+      return result;
     }
 
     UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
@@ -548,8 +547,9 @@ public class CharService extends DataServiceBase {
 
   public void saveCharStuffs(LinkedHashMap<Integer, ObjectMap<String, Object>> clothes) {
     // Validate clothing data before processing
-    ClothingValidationService validationService = ClothingValidationService.createValidationService();
-    
+    ClothingValidationService validationService =
+        ClothingValidationService.createValidationService();
+
     Map<Integer, ObjectMap<String, Object>> validatedClothes;
     try {
       validatedClothes = validationService.validateClothingData(clothes, getSession());
@@ -557,20 +557,28 @@ public class CharService extends DataServiceBase {
       UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
       String userLogin = userAdapter.getLogin();
       Long userId = userAdapter.getUserId();
-      
-      logger.error("Clothing validation failed for user " + userLogin + " (ID: " + userId + "): " + e.getMessage() + ". Kicking user out.");
-      
+
+      logger.error(
+          "Clothing validation failed for user "
+              + userLogin
+              + " (ID: "
+              + userId
+              + "): "
+              + e.getMessage()
+              + ". Kicking user out.");
+
       // Kick out the user for failed clothing validation
       userAdapter.kickOut("Clothing validation failed", false);
       return;
     }
-    
-    // If validation returns empty, it means no clothing data to process (normal when wardrobe not loaded)
+
+    // If validation returns empty, it means no clothing data to process (normal when wardrobe not
+    // loaded)
     if (validatedClothes.isEmpty()) {
       logger.debug("No validated clothing data to process - likely wardrobe not loaded yet");
       return;
     }
-    
+
     // Process only validated clothing items
     for (StuffItem item : getCharClothesAndStuffs(null, null, false, false)) {
 
@@ -693,7 +701,7 @@ public class CharService extends DataServiceBase {
     populateStaticData(result);
 
     if (!userAdapter.getPersistent()) {
-        return result;
+      return result;
     }
 
     result.setIsGuest(false);

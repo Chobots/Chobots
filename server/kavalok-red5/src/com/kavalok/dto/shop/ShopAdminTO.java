@@ -41,4 +41,4 @@ public class ShopAdminTO {
   public void setRequiredPermission(String requiredPermission) {
     this.requiredPermission = requiredPermission;
   }
-} 
+}
