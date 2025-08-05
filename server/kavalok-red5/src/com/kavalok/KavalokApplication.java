@@ -424,6 +424,7 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       case "StuffService.buyItem":
       case "CharService.makePresent":
       case "LoginService.loginWithToken":
+      case "CharService.savePlayerCard":
         return -1;
 
       default:

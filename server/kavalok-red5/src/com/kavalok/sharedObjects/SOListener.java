@@ -1,5 +1,6 @@
 package com.kavalok.sharedObjects;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,6 +25,7 @@ import com.kavalok.user.UserManager;
 import com.kavalok.utils.HibernateUtil;
 import com.kavalok.utils.ReflectUtil;
 import com.kavalok.utils.SOUtil;
+import com.kavalok.services.ClothingValidationService;
 
 public class SOListener implements ISharedObjectListener {
 
@@ -318,6 +320,33 @@ public class SOListener implements ISharedObjectListener {
     return false;
   }
 
+  /**
+   * Uses reflection to resolve a method name to its constant representation.
+   * Searches through all static final String fields in this class to find a match.
+   * 
+   * @param methodName the method name to resolve
+   * @return the constant name if found, otherwise the original method name
+   */
+  private String resolveMethodNameToConstant(String methodName) {
+    try {
+      Field[] fields = this.getClass().getDeclaredFields();
+      for (Field field : fields) {
+        if (field.getType() == String.class && 
+            java.lang.reflect.Modifier.isStatic(field.getModifiers()) && 
+            java.lang.reflect.Modifier.isFinal(field.getModifiers())) {
+          field.setAccessible(true);
+          String fieldValue = (String) field.get(null);
+          if (methodName.equals(fieldValue)) {
+            return field.getName();
+          }
+        }
+      }
+    } catch (Exception e) {
+      logger.debug("Error resolving method name to constant: " + e.getMessage());
+    }
+    return methodName; // Return original if no constant found
+  }
+
   public void onSharedObjectUpdate(ISharedObjectBase arg0, IAttributeStore arg1) {
     // TODO Auto-generated method stub
 
@@ -341,12 +370,8 @@ public class SOListener implements ISharedObjectListener {
   @SuppressWarnings("unchecked")
   @Override
   public void beforeSharedObjectSend(ISharedObjectBase arg0, String methodName, List args) {
-    ThreadMonitorServices.startJobSubDetails();
-    ThreadMonitorServices.setJobDetails(
-        "SOListenerbeforeSharedObjectSend(ISharedObjectBase arg0 {0}, String methodName {1}, List args {2})",
-        arg0, methodName, args);
-
-    logger.info("beforeSharedObjectSend: methodName=" + methodName + ", args=" + args);
+    String resolvedMethodName = resolveMethodNameToConstant(methodName);
+    logger.info(methodName + " (" + resolvedMethodName + ") " + args);  
 
     // Check for rCharAction messages (char property modifications)
     if ("oS".equals(methodName) && args.size() > 1) {
@@ -386,8 +411,6 @@ public class SOListener implements ISharedObjectListener {
                       + className
                       + " - "
                       + getCurrentUserLogin());
-              logger.info("BLOCKING rCharAction execution for non-superuser");
-              // Use preventClientInvocation to actually block the execution
               LinkedHashMap<Integer, Object> methodArgs = getMethodArgs(args);
               preventClientInvocation(methodArgs);
               return;
@@ -451,10 +474,70 @@ public class SOListener implements ISharedObjectListener {
       String clientMethodName = (String) args.get(1);
 
       LinkedHashMap<Integer, Object> methodArgs = getMethodArgs(args);
+      
+      // Validate clothing data if this is a character state update
       if (methodName.equals(SEND_STATE)) {
         String stateName = (String) methodArgs.get(0);
+        
+        // Check if this is a character state update that might contain clothing data
+        if (stateName != null && stateName.startsWith("char_")) {
+          Object stateData = methodArgs.get(1);
+          if (stateData instanceof ObjectMap) {
+            ObjectMap<String, Object> stateObject = (ObjectMap<String, Object>) stateData;
+            
+            // Check if clothing data is present
+            if (stateObject.containsKey("cl")) {
+              Object clothingData = stateObject.get("cl");
+              if (clothingData instanceof Map) {
+                @SuppressWarnings("unchecked")
+                Map<Integer, ObjectMap<String, Object>> clothes = (Map<Integer, ObjectMap<String, Object>>) clothingData;
+                
+                // Validate clothing data
+                try {
+                  ClothingValidationService validationService = 
+                      ClothingValidationService.createValidationService();
+                  
+                  Session session = HibernateUtil.getSessionFactory().openSession();
+                  try {
+                    Map<Integer, ObjectMap<String, Object>> validatedClothes = 
+                        validationService.validateSharedObjectClothingData(clothes, session);
+                    
+                    // Replace the clothing data with validated data
+                    stateObject.put("cl", validatedClothes);
+                    methodArgs.put(1, stateObject);
+                    
+                    logger.info("Clothing validation passed for user: " + getCurrentUserLogin());
+                  } finally {
+                    if (session != null && session.isOpen()) {
+                      session.close();
+                    }
+                  }
+                } catch (SecurityException e) {
+                  UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
+                  String userLogin = userAdapter.getLogin();
+                  Long userId = userAdapter.getUserId();
+                  
+                  logger.error(
+                      "Clothing validation failed for user "
+                          + userLogin
+                          + " (ID: "
+                          + userId
+                          + ") in beforeSharedObjectSend: "
+                          + e.getMessage()
+                          + ". Blocking shared object send.");
+                  
+                  // Block the shared object send
+                  preventClientInvocation(methodArgs);
+                  return;
+                }
+              }
+            }
+          }
+        }
+        
         processSendState(methodArgs, clientId, stateName);
       }
+      
       if (!isPrevent(methodArgs)) {
         executeServerMethods(clientId, clientMethodName, methodArgs);
       } else {
