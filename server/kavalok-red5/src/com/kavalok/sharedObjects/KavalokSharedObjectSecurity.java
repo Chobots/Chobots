@@ -324,7 +324,7 @@ public class KavalokSharedObjectSecurity implements ISharedObjectSecurity {
       }
 
       if (user.isModerator() || user.isSuperUser()) {
-        //return true;
+        return true;
       }
 
       String currentLocation = so.getName();
