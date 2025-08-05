@@ -22,6 +22,7 @@
 	xmlns:worldconfig="com.kavalok.admin.worldconfig.*"
 	xmlns:magic="com.kavalok.admin.magic.*"
 	xmlns:competitions="com.kavalok.admin.competitions.*"
+	xmlns:catalogs="com.kavalok.admin.catalogs.*"
 	creationComplete="onCreationComplete(event)"
 	xmlns:stuffs="com.kavalok.admin.stuffs.*">
 		
@@ -122,6 +123,12 @@
 			/>
 		<stuffs:Stuffs
 			label="Stuffs"
+			width="100%"
+			height="100%"
+			enabled="{permissionLevel >= PermissionLevels.SUPER_MODER}"
+			/>
+		<catalogs:Catalogs
+			label="Catalogs"
 			width="100%"
 			height="100%"
 			enabled="{permissionLevel >= PermissionLevels.SUPER_MODER}"

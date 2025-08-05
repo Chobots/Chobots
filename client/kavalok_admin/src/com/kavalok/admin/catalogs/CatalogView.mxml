@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CatalogViewBase
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns="com.kavalok.admin.catalogs.*"
+	>
+	
+	<mx:VBox width="100%" height="100%">
+		<mx:Label
+			fontSize="14"
+			fontWeight="bold"
+			text="{item.name}" />
+			
+		<mx:FormItem label="Name">
+			<mx:TextInput
+				id="nameField"
+				text="{item.name}"
+				enabled="{Boolean(item)}"
+			/>
+		</mx:FormItem>
+		
+		<mx:FormItem label="Permission">
+			<mx:ComboBox
+				id="requiredPermissionCombo"
+				enabled="{Boolean(item)}"
+				dataProvider="{['PUBLIC', 'AGENT', 'MODERATOR', 'SUPERUSER']}"
+				selectedItem="{item.requiredPermission}"
+			/>
+		</mx:FormItem>
+		
+		<mx:Button
+			id="saveButton"
+			label="save"
+			click="save()"
+			enabled="{Boolean(item)}"
+		/>
+		
+	</mx:VBox>
+	
+</CatalogViewBase> 

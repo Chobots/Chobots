@@ -318,6 +318,8 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       case "AdminService.deleteUser":
       case "AdminService.restoreUser":
       case "StuffTypeService.saveItem":
+      case "ShopService.getShops":
+      case "ShopService.saveShop":
       case "CompetitionDataService.getCompetitions":
       case "CompetitionDataService.startCompetition":
       case "CompetitionDataService.clearCompetition":

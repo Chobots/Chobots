@@ -54,13 +54,7 @@ public class SOListener implements ISharedObjectListener {
 
   // Array of restricted rooms that require superuser access
   private static final String[] RESTRICTED_ROOMS = {
-    "locSecret",
-    "locSecret2", 
-    "locSecret3",
-    "locAdmin",
-    "locModerator",
-    "locTest",
-    "locPrivate"
+    "locSecret"
   };
 
   public static SOListener getListener(ISharedObject sharedObject) {
@@ -92,25 +86,6 @@ public class SOListener implements ISharedObjectListener {
     checkArgs.add(true);
     MessageChecker checker = new MessageChecker();
     return (Boolean) TransactionUtil.callTransaction(checker, "checkMessage", checkArgs);
-  }
-
-  public Boolean rExecuteCommand(ObjectMap<String, Object> command) {
-    String className = (String) command.get("className");
-    
-    logger.info("Received command: className=" + className + ", command=" + command);
-    
-    // Check for superuser-only commands
-    if ("com.kavalok.location.commands::MoveCharCommand".equals(className) ||
-        "com.kavalok.location.commands::MoveToLocCommand".equals(className) ||
-        "com.kavalok.location.commands::FlyingPromoCommand".equals(className)) {
-      if (!isUserSuperUser()) {
-        logger.warn("Non-superuser attempted command: " + className + " - " + getCurrentUserLogin());
-        return true; // Prevent execution
-      }
-    }
-    
-    // For now, just pass through all commands without special processing
-    return false;
   }
 
   public ObjectMap<String, Object> getState() {
@@ -426,7 +401,9 @@ public class SOListener implements ISharedObjectListener {
         
         if ("com.kavalok.location.commands::MoveCharCommand".equals(className) ||
             "com.kavalok.location.commands::MoveToLocCommand".equals(className) ||
-            "com.kavalok.location.commands::FlyingPromoCommand".equals(className)) {
+            "com.kavalok.location.commands::FlyingPromoCommand".equals(className) ||
+            "com.kavalok.location.commands::PlaySwfCommand".equals(className) ||
+            "com.kavalok.location.commands::StuffRainCommand".equals(className)) {
           if (!isUserSuperUser()) {
             logger.warn("Non-superuser attempted command: " + className + " - " + getCurrentUserLogin());
             // Use preventClientInvocation to actually block the execution

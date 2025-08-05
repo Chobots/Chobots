@@ -66,11 +66,6 @@ public class StuffTypeDAO extends DAO<StuffType> {
       result = StuffTypeCache.getInstance().putStuffTypes(groupNum, shop, stuffs);
     }
 
-    System.err.println(
-        "findByShopName select ITEMS shopName: "
-            + shopName
-            + ", time: "
-            + (System.currentTimeMillis() - now));
     return result;
   }
 
@@ -105,11 +100,6 @@ public class StuffTypeDAO extends DAO<StuffType> {
               .subList(pageNum * itemsPerPage, pageNum * itemsPerPage + itemsPerPage);
     }
 
-    System.err.println(
-        "findByShopName select ITEMS shopName: "
-            + shopName
-            + ", time: "
-            + (System.currentTimeMillis() - now));
     return result;
   }
 
@@ -136,18 +126,7 @@ public class StuffTypeDAO extends DAO<StuffType> {
 
       List stuffs = criteria.list();
       result = StuffTypeCache.getInstance().putStuffTypes(shop, stuffs);
-      System.err.println(
-          "findByShopName select ITEMS shopName: "
-              + shop.getName()
-              + ", time: "
-              + (System.currentTimeMillis() - now));
     }
-
-    System.err.println(
-        "findByShopName select ITEMS shopName: "
-            + shop.getName()
-            + ", time: "
-            + (System.currentTimeMillis() - now));
 
     return result;
   }
