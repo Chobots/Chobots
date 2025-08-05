@@ -15,9 +15,12 @@ import org.slf4j.LoggerFactory;
 import com.kavalok.dao.GameCharDAO;
 import com.kavalok.dao.StuffItemDAO;
 import com.kavalok.dao.StuffTypeDAO;
+import com.kavalok.dao.QuestDAO;
 import com.kavalok.db.GameChar;
 import com.kavalok.db.StuffItem;
 import com.kavalok.db.StuffType;
+import com.kavalok.db.Quest;
+import com.kavalok.db.Server;
 import com.kavalok.dto.CharTOCache;
 import com.kavalok.dto.stuff.StuffItemLightTO;
 import com.kavalok.dto.stuff.StuffTypeTO;
@@ -31,6 +34,7 @@ import com.kavalok.services.stuff.UniqueItemsProcessor;
 import com.kavalok.services.stuff.RainTokenManager;
 import com.kavalok.user.UserAdapter;
 import com.kavalok.user.UserManager;
+import com.kavalok.KavalokApplication;
 
 public class StuffServiceNT extends DataServiceNotTransactionBase {
 
@@ -38,9 +42,20 @@ public class StuffServiceNT extends DataServiceNotTransactionBase {
 
   private static final SimpleDateFormat ITEM_OF_THE_MONTH_FORMAT = new SimpleDateFormat("yyyyMM");
 
-  private static final Set<String> ALLOW_CLIENT_REQUEST_ITEMS = new HashSet<String>(
-      Arrays.asList("globus", "glasses_professor", "okuliari_chopix", "cleaner_pot", "cleaner_pylesos", "cleaner_kaska", "cleaner_board")
-  );
+  // Map each allowed item to its quest name
+  private static final HashMap<String, String> ITEM_QUEST_MAP = new HashMap<String, String>() {{
+      put("globus", "questAcademy");
+      put("glasses_professor", "questAcademy");
+      put("okuliari_chopix", "questChopix");
+      put("cleaner_pot", "questHoover");
+      put("cleaner_board", "questHoover");
+      put("cleaner_kaska", "questHoover");
+      put("shapka_sclaus", "questBetaParty");
+      put("sharphik_sclaus", "questBetaParty");
+      put("shkar_sclaus", "questBetaParty");
+      put("elf", "questSanta2010");
+      put("mask_nichos", "questNichos");
+  }};
 
   private static final Logger logger = LoggerFactory.getLogger(StuffServiceNT.class);
 
@@ -57,6 +72,26 @@ public class StuffServiceNT extends DataServiceNotTransactionBase {
     shopProcessors.put("exchange", new ExchangeShopProcessor());
   }
 
+  private void checkQuestEnabledForItem(String fileName) {
+      String questName = ITEM_QUEST_MAP.get(fileName.toLowerCase());
+      if (questName == null) {
+          throw new SecurityException("No quest mapping for item: " + fileName);
+      }
+      Server server = KavalokApplication.getInstance().getServer();
+      QuestDAO questDAO = new QuestDAO(getSession());
+      List<Object> enabledQuests = questDAO.findEnabled(server);
+      boolean found = false;
+      for (Object q : enabledQuests) {
+          if (questName.equalsIgnoreCase(q.toString())) {
+              found = true;
+              break;
+          }
+      }
+      if (!found) {
+          throw new SecurityException("Quest not enabled for item: " + fileName + " (quest: " + questName + ")");
+      }
+  }
+
   public StuffItemLightTO getItem(Integer itemId) {
     StuffItem item = new StuffItemDAO(getSession()).findById(itemId.longValue());
     return new StuffItemLightTO(item);
@@ -69,9 +104,10 @@ public class StuffServiceNT extends DataServiceNotTransactionBase {
   }
 
   public StuffItemLightTO retriveItemWithColor(String fileName, Integer color) {
-    if (!ALLOW_CLIENT_REQUEST_ITEMS.contains(fileName.toLowerCase())) {
+    if (!ITEM_QUEST_MAP.containsKey(fileName.toLowerCase())) {
         throw new SecurityException("Unauthorized item retrieval: " + fileName);
     }
+    checkQuestEnabledForItem(fileName);
     StuffItemDAO stuffItemDAO = new StuffItemDAO(getSession());
     StuffItem item = createItem(fileName, stuffItemDAO);
     item.setColor(color);
@@ -80,9 +116,10 @@ public class StuffServiceNT extends DataServiceNotTransactionBase {
   }
 
   public StuffItemLightTO retriveItem(String fileName) {
-    if (!ALLOW_CLIENT_REQUEST_ITEMS.contains(fileName.toLowerCase())) {
+    if (!ITEM_QUEST_MAP.containsKey(fileName.toLowerCase())) {
         throw new SecurityException("Unauthorized item retrieval: " + fileName);
     }
+    checkQuestEnabledForItem(fileName);
     StuffItemDAO stuffItemDAO = new StuffItemDAO(getSession());
     StuffItem item = createItem(fileName, stuffItemDAO);
     stuffItemDAO.makePersistent(item);

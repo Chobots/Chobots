@@ -251,7 +251,15 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       return null;
     }
     
-    return TransactionUtil.callTransaction(service, method, args);
+    try {
+      return TransactionUtil.callTransaction(service, method, args);
+    } catch (SecurityException e) {
+      logger.error("Security violation in " + className + "." + method + ": " + e.getMessage());
+      throw e;
+    } catch (Exception e) {
+      logger.error("Error in " + className + "." + method + ": " + e.getMessage());
+      throw e;
+    }
   }
 
   private Boolean isAuthorized(String className, String methodName) {
@@ -413,6 +421,8 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       case "MagicServiceNT.getMagicPeriod":
       case "MagicServiceNT.executeMagicRain":
       case "StuffServiceNT.removeItem":
+      case "com.kavalok.services.StuffService.buyItem":
+      case "CharService.makePresent":
         return -1;
       
       default:

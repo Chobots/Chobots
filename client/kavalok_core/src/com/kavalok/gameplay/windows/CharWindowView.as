@@ -323,7 +323,7 @@ package com.kavalok.gameplay.windows
 			panel.visible = !Global.charManager.isGuest && !Global.startupInfo.widget;
 			
 			panel.chatButton.visible = !_char.isUser;	
-			panel.giftButton.visible = Global.superUser && !_char.isUser;	
+			panel.giftButton.visible = !_char.isUser;	
 			panel.addButton.visible = !_char.isUser && !isFriend && !_char.isGuest;
 			panel.removeButton.visible = !_char.isUser && isFriend;
 			panel.reportButton.visible = !_char.isUser && !_char.isGuest;
@@ -331,7 +331,7 @@ package com.kavalok.gameplay.windows
 			panel.ignoreButton.visible = !_char.isUser && !isFriend && !isIgnored && canBeIgnored;
 			panel.unignoreButton.visible = !_char.isUser && isIgnored;
 			panel.kickButton.visible = (Global.charManager.isModerator || Global.superUser) && !_char.isUser;
-			panel.tradeButton.visible = false;//!_char.isUser;
+			panel.tradeButton.visible = !_char.isUser;
 			panel.robotButton.visible = !_char.isUser && _char.hasRobot;
 			
 			GraphUtils.setBtnEnabled(panel.addButton,

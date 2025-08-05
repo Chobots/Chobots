@@ -29,9 +29,16 @@ import com.kavalok.db.statistics.LoginStatistics;
 import com.kavalok.db.statistics.MoneyStatistics;
 import com.kavalok.dto.stuff.StuffItemLightTO;
 import com.kavalok.services.common.SimpleEncryptor;
+import com.kavalok.services.ClothingValidationService;
+import com.kavalok.dao.StuffItemDAO;
+import com.kavalok.services.stuff.StuffTypes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.util.Map;
 
 public class UserAdapter {
 
+  private static final Logger logger = LoggerFactory.getLogger(UserAdapter.class);
   private static final int MESSAGES_TO_LOG_COUNT = 100;
 
   private static final int MONEY_STATS_CACHE_MAX_SIZE = 20;
@@ -152,7 +159,52 @@ public class UserAdapter {
   public List<String> getClothes(Session session) {
     GameCharDAO charDAO = new GameCharDAO(session);
     GameChar gameChar = charDAO.findByUserId(userId);
-    return charDAO.getUsedClothes(gameChar);
+    
+    if (gameChar == null) {
+      logger.warn("Game character not found for user: {}", userId);
+      return new ArrayList<>();
+    }
+    
+    List<String> clothes = charDAO.getUsedClothes(gameChar);
+    
+    // Validate that all clothing items exist and belong to the user
+    ClothingValidationService validationService = ClothingValidationService.createValidationService();
+    
+    // Convert clothing file names to item IDs for validation
+    List<Long> itemIds = new ArrayList<>();
+    List<StuffItem> userItems = gameChar.getStuffItems();
+    
+    for (String clothingFileName : clothes) {
+      // Find the StuffItem by file name and get its ID
+      for (StuffItem item : userItems) {
+        if (item.isUsed() && clothingFileName.equals(item.getType().getFileName())) {
+          itemIds.add(item.getId());
+          break;
+        }
+      }
+    }
+    
+    // Validate item existence and ownership
+    Map<Long, StuffItem> validItems = validationService.validateItemExistence(itemIds, session);
+    
+    // Return only validated clothing file names
+    List<String> validatedClothes = new ArrayList<>();
+    for (String clothingFileName : clothes) {
+      for (StuffItem item : userItems) {
+        if (item.isUsed() && clothingFileName.equals(item.getType().getFileName()) && 
+            validItems.containsKey(item.getId())) {
+          validatedClothes.add(clothingFileName);
+          break;
+        }
+      }
+    }
+    
+    if (validatedClothes.size() != clothes.size()) {
+      logger.warn("User {} had {} invalid clothing items removed from broadcast", 
+          userId, clothes.size() - validatedClothes.size());
+    }
+    
+    return validatedClothes;
   }
 
   /*

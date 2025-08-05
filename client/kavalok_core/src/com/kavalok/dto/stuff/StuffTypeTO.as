@@ -22,7 +22,7 @@ package com.kavalok.dto.stuff
 
 		override public function createModel():ResourceSprite
 		{
-			if(hasColor && color >= 0)
+			if (hasColor && color > 0)
 				return new ColorResourceSprite(url, MODEL_CLASS_NAME, color, false);
 			else
 				return super.createModel();
