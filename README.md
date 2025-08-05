@@ -26,13 +26,13 @@ Goals of this project are as follows but not limited to:
  - [ ] Produce detailed software architecture documents
  - [x] Salt and hash passwords
  - [x] Implement token-based authentication (replaces client-side password storage)
- - [ ] Server-side validation of superuser commands
+ - [x] Server-side validation of superuser commands
  - [ ] Safely enable guest accounts & patch specific guest exploits
  - [ ] Fix partner login
  - [x] Reauthenticate client server moves (including first login) via auth tokens rather than client stored password
  - [ ] Fix Cinema
  - [ ] Add database rows required to fix missions, pets, robots
- - [ ] Fix login error message on duplicate login
+ - [x] Fix login error message on duplicate login
  - [ ] [Fix chat history bar not displaying](https://github.com/Chobots/Chobots/issues/6)
 
 ## Running the code
