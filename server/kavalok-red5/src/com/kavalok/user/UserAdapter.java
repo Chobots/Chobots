@@ -67,6 +67,8 @@ public class UserAdapter {
 
   private String login;
 
+  private String creationStackTrace;
+
   private Server server;
 
   private Boolean persistent = true;
@@ -89,6 +91,12 @@ public class UserAdapter {
     messagesStack.setSize(MESSAGES_TO_LOG_COUNT);
     client = new Red5().getClient();
     connection = (IServiceCapableConnection) Red5.getConnectionLocal();
+    creationStackTrace = "";
+    StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+    for (int i = 0; i < trace.length; i++) {
+      String el = trace[i].toString();
+      this.creationStackTrace = this.creationStackTrace + el + "\n<br>";
+    }
   }
 
   public IServiceCapableConnection getConnection() {
@@ -470,5 +478,13 @@ public class UserAdapter {
           }
         };
     Executors.newCachedThreadPool().execute(worker);
+  }
+
+  public String getCreationStackTrace() {
+    return creationStackTrace;
+  }
+
+  public void setCreationStackTrace(String creationStackTrace) {
+    this.creationStackTrace = creationStackTrace;
   }
 }
