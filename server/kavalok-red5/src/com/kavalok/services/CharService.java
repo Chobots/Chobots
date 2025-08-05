@@ -575,7 +575,6 @@ public class CharService extends DataServiceBase {
     // If validation returns empty, it means no clothing data to process (normal when wardrobe not
     // loaded)
     if (validatedClothes.isEmpty()) {
-      logger.debug("No validated clothing data to process - likely wardrobe not loaded yet");
       return;
     }
 

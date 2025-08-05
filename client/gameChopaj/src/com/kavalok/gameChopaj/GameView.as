@@ -49,12 +49,15 @@
 			
 			if (playerNum == -1)
 			{
-				CharModel(_models[0]).setModel(CharModels.DANCE_VICTORY);
-				CharModel(_models[1]).setModel(CharModels.DANCE_VICTORY);
+				if (_models[0] != null)
+					CharModel(_models[0]).setModel(CharModels.DANCE_VICTORY);
+				if (_models[1] != null)
+					CharModel(_models[1]).setModel(CharModels.DANCE_VICTORY);
 			}
 			else
 			{
-				CharModel(_models[playerNum]).setModel(CharModels.DANCE_VICTORY);
+				if (_models[playerNum] != null)
+					CharModel(_models[playerNum]).setModel(CharModels.DANCE_VICTORY);
 			}
 		}
 		

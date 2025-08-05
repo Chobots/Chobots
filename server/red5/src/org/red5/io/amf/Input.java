@@ -363,7 +363,6 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
    * @return Object New object instance (for given class)
    */
   protected Object newInstance(String className) {
-    log.info("Loading class: {}", className);
     Object instance = null;
     try {
       Class<?> clazz = Thread.currentThread().getContextClassLoader().loadClass(className);

@@ -10,10 +10,10 @@ import org.slf4j.LoggerFactory;
 
 import com.kavalok.dao.UserDAO;
 import com.kavalok.db.User;
+import com.kavalok.services.common.ServiceBase;
 import com.kavalok.user.UserAdapter;
 import com.kavalok.user.UserManager;
 import com.kavalok.utils.HibernateUtil;
-import com.kavalok.services.common.ServiceBase;
 import com.kavalok.utils.SOUtil;
 
 public class GraphityService extends ServiceBase {

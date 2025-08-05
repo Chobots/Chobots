@@ -4,9 +4,12 @@ import java.io.FileNotFoundException;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 import org.hibernate.HibernateException;
 import org.red5.io.utils.ObjectMap;
+import org.red5.server.api.IClient;
+import org.red5.server.api.Red5;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -287,11 +290,32 @@ public class LoginService extends DataServiceBase {
 
     if (priorUserAdapter != null) {
       logger.info("Kicking out prior existing session for user: {}", user.getLogin());
-      priorUserAdapter.kickOut(SOMEONE_USED_YOUR_LOGIN, false);
+      // Kick out the prior session asynchronously to avoid connection issues
+      final UserAdapter finalPriorUserAdapter = priorUserAdapter;
+      final String userLogin = user.getLogin();
+      Executors.newSingleThreadExecutor()
+          .submit(
+              () -> {
+                try {
+                  // Set a flag to prevent statistics update during kick-out to avoid database
+                  // conflicts
+                  finalPriorUserAdapter.setPersistent(false);
+                  finalPriorUserAdapter.kickOut(SOMEONE_USED_YOUR_LOGIN, false);
+                } catch (Exception e) {
+                  logger.error("Error kicking out prior session for user: {}", userLogin, e);
+                }
+              });
     }
 
-    // Get adapter for current session
-    UserAdapter userAdapter = manager.getCurrentUser();
+    // Create a new UserAdapter for the current session
+    UserAdapter userAdapter = new UserAdapter();
+    IClient client = new Red5().getClient();
+    if (client != null) {
+      client.setAttribute(UserManager.ADAPTER, userAdapter);
+    } else {
+      logger.error("Failed to get client for new UserAdapter for user: {}", user.getLogin());
+      return createErrorResult(ERROR_UNKNOWN);
+    }
 
     userAdapter.setLogin(user.getLogin());
     userAdapter.setServer(server);
