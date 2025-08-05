@@ -35,6 +35,7 @@ import com.kavalok.services.stuff.RainTokenManager;
 import com.kavalok.user.UserAdapter;
 import com.kavalok.user.UserManager;
 import com.kavalok.KavalokApplication;
+import com.kavalok.utils.ShopAccessUtil;
 
 public class StuffServiceNT extends DataServiceNotTransactionBase {
 
@@ -217,6 +218,9 @@ public class StuffServiceNT extends DataServiceNotTransactionBase {
   public List<StuffTypeTO> getStuffTypes(String shopName) {
     long now = System.currentTimeMillis();
 
+    // Check if user has access to this shop
+    ShopAccessUtil.checkShopAccess(getSession(), shopName);
+
     IShopProcessor processor = new DefaultShopProcessor();
 
     if (shopProcessors.containsKey(shopName) && getAdapter().getPersistent())
@@ -230,6 +234,9 @@ public class StuffServiceNT extends DataServiceNotTransactionBase {
 
   public List<StuffTypeTO> getStuffTypes(String shopName, Integer pageNum, Integer itemsPerPage) {
     long now = System.currentTimeMillis();
+
+    // Check if user has access to this shop
+    ShopAccessUtil.checkShopAccess(getSession(), shopName);
 
     IShopProcessor processor = new DefaultShopProcessor();
 

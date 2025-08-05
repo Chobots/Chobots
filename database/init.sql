@@ -1334,9 +1334,10 @@ DROP TABLE IF EXISTS `Shop`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Shop`
 (
-    `id`      bigint(20) NOT NULL AUTO_INCREMENT,
-    `created` datetime     DEFAULT NULL,
-    `name`    varchar(255) DEFAULT NULL,
+    `id`                    bigint(20) NOT NULL AUTO_INCREMENT,
+    `created`               datetime     DEFAULT NULL,
+    `name`                  varchar(255) DEFAULT NULL,
+    `requiredPermission`    varchar(20)  DEFAULT 'PUBLIC',
     PRIMARY KEY (`id`),
     UNIQUE KEY `name` (`name`)
 ) ENGINE = InnoDB
