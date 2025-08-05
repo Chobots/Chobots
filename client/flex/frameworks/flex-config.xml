@@ -174,9 +174,8 @@
                java -cp mxmlc.jar flex2.tools.FontSnapshot (fontpath)
                Will default to winFonts.ser on Windows XP and
                macFonts.ser on Mac OS X, so is commented out by default.
-
-          <local-fonts-snapshot>localFonts.ser</local-fonts-snapshot>
           -->
+          <local-fonts-snapshot>localFonts.ser</local-fonts-snapshot>
 
       </fonts>
 
