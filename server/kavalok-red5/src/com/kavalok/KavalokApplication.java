@@ -423,6 +423,7 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       case "StuffServiceNT.removeItem":
       case "StuffService.buyItem":
       case "CharService.makePresent":
+      case "LoginService.loginWithToken":
         return -1;
 
       default:
