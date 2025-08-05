@@ -139,7 +139,9 @@ package com.kavalok.gameplay.windows
 		
 		override public function onClose():void
 		{
-			Global.charManager.stuffs.refreshEvent.removeListener(onStuffChange);
+			if (Global.charManager.stuffs.refreshEvent.hasListener(onStuffChange)) {
+				Global.charManager.stuffs.refreshEvent.removeListener(onStuffChange);
+			}
 			_client.disconnect();
 		}
 		
@@ -170,23 +172,23 @@ package com.kavalok.gameplay.windows
 		
 		public function rAccept(charId : String) : void
 		{
-//			if(_oneAccepted)
-//			{
-//				Dialogs.showOkDialog(bundle.getMessage("tradeSuccessfull"));
-//				Global.charManager.stuffs.refresh();
-//				Global.windowManager.closeWindow(this);
-//				_finished = true;
-//				return;
-//			}
-//			
-//			_oneAccepted = true;
-//			disable();
-//			ToolTips.registerObject(_stuffList.content, "tradeCannotChangeItems", ResourceBundles.KAVALOK);
-//			ToolTips.registerObject(_myTradeList.content, "tradeCannotChangeItems", ResourceBundles.KAVALOK);
-//			if(charId == _partner)
-//			{
-//				bundle.registerTextField(_content.partnerField, "tradeAccepted");
-//			}
+			if(_oneAccepted)
+			{
+				_finished = true;
+				Dialogs.showOkDialog(bundle.getMessage("tradeSuccessfull"));
+				Global.charManager.stuffs.refresh();
+				Global.windowManager.closeWindow(this);
+				return;
+			}
+			
+			_oneAccepted = true;
+			disable();
+			ToolTips.registerObject(_stuffList.content, "tradeCannotChangeItems", ResourceBundles.KAVALOK);
+			ToolTips.registerObject(_myTradeList.content, "tradeCannotChangeItems", ResourceBundles.KAVALOK);
+			if(charId == _partner)
+			{
+				bundle.registerTextField(_content.partnerField, "tradeAccepted");
+			}
 		}
 
 		public function rRemoveItem(charId : String, item : StuffItemLightTO) : void

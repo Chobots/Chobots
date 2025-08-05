@@ -15,6 +15,7 @@ public class StuffTypeTO extends StuffTOBase {
   private Boolean premium;
   private ObjectMap<String, Object> robotInfo;
   private ObjectMap<String, Object> skuInfo;
+  private String rainToken;
 
   public StuffTypeTO() {
     super();
@@ -102,5 +103,13 @@ public class StuffTypeTO extends StuffTOBase {
 
   public void setCount(Integer count) {
     this.count = count;
+  }
+
+  public String getRainToken() {
+    return rainToken;
+  }
+
+  public void setRainToken(String rainToken) {
+    this.rainToken = rainToken;
   }
 }

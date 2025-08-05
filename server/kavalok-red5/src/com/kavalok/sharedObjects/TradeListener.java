@@ -32,7 +32,8 @@ public class TradeListener extends SOListener implements ISessionDependent {
 
   public boolean rRemoveItem(String owner, StuffItemLightTO item) {
     if (acceptedChars.size() > 0 || !hasItem(item)) return true;
-    ArrayList<Integer> charItems = items.get(getUserId().intValue());
+    Long userId = getUserId();
+    ArrayList<Integer> charItems = items.get(userId);
     charItems.remove(Integer.valueOf(item.getId().intValue()));
     return false;
   }
@@ -40,15 +41,17 @@ public class TradeListener extends SOListener implements ISessionDependent {
   public boolean rAddItem(String owner, StuffItemLightTO item) {
 
     if (acceptedChars.size() > 0 || hasItem(item)) return true;
-    if (items.get(getUserId()) == null) {
-      items.put(getUserId(), new ArrayList<Integer>());
+
+    Long userId = getUserId();
+    if (items.get(userId) == null) {
+      items.put(userId, new ArrayList<Integer>());
     }
-    ArrayList<Integer> charItems = items.get(getUserId().intValue());
+    ArrayList<Integer> charItems = items.get(userId);
     charItems.add(item.getId().intValue());
     return false;
   }
 
-  public boolean rAccept(Long charId) {
+  public boolean rAccept(String charId) {
     Long userIdCurr = getUserId();
     if (acceptedChars.contains(userIdCurr))
       throw new IllegalStateException("User " + userIdCurr + " is trying to hack the trade");
@@ -88,7 +91,6 @@ public class TradeListener extends SOListener implements ISessionDependent {
   }
 
   private void moveItems(GameChar to, GameChar from, ArrayList<Integer> ids) {
-    if (1 == 1) return;
     StuffItemDAO stuffItemDAO = new StuffItemDAO(session);
     for (Integer id : ids) {
       boolean processed = false;

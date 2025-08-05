@@ -41,7 +41,7 @@ LOCK TABLES `Admin` WRITE;
     DISABLE KEYS */;
 
 INSERT INTO `Admin` (`id`, `created`, `login`, `password`, `permissionLevel`, `salt`)
-VALUES (1, '2025-01-01 00:00:00', 'admin', '59bb1d5ccc384c90f50cea164abec2bbd069e1a78ed35b80c79bbdd1248dbf8a', 1000,
+VALUES (1, '2025-01-01 00:00:00', 'admin', '59bb1d5ccc384c90f50cea164abec2bbd069e1a78ed35b80c79bbdd1248dbf8a', 5,
         'vNkshlQFOHkDkdlBGiGosBHXoYeTswja');
 /*!40000 ALTER TABLE `Admin`
     ENABLE KEYS */;
@@ -978,10 +978,9 @@ CREATE TABLE `Quest`
 --
 
 LOCK TABLES `Quest` WRITE;
-/*!40000 ALTER TABLE `Quest`
-    DISABLE KEYS */;
-/*!40000 ALTER TABLE `Quest`
-    ENABLE KEYS */;
+/*!40000 ALTER TABLE `Quest` DISABLE KEYS */;
+INSERT INTO `Quest` (id, created, name, enabled, server_id) VALUES (2,NULL,'questChopix',1,NULL),(3,NULL,'questAcademy',1,NULL),(4,NULL,'questNichos',1,NULL),(5,NULL,'questHoover',1,NULL),(8,NULL,'questMusic',0,NULL),(15,NULL,'betaNPC',0,NULL),(16,NULL,'questPatrick',0,NULL),(17,NULL,'questPets',0,NULL),(18,NULL,'questCowboy',0,NULL),(19,NULL,'santaNPC',0,NULL),(20,NULL,'questHalloween',0,NULL);
+/*!40000 ALTER TABLE `Quest` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -1335,9 +1334,10 @@ DROP TABLE IF EXISTS `Shop`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Shop`
 (
-    `id`      bigint(20) NOT NULL AUTO_INCREMENT,
-    `created` datetime     DEFAULT NULL,
-    `name`    varchar(255) DEFAULT NULL,
+    `id`                    bigint(20) NOT NULL AUTO_INCREMENT,
+    `created`               datetime     DEFAULT NULL,
+    `name`                  varchar(255) DEFAULT NULL,
+    `requiredPermission`    varchar(20)  DEFAULT 'PUBLIC',
     PRIMARY KEY (`id`),
     UNIQUE KEY `name` (`name`)
 ) ENGINE = InnoDB

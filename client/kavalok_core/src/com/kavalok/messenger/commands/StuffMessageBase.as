@@ -27,8 +27,13 @@ package com.kavalok.messenger.commands
 		
 		private function onGetItem(result:StuffItemLightTO):void
 		{
+			trace("StuffMessageBase.onGetItem: result.color = " + result.color + " (hex: 0x" + result.color.toString(16) + "), result.id = " + result.id);
 			Global.charManager.stuffs.addItem(result)
-			_item = Global.charManager.stuffs.getById(itemId);
+			
+			// Use the result directly instead of getting from inventory to preserve the correct color
+			_item = result;
+			trace("StuffMessageBase.onGetItem: Using result directly, _item.color = " + _item.color + " (hex: 0x" + _item.color.toString(16) + "), _item.id = " + _item.id);
+			
 			if (_item)
 				showStuff(sender, getText());
 		}

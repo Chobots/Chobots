@@ -187,7 +187,8 @@ public class MessageService extends DataServiceNotTransactionBase {
       MessageChecker checker = new MessageChecker(getSession());
 
       if (checker.checkMessage(
-          null, userAdapter.getUserId(), userAdapter.getLogin(), (String) message, true, true)) return;
+          null, userAdapter.getUserId(), userAdapter.getLogin(), (String) message, true, true))
+        return;
     }
 
     SOListener listener = SOListener.getListener(sharedObject);
@@ -203,7 +204,8 @@ public class MessageService extends DataServiceNotTransactionBase {
             && user.getUserId() != null
             && !userAdapter.getUserId().equals(user.getUserId())) {
 
-          user.sendLocationChat(userAdapter.getUserId().intValue(), userAdapter.getLogin(), message);
+          user.sendLocationChat(
+              userAdapter.getUserId().intValue(), userAdapter.getLogin(), message);
         }
       }
     }

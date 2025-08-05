@@ -521,7 +521,7 @@ public class CharService extends DataServiceBase {
     result.setLogin(user.getLogin());
 
     if (!checkCurrentUserCache) {
-        return result;
+      return result;
     }
 
     UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
@@ -546,9 +546,43 @@ public class CharService extends DataServiceBase {
   }
 
   public void saveCharStuffs(LinkedHashMap<Integer, ObjectMap<String, Object>> clothes) {
+    // Validate clothing data before processing
+    ClothingValidationService validationService =
+        ClothingValidationService.createValidationService();
+
+    Map<Integer, ObjectMap<String, Object>> validatedClothes;
+    try {
+      validatedClothes = validationService.validateClothingData(clothes, getSession());
+    } catch (SecurityException e) {
+      UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
+      String userLogin = userAdapter.getLogin();
+      Long userId = userAdapter.getUserId();
+
+      logger.error(
+          "Clothing validation failed for user "
+              + userLogin
+              + " (ID: "
+              + userId
+              + "): "
+              + e.getMessage()
+              + ". Kicking user out.");
+
+      // Kick out the user for failed clothing validation
+      userAdapter.kickOut("Clothing validation failed", false);
+      return;
+    }
+
+    // If validation returns empty, it means no clothing data to process (normal when wardrobe not
+    // loaded)
+    if (validatedClothes.isEmpty()) {
+      logger.debug("No validated clothing data to process - likely wardrobe not loaded yet");
+      return;
+    }
+
+    // Process only validated clothing items
     for (StuffItem item : getCharClothesAndStuffs(null, null, false, false)) {
 
-      for (ObjectMap<String, Object> clothe : clothes.values()) {
+      for (ObjectMap<String, Object> clothe : validatedClothes.values()) {
         Long id = Long.valueOf((Integer) clothe.get("id"));
         if (id.equals(item.getId())) {
           item.setUsed((Boolean) clothe.get("used"));
@@ -631,7 +665,6 @@ public class CharService extends DataServiceBase {
   }
 
   public Integer makePresent(Integer userId, Integer stuffId) {
-    if (1 == 1) return stuffId;
     StuffItemDAO itemDAO = new StuffItemDAO(getSession());
     StuffItem item = itemDAO.findById(stuffId.longValue(), false);
 
@@ -668,7 +701,7 @@ public class CharService extends DataServiceBase {
     populateStaticData(result);
 
     if (!userAdapter.getPersistent()) {
-        return result;
+      return result;
     }
 
     result.setIsGuest(false);

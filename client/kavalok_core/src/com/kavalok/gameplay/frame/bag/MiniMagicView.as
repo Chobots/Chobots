@@ -39,24 +39,11 @@ package com.kavalok.gameplay.frame.bag
 			}else if(Global.charManager.magicStuffItemRain){
 				if(Global.charManager.magicStuffItemRainCount>0){
 					Global.locationManager.location.sendUserAction(MagicAction);
-					new StuffServiceNT(magicStuffRainItemRetreived).getStuffType(Global.charManager.magicStuffItemRain);
+					new MagicServiceNT().executeMagicRain();
 				}
 			}
 			onResult(0);
 			_applyEvent.sendEvent();
-		}
-		
-		private function magicStuffRainItemRetreived(stuffType : StuffTypeTO):void
-		{
-			
-				for(var i:int = 0;i<Global.charManager.magicStuffItemRainCount;i++){
-					var comm : StuffRainCommand = new StuffRainCommand();
-					comm.fileName = stuffType.fileName;
-					comm.itemId = stuffType.id;
-					comm.stuffType = stuffType.type;
-					Global.locationManager.location.sendCommand(comm);
-				}
-				new MagicServiceNT().updateMagicDate();
 		}
 
 		public function refresh():void

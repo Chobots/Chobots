@@ -85,6 +85,11 @@ package com.kavalok.services
 			doCall("getRainableStuffs", arguments);
 		}
 		
+		public function triggerRainEventWithLocation(fileName:String, count:int, serverId:int, remoteId:String):void
+		{
+			doCall("triggerRainEventWithLocation", arguments);
+		}
+		
 		public function clearSharedObject(serverId : int, sharedObjectId : String) : void
 		{
 			doCall("clearSharedObject", arguments);

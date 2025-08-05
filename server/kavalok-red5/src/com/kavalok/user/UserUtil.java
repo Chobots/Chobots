@@ -201,7 +201,8 @@ public class UserUtil {
 
     GameCharDAO charDAO = new GameCharDAO(session);
 
-    // Chobots.org Modification - Default chatEnabled and activated to true (originally false) due to probable lack of email activation configuration
+    // Chobots.org Modification - Default chatEnabled and activated to true (originally false) due
+    // to probable lack of email activation configuration
     Boolean chatEnabled = true;
     Boolean activated = true;
 

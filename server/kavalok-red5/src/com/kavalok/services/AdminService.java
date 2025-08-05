@@ -11,6 +11,8 @@ import org.hibernate.Criteria;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Restrictions;
 import org.red5.io.utils.ObjectMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.kavalok.KavalokApplication;
 import com.kavalok.dao.AdminDAO;
@@ -42,14 +44,12 @@ import com.kavalok.dto.WorldConfigTO;
 import com.kavalok.dto.admin.FilterTO;
 import com.kavalok.dto.stuff.StuffTypeTO;
 import com.kavalok.services.common.DataServiceBase;
+import com.kavalok.user.UserAdapter;
 import com.kavalok.user.UserManager;
 import com.kavalok.user.UserUtil;
 import com.kavalok.utils.StringUtil;
 import com.kavalok.xmlrpc.AdminClient;
 import com.kavalok.xmlrpc.RemoteClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import com.kavalok.user.UserAdapter;
 
 public class AdminService extends DataServiceBase {
 
@@ -593,5 +593,10 @@ public class AdminService extends DataServiceBase {
     } else {
       return "error";
     }
+  }
+
+  public void triggerRainEventWithLocation(
+      String fileName, Integer count, Integer serverId, String remoteId) {
+    RainCommandService.triggerRainEvent(getSession(), fileName, count, "admin", serverId, remoteId);
   }
 }

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CatalogsBase
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns="com.kavalok.admin.catalogs.*"
+	>
+	
+	<mx:VBox width="100%" height="100%">
+		
+		<mx:HBox
+			width="100%"
+		>
+			<mx:Button
+				label="Refresh"
+				click="refresh()"
+			/>
+			
+			<mx:Spacer width="100"/>
+			
+			<mx:Button
+				label="Add Shop"
+				click="onAddClick()">
+			</mx:Button>
+			
+		</mx:HBox>
+		
+		<mx:HBox width="100%" height="100%">
+			
+			 <mx:DataGrid width="100%" height="100%"
+				id="catalogsGrid"
+				dataProvider="{catalogList}"
+				change="onItemChange(event)">
+				 <mx:columns>
+					<mx:DataGridColumn
+						dataField="id"
+						headerText="id"
+						/>
+					<mx:DataGridColumn
+						dataField="name"
+						headerText="Name"
+						/>
+					<mx:DataGridColumn
+						dataField="requiredPermission"
+						headerText="Permission"
+						/>
+				 </mx:columns>
+			 </mx:DataGrid>
+			
+			 <CatalogView
+				id="catalogView"
+				width="220"
+				height="100%"
+				item="{selectedItem}"
+			 />
+		</mx:HBox>
+	</mx:VBox>
+	
+</CatalogsBase> 

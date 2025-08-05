@@ -39,11 +39,7 @@
 		
 		public function onSendClick():void
 		{
-			var command:StuffRainCommand = new StuffRainCommand();
-			command.itemId = stuffType.id;
-			command.fileName = stuffType.fileName;
-			command.stuffType = stuffType.type;
-			sendLocationCommand(command);
+			new AdminService().triggerRainEventWithLocation(stuffType.fileName, 1, serverId, remoteId);
 		}
 		
 		public function get stuffType():StuffTypeTO

@@ -30,6 +30,7 @@ public class Admin extends LoginModelBase {
   public String getSalt() {
     return salt;
   }
+
   public void setSalt(String salt) {
     this.salt = salt;
   }

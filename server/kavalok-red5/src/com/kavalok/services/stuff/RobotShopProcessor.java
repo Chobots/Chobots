@@ -18,12 +18,15 @@ import com.kavalok.db.User;
 import com.kavalok.dto.robot.RobotTipes;
 import com.kavalok.dto.stuff.StuffTypeTO;
 import com.kavalok.user.UserManager;
+import com.kavalok.utils.ShopAccessUtil;
 
 public class RobotShopProcessor implements IShopProcessor {
 
   @SuppressWarnings("unchecked")
   @Override
   public List<StuffTypeTO> getStuffTypes(Session session, String shopName) {
+    // Check if user has access to this catalog
+    ShopAccessUtil.checkShopAccess(session, shopName);
 
     ObjectMap<String, Integer> robotLevels = getRobotLevels(session);
     List<RobotType> types = new RobotTypeDAO(session).findByCatalog(shopName);
