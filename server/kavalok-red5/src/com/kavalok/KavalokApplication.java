@@ -31,6 +31,7 @@ import com.kavalok.dto.CharTOCache;
 import com.kavalok.messages.UsersCache;
 import com.kavalok.messages.WordsCache;
 import com.kavalok.permissions.AccessAdmin;
+import com.kavalok.permissions.AccessUser;
 import com.kavalok.services.stuff.RainTokenManager;
 import com.kavalok.statistics.ServerUsageStatistics;
 import com.kavalok.transactions.DefaultTransactionStrategy;
@@ -43,7 +44,6 @@ import com.kavalok.user.UserManager;
 import com.kavalok.utils.HibernateUtil;
 import com.kavalok.utils.ReflectUtil;
 import com.kavalok.utils.SOManager;
-import com.kavalok.sharedObjects.KavalokSharedObjectSecurity;
 
 import net.sf.cglib.core.ReflectUtils;
 
@@ -134,7 +134,7 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
     }
 
     addListener(getScope(), new SOManager());
-    
+
     HibernateUtil.getSessionFactory();
     WordsCache.getInstance(); // load words
     String name = scope.getName();
@@ -281,7 +281,6 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
     String permission = method.substring("com.kavalok.services.".length());
 
     switch (permission) {
-        // SUPER_ADMIN level methods (level 5) - Super Admin users only
       case "StatisticsService.getMembersAge":
       case "StatisticsService.getTotalLogins":
       case "StatisticsService.getActivationChart":
@@ -296,9 +295,8 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       case "AdminService.refreshServersConfig":
       case "AdminService.getMailServers":
       case "ErrorService.getErrors":
-        return 5;
-
-        // SUPER_MOD level methods (level 4) - Super moderators and above
+        // SUPER_ADMIN level methods (level 5) - Super Admin users only
+        return 7;
       case "AdminService.saveStuffGroupNum":
       case "MessageService.getBlockWords":
       case "MessageService.addBlockWord":
@@ -323,9 +321,8 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       case "CompetitionDataService.getCompetitions":
       case "CompetitionDataService.startCompetition":
       case "CompetitionDataService.clearCompetition":
-        return 4;
-
-        // MOD level methods (level 3) - Full moderators and above
+        // SUPER_MOD level methods (level 4) - Super moderators and above
+        return 6;
       case "AdminService.setBanDate":
       case "AdminService.kickOut":
       case "AdminService.saveUserData":
@@ -335,9 +332,8 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       case "QuestService.getQuests":
       case "QuestService.saveQuest":
       case "InfoPanelService.saveEntity":
-        return 3;
-
-        // HALF_MOD level methods (level 2) - Half moderators and above
+        // MOD level methods (level 3) - Full moderators and above
+        return 5;
       case "AdminService.moderateChat":
       case "AdminService.setReportProcessed":
       case "AdminService.getLastChatMessages":
@@ -347,16 +343,14 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       case "AdminService.saveUserBan":
       case "AdminService.sendRules":
       case "AdminService.saveWorldConfig":
-        return 2;
-
-        // PARTNER level methods (level 1) - Partners and above
+        // HALF_MOD level methods (level 2) - Half moderators and above
+        return 4;
       case "AdminService.viewStatistics":
       case "AdminService.viewPartnerData":
       case "StatisticsService.getTransactionStatistics":
       case "StatisticsService.getRobotTransactionStatistics":
-        return 1;
-
-        // EXTERNAL_MOD level methods (level 0) - External moderators and above
+        // PARTNER level methods (level 1) - Partners and above
+        return 3;
       case "AdminService.getGraphity":
       case "AdminService.clearGraphity":
       case "AdminService.viewReports":
@@ -370,22 +364,8 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       case "StuffTypeService.getStuffListByShop":
       case "AdminService.getRainableStuffs":
       case "AdminService.triggerRainEventWithLocation":
-        return 0;
-
-        // Public methods (no permission required)
-      case "AdminService.adminLogin":
-      case "AdminService.changePassword":
-      case "AdminService.getPermissionLevel":
-      case "AdminService.getServerLimit":
-      case "AdminService.getConfig":
-      case "AdminService.getClientConfig":
-      case "AdminService.getWorldConfig":
-      case "AdminService.getStuffGroupNum":
-      case "LoginService.getServerProperties":
-      case "SystemService.clientTick":
-      case "CharService.getCharViewLogin":
-      case "LoginService.login":
-        // Logged in
+        // EXTERNAL_MOD level methods (level 0) - External moderators and above
+        return 2;
       case "LoginService.getMostLoadedServer":
       case "ServerService.getServers":
       case "ServerService.getServerAddress":
@@ -425,9 +405,24 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       case "StuffServiceNT.removeItem":
       case "StuffService.buyItem":
       case "CharService.makePresent":
-      case "LoginService.loginWithToken":
       case "CharService.savePlayerCard":
-        return -1;
+        return 1;
+        // Logged in user methods
+      case "AdminService.adminLogin":
+      case "AdminService.changePassword":
+      case "AdminService.getPermissionLevel":
+      case "AdminService.getServerLimit":
+      case "AdminService.getConfig":
+      case "AdminService.getClientConfig":
+      case "AdminService.getWorldConfig":
+      case "AdminService.getStuffGroupNum":
+      case "LoginService.getServerProperties":
+      case "SystemService.clientTick":
+      case "CharService.getCharViewLogin":
+      case "LoginService.login":
+      case "LoginService.loginWithToken":
+        // Public methods (no login or permission required)
+        return 0;
 
       default:
         return null;
@@ -436,7 +431,7 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
 
   private boolean userHasPermissionLevel(int requiredLevel) {
     // If no permission is required, allow access
-    if (requiredLevel == -1) {
+    if (requiredLevel == 0) {
       return true;
     }
 
@@ -444,6 +439,12 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
     if (userAdapter == null) {
       logger.warn("Unauthorized access attempt by unknown user");
       return false;
+    }
+
+    if (requiredLevel == 1
+        && (AccessUser.class.equals(userAdapter.getAccessType())
+            || AccessAdmin.class.equals(userAdapter.getAccessType()))) {
+      return true;
     }
 
     if (AccessAdmin.class.equals(userAdapter.getAccessType())) {
@@ -454,8 +455,10 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
         Admin admin = adminDAO.findById(userAdapter.getUserId());
 
         if (admin != null) {
+          // Offset by 2 to convert Admin permission level into permission level used by this
+          // permission structure
           int adminPermissionLevel =
-              admin.getPermissionLevel() != null ? admin.getPermissionLevel() : 0;
+              admin.getPermissionLevel() != null ? admin.getPermissionLevel() + 2 : 2;
           return adminPermissionLevel >= requiredLevel;
         }
       } catch (Exception e) {
@@ -477,11 +480,12 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
         boolean isSuperUser = Boolean.TRUE.equals(user.getSuperUser());
         boolean isModerator = user.isModerator();
 
-        int userPermissionLevel = 0;
+        int userPermissionLevel = 1;
+
         if (isSuperUser) {
-          userPermissionLevel = 5; // SUPER_ADMIN level
+          userPermissionLevel = 7;
         } else if (isModerator) {
-          userPermissionLevel = 3; // MOD level
+          userPermissionLevel = 5;
         }
 
         return userPermissionLevel >= requiredLevel;
@@ -521,7 +525,6 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
   public void disconnectUser(Session session) {
     UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
     if (userAdapter.getUserId() != null) {
-      logger.info("User {} disconnect", userAdapter.getLogin());
       UserDAO userDAO = new UserDAO(session);
       User user = userDAO.findById(userAdapter.getUserId());
       if (user == null) {

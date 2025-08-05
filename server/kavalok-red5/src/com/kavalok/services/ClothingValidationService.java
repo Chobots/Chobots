@@ -275,8 +275,8 @@ public class ClothingValidationService extends DataServiceBase {
   }
 
   /**
-   * Validates shared object clothing data format (p=placement, c=color, n=fileName).
-   * This is used for validating clothing data sent through shared objects.
+   * Validates shared object clothing data format (p=placement, c=color, n=fileName). This is used
+   * for validating clothing data sent through shared objects.
    *
    * @param clothesData The clothing data from shared object (with p, c, n fields)
    * @param session The Hibernate session to use
@@ -364,7 +364,7 @@ public class ClothingValidationService extends DataServiceBase {
 
     for (Map.Entry<Integer, ObjectMap<String, Object>> entry : clothesData.entrySet()) {
       ObjectMap<String, Object> clothe = entry.getValue();
-      
+
       // Validate required fields for shared object format
       if (!validateSharedObjectRequiredFields(clothe)) {
         throw new SecurityException("Clothing item missing required fields (p, c, n)");
@@ -378,7 +378,7 @@ public class ClothingValidationService extends DataServiceBase {
       // Get the fileName from the 'n' field and color from 'c' field
       String fileName = (String) clothe.get("n");
       Integer color = (Integer) clothe.get("c");
-      
+
       if (fileName == null || color == null) {
         throw new SecurityException("Invalid clothing item data: missing fileName or color");
       }
@@ -390,7 +390,8 @@ public class ClothingValidationService extends DataServiceBase {
             "User attempting to use clothing item they don't own: " + fileName);
       }
 
-      // Additional validation: ensure the color matches (optional - some items might have different colors)
+      // Additional validation: ensure the color matches (optional - some items might have different
+      // colors)
       // For now, we'll just validate ownership by fileName
       // TODO: Add color validation if needed
 
@@ -403,8 +404,8 @@ public class ClothingValidationService extends DataServiceBase {
 
   /** Validates that all required fields are present in shared object clothing data. */
   private boolean validateSharedObjectRequiredFields(ObjectMap<String, Object> clothe) {
-    return clothe.containsKey("p")  // placement
-        && clothe.containsKey("c")  // color/id
+    return clothe.containsKey("p") // placement
+        && clothe.containsKey("c") // color/id
         && clothe.containsKey("n"); // name
   }
 

@@ -6,26 +6,20 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.Session;
 import org.red5.io.utils.ObjectMap;
 import org.red5.server.api.IAttributeStore;
 import org.red5.server.api.so.ISharedObject;
 import org.red5.server.api.so.ISharedObjectBase;
 import org.red5.server.api.so.ISharedObjectListener;
-import org.red5.threadmonitoring.ThreadMonitorServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.kavalok.dao.UserDAO;
-import com.kavalok.db.User;
 import com.kavalok.messages.MessageChecker;
 import com.kavalok.transactions.TransactionUtil;
 import com.kavalok.user.UserAdapter;
 import com.kavalok.user.UserManager;
-import com.kavalok.utils.HibernateUtil;
 import com.kavalok.utils.ReflectUtil;
 import com.kavalok.utils.SOUtil;
-import com.kavalok.services.ClothingValidationService;
 
 public class SOListener implements ISharedObjectListener {
 
@@ -46,8 +40,6 @@ public class SOListener implements ISharedObjectListener {
   public static final String SEND = "oS";
 
   private static Logger logger = LoggerFactory.getLogger(SOListener.class);
-
-
 
   public static SOListener getListener(ISharedObject sharedObject) {
     return (SOListener) sharedObject.getAttribute(LISTENER);
@@ -85,7 +77,6 @@ public class SOListener implements ISharedObjectListener {
   }
 
   public void initialize(ISharedObject sharedObject) {
-    logger.info("shared object initialized " + sharedObject.getName());
     this.sharedObject = sharedObject;
     sharedObject.setAttribute(LISTENER, this);
   }
@@ -170,15 +161,14 @@ public class SOListener implements ISharedObjectListener {
   @SuppressWarnings("unchecked")
   private LinkedHashMap<Integer, Object> getMethodArgs(List args) {
     if (args.size() > 2 && args.get(2) instanceof LinkedHashMap) {
-        return (LinkedHashMap<Integer, Object>) args.get(2);
+      return (LinkedHashMap<Integer, Object>) args.get(2);
     }
     logger.warn("getMethodArgs: args too small or wrong type: " + args);
     return new LinkedHashMap<Integer, Object>();
-}
+  }
 
   protected void executeServerMethods(
       String clientId, String methodName, LinkedHashMap<Integer, Object> args) {
-
 
     if (methodName == null) {
       return;
@@ -248,26 +238,10 @@ public class SOListener implements ISharedObjectListener {
     }
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   /**
-   * Uses reflection to resolve a method name to its constant representation.
-   * Searches through all static final String fields in this class to find a match.
-   * 
+   * Uses reflection to resolve a method name to its constant representation. Searches through all
+   * static final String fields in this class to find a match.
+   *
    * @param methodName the method name to resolve
    * @return the constant name if found, otherwise the original method name
    */
@@ -275,9 +249,9 @@ public class SOListener implements ISharedObjectListener {
     try {
       Field[] fields = this.getClass().getDeclaredFields();
       for (Field field : fields) {
-        if (field.getType() == String.class && 
-            java.lang.reflect.Modifier.isStatic(field.getModifiers()) && 
-            java.lang.reflect.Modifier.isFinal(field.getModifiers())) {
+        if (field.getType() == String.class
+            && java.lang.reflect.Modifier.isStatic(field.getModifiers())
+            && java.lang.reflect.Modifier.isFinal(field.getModifiers())) {
           field.setAccessible(true);
           String fieldValue = (String) field.get(null);
           if (methodName.equals(fieldValue)) {
@@ -323,13 +297,12 @@ public class SOListener implements ISharedObjectListener {
         processSendState(methodArgs, clientId, stateName);
       }
 
-    executeServerMethods(clientId, clientMethodName, methodArgs);
+      executeServerMethods(clientId, clientMethodName, methodArgs);
     }
     if (methodName.equals(CLEAR)) {
       state.clear();
       lockedStates.clear();
       connectedUsers.clear();
     }
-}
-
+  }
 }

@@ -61,7 +61,7 @@ public class SOManager implements ISharedObjectServiceListener {
 
     // Register the security handler with the shared object
     sharedObject.registerSharedObjectSecurity(new KavalokSharedObjectSecurity());
-    
+
     sharedObject.addSharedObjectListener(listener);
     listener.initialize(sharedObject);
   }

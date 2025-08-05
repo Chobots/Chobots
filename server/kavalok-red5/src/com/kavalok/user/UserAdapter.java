@@ -320,6 +320,26 @@ public class UserAdapter {
   }
 
   public void dispose() {
+    // Clear loginToken in database when user disconnects
+    if (userId != null) {
+      org.hibernate.Session session = null;
+      try {
+        session = com.kavalok.utils.HibernateUtil.getSessionFactory().openSession();
+        com.kavalok.dao.UserDAO userDAO = new com.kavalok.dao.UserDAO(session);
+        com.kavalok.db.User user = userDAO.findById(userId);
+        if (user != null) {
+          user.setLoginToken(null);
+          userDAO.makePersistent(user);
+        }
+      } catch (Exception e) {
+        logger.error("Error clearing loginToken for user " + userId, e);
+      } finally {
+        if (session != null && session.isOpen()) {
+          session.close();
+        }
+      }
+    }
+
     client.disconnect();
     client.removeAttribute(UserManager.ADAPTER);
   }

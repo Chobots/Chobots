@@ -5,10 +5,6 @@ import java.util.LinkedHashMap;
 
 import org.red5.io.utils.ObjectMap;
 import org.red5.server.api.so.ISharedObject;
-import org.red5.server.so.SharedObjectEvent;
-import org.red5.server.so.SharedObjectMessage;
-import org.red5.server.so.ISharedObjectEvent;
-import org.red5.server.so.SharedObjectScope;
 
 import com.kavalok.KavalokApplication;
 import com.kavalok.sharedObjects.SOListener;
@@ -43,10 +39,7 @@ public class SOUtil {
 
     ISharedObject so = KavalokApplication.getInstance().getSharedObject(sharedObjectId);
     if (so != null) {
-      SharedObjectEvent event = new SharedObjectEvent(ISharedObjectEvent.Type.SERVER_SEND_MESSAGE, SOListener.SEND_STATE, args);
-      SharedObjectMessage msg = new SharedObjectMessage(so.getName(), so.getVersion(), ((SharedObjectScope) so).isPersistentObject());
-      msg.addEvent(event);
-      ((SharedObjectScope) so).dispatchEvent(msg);
+      so.sendMessage(SOListener.SEND_STATE, args);
     } else {
       org.slf4j.LoggerFactory.getLogger(SOUtil.class)
           .warn("Shared object not found: " + sharedObjectId);
@@ -87,10 +80,7 @@ public class SOUtil {
     methodArgs.put(1, state);
     methodArgs.put(2, false);
 
-    SharedObjectEvent event = new SharedObjectEvent(ISharedObjectEvent.Type.SERVER_SEND_MESSAGE, SOListener.SEND_STATE, args);
-    SharedObjectMessage msg = new SharedObjectMessage(so.getName(), so.getVersion(), ((SharedObjectScope) so).isPersistentObject());
-    msg.addEvent(event);
-    ((SharedObjectScope) so).dispatchEvent(msg);
+    so.sendMessage(SOListener.SEND_STATE, args);
   }
 
   public static void callSharedObject(
@@ -108,9 +98,6 @@ public class SOUtil {
     for (int i = 0; i < params.length; i++) methodArgs.put(i, params[i]);
 
     args.add(methodArgs);
-    SharedObjectEvent event = new SharedObjectEvent(ISharedObjectEvent.Type.SERVER_SEND_MESSAGE, SOListener.SEND, args);
-    SharedObjectMessage msg = new SharedObjectMessage(so.getName(), so.getVersion(), ((SharedObjectScope) so).isPersistentObject());
-    msg.addEvent(event);
-    ((SharedObjectScope) so).dispatchEvent(msg);
+    so.sendMessage(SOListener.SEND, args);
   }
 }
