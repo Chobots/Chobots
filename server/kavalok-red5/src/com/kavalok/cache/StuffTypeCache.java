@@ -57,9 +57,7 @@ public class StuffTypeCache {
 
   public List<StuffTypeWrapper> getStuffTypes(Integer groupNum, Shop shop) {
     List<StuffTypeWrapper> result = stuffTypesMap.get(getTypesKey(groupNum, shop));
-    if (result != null) {
-      System.err.println("Got stuffTypes from the cache");
-    }
+
     return result;
   }
 
@@ -75,9 +73,7 @@ public class StuffTypeCache {
 
   public List<StuffTypeWrapper> getStuffTypes(Shop shop) {
     List<StuffTypeWrapper> result = stuffTypesMap.get(getTypesKey(shop));
-    if (result != null) {
-      System.err.println("Got stuffTypes from the cache");
-    }
+
     return result;
   }
 }

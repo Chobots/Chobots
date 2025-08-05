@@ -46,11 +46,6 @@ public class StuffTypeDAO extends DAO<StuffType> {
   public List<StuffTypeWrapper> findByShopName(String shopName, Integer groupNum) {
     long now = System.currentTimeMillis();
     Shop shop = getShop(shopName);
-    System.err.println(
-        "findByShopName select SHOP shopName: "
-            + shopName
-            + ", time: "
-            + (System.currentTimeMillis() - now));
 
     now = System.currentTimeMillis();
     List result = StuffTypeCache.getInstance().getStuffTypes(groupNum, shop);
@@ -74,11 +69,6 @@ public class StuffTypeDAO extends DAO<StuffType> {
       String shopName, Integer groupNum, Integer pageNum, Integer itemsPerPage) {
     long now = System.currentTimeMillis();
     Shop shop = getShop(shopName);
-    System.err.println(
-        "findByShopName select SHOP shopName: "
-            + shopName
-            + ", time: "
-            + (System.currentTimeMillis() - now));
 
     now = System.currentTimeMillis();
     List result;

@@ -234,8 +234,7 @@ public class StuffServiceNT extends DataServiceNotTransactionBase {
       processor = shopProcessors.get(shopName);
 
     List<StuffTypeTO> result = processor.getStuffTypes(getSession(), shopName);
-    System.err.println(
-        "getStuffTypes shopName: " + shopName + ", time: " + (System.currentTimeMillis() - now));
+
     return result;
   }
 
@@ -254,8 +253,7 @@ public class StuffServiceNT extends DataServiceNotTransactionBase {
     if (pageNum == 0 && result.size() > 0) {
       result.get(0).setCount(itemsPerPage);
     }
-    System.err.println(
-        "getStuffTypes shopName: " + shopName + ", time: " + (System.currentTimeMillis() - now));
+
     return result;
   }
 }

@@ -385,7 +385,7 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       case "MessageService.deleteCommand":
       case "CharService.getFamilyInfo":
       case "GraphityService.getShapes":
-      case "GraphityService.sendShape":
+      case "GraphityService.sendShape": // Also has finer permission control
       case "CharService.saveSettings":
       case "UserServiceNT.setHelpEnabled":
       case "CharService.saveCharStuffs":
