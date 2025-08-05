@@ -16,7 +16,7 @@
 	 */
 	public class AnimationBase extends MagicViewBase
 	{
-		static public const URL_PREFIX:String = '/game/resources/magic/';
+		static public const URL_PREFIX:String = 'resources/magic/';
 		
 		[Bindable] public var urlField:TextInput;
 		[Bindable] public var urlCombo:ComboBox;
@@ -33,11 +33,9 @@
 		
 		private function loadList():void
 		{
-			var url:String = URL_PREFIX + 'magic.xml';
-			
 			var loader:URLLoader = new URLLoader();
 			loader.addEventListener(Event.COMPLETE, onLoadComplete);
-			loader.load(new URLRequest(url));
+			loader.load(new URLRequest('resources/magic/magic.xml'));
 		}
 		
 		private function onLoadComplete(e:Event):void 
