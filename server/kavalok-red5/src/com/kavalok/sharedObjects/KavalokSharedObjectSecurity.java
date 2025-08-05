@@ -75,12 +75,14 @@ public class KavalokSharedObjectSecurity implements ISharedObjectSecurity {
     // Check if user is properly connected to this shared object
     if (!isUserConnectedToSharedObject(so)) {
       logger.warn("User " + getCurrentUserLogin() + " attempted to send message without being connected to shared object: " + so.getName());
+      kickOutUser("Unauthorized shared object access");
       return false;
     }
     
     // Test: Always deny "testMessage" to verify security handler is working
     if ("testMessage".equals(message)) {
       logger.warn("KavalokSharedObjectSecurity.isSendAllowed - DENIED testMessage for testing");
+      kickOutUser("Test message denied");
       return false;
     }
     
@@ -91,6 +93,7 @@ public class KavalokSharedObjectSecurity implements ISharedObjectSecurity {
       if ("rShape".equals(actualMethodName)) {
         if (!hasGraphityPermission(message, arguments, so)) {
           logger.warn("Graphity permission denied for user: " + getCurrentUserLogin());
+          kickOutUser("Graphity permission denied");
           return false;
         }
       }
@@ -116,6 +119,7 @@ public class KavalokSharedObjectSecurity implements ISharedObjectSecurity {
                       + className
                       + " - "
                       + getCurrentUserLogin());
+              kickOutUser("Unauthorized rCharAction: " + className);
               return false;
             }
           }
@@ -138,6 +142,7 @@ public class KavalokSharedObjectSecurity implements ISharedObjectSecurity {
           if (!isUserSuperUser()) {
             logger.warn(
                 "Non-superuser attempted command: " + className + " - " + getCurrentUserLogin());
+            kickOutUser("Unauthorized command: " + className);
             return false;
           }
         }
@@ -148,6 +153,7 @@ public class KavalokSharedObjectSecurity implements ISharedObjectSecurity {
     if ("rResetObjectPositions".equals(message)) {
       if (!isUserSuperUser()) {
         logger.warn("Non-superuser attempted rResetObjectPositions: " + getCurrentUserLogin());
+        kickOutUser("Unauthorized rResetObjectPositions");
         return false;
       }
     }
@@ -170,6 +176,7 @@ public class KavalokSharedObjectSecurity implements ISharedObjectSecurity {
                   + " attempted to control character " 
                   + targetCharId 
                   + " - blocking unauthorized character control");
+          kickOutUser("Unauthorized character control: " + targetCharId);
           return false;
         }
         
@@ -181,6 +188,7 @@ public class KavalokSharedObjectSecurity implements ISharedObjectSecurity {
                   + " attempted to send invalid character state name: " 
                   + stateName 
                   + " - blocking invalid state name");
+          kickOutUser("Invalid character state name: " + stateName);
           return false;
         }
         
@@ -222,6 +230,7 @@ public class KavalokSharedObjectSecurity implements ISharedObjectSecurity {
                         + e.getMessage()
                         + ". Blocking shared object send.");
                 
+                                 kickOutUser("Clothing validation failed: " + e.getMessage());
                                  return false;
                }
              }
@@ -315,23 +324,16 @@ public class KavalokSharedObjectSecurity implements ISharedObjectSecurity {
       }
 
       if (user.isModerator() || user.isSuperUser()) {
-        return true;
+        //return true;
       }
 
-      // Get the current location from the shared object name
       String currentLocation = so.getName();
 
-      // Check location-specific permissions
       if ("locGraphityA".equals(currentLocation)) {
-        // Only agents are allowed in locGraphityA
         return user.isAgent();
       } else if ("locGraphity".equals(currentLocation)) {
-        // Only citizens are allowed in locGraphity
         return user.isCitizen();
       }
-
-      // For other locations, check if user is a superuser
-      return Boolean.TRUE.equals(user.getSuperUser());
     } catch (Exception e) {
       logger.error("Error checking graphity permission: " + e.getMessage(), e);
       return false;
@@ -339,6 +341,16 @@ public class KavalokSharedObjectSecurity implements ISharedObjectSecurity {
       if (session != null && session.isOpen()) {
         session.close();
       }
+    }
+
+    return false;
+  }
+
+  private void kickOutUser(String reason) {
+    UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
+    if (userAdapter != null) {
+      logger.warn("Kicking out user " + userAdapter.getLogin() + " for reason: " + reason);
+      userAdapter.kickOut(reason, false);
     }
   }
 } 

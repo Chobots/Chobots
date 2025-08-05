@@ -395,6 +395,10 @@ public class User extends LoginModelBase {
     return superUser;
   }
 
+  public Boolean isSuperUser() {
+    return superUser;
+  }
+
   public void setSuperUser(Boolean superUser) {
     this.superUser = superUser;
   }
