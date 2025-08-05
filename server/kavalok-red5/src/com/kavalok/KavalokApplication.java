@@ -43,6 +43,7 @@ import com.kavalok.user.UserManager;
 import com.kavalok.utils.HibernateUtil;
 import com.kavalok.utils.ReflectUtil;
 import com.kavalok.utils.SOManager;
+import com.kavalok.sharedObjects.KavalokSharedObjectSecurity;
 
 import net.sf.cglib.core.ReflectUtils;
 
@@ -133,6 +134,7 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
     }
 
     addListener(getScope(), new SOManager());
+    
     HibernateUtil.getSessionFactory();
     WordsCache.getInstance(); // load words
     String name = scope.getName();

@@ -11,6 +11,7 @@ import com.kavalok.sharedObjects.ClassFactory;
 import com.kavalok.sharedObjects.CombatListener;
 import com.kavalok.sharedObjects.GameEnterFactory;
 import com.kavalok.sharedObjects.InfoPanelListener;
+import com.kavalok.sharedObjects.KavalokSharedObjectSecurity;
 import com.kavalok.sharedObjects.NichosRopeSOListener;
 import com.kavalok.sharedObjects.RopeSOListener;
 import com.kavalok.sharedObjects.SOListener;
@@ -58,6 +59,9 @@ public class SOManager implements ISharedObjectServiceListener {
     }
     if (listener == null) listener = new SOListener();
 
+    // Register the security handler with the shared object
+    sharedObject.registerSharedObjectSecurity(new KavalokSharedObjectSecurity());
+    
     sharedObject.addSharedObjectListener(listener);
     listener.initialize(sharedObject);
   }
