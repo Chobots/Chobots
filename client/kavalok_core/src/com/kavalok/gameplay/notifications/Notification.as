@@ -32,15 +32,6 @@ package com.kavalok.gameplay.notifications
 		
 		private function checkMessage(message:String):String
 		{
-			// check password
-			var password:String = Global.startupInfo.password;
-			if (message.indexOf(password) >= 0)
-			{
-				message = "";
-				var warning:String = Strings.substitute(Global.messages.passwordWarning, password);
-				Dialogs.showOkDialog(warning);
-			}
-			
 			// check word length
 			var words:Array = message.split(' ');
 			for each (var word:String in words)

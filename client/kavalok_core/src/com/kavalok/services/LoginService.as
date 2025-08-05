@@ -65,6 +65,11 @@ package com.kavalok.services
 			doCall("login", arguments);
 		}
 		
+		public function loginWithToken(login : String, token : String, locale : String) : void
+		{
+			doCall("loginWithToken", arguments);
+		}
+		
 		public function getPartnerLoginInfo(uid : String) : void
 		{
 			doCall("getPartnerLoginInfo", arguments);

@@ -7,6 +7,7 @@ package com.kavalok.login
 	import com.kavalok.constants.Modules;
 	import com.kavalok.dialogs.Dialogs;
 	import com.kavalok.dto.ServerPropertiesTO;
+	import com.kavalok.dto.login.LoginResultTO;
 	import com.kavalok.dto.login.PartnerLoginCredentialsTO;
 	import com.kavalok.gameplay.KavalokConstants;
 	import com.kavalok.localization.Localiztion;
@@ -137,14 +138,17 @@ package com.kavalok.login
 		{
 			Global.isLocked=false;
 			_partnerUid=Global.startupInfo.partnerUid;
-			var service:LoginService=new LoginService(onLoginSuccess, onLoginFault);
 
 			if (_info.prefix && !_info.login) {
 				// Only use freeLoginByPrefix for true guests
+				var service:LoginService=new LoginService(onLoginSuccess, onLoginFault);
 				service.freeLoginByPrefix(_info.prefix);
 			} else if (_info.login) {
-				// Always use login for authenticated users
-				service.login(_info.login, Global.startupInfo.password, Localiztion.locale);
+				if (Global.startupInfo.loginToken) {
+					Global.authManager.loginEvent.addListenerIfHasNot(onAuthLoginSuccess);
+					Global.authManager.faultEvent.addListenerIfHasNot(onAuthLoginFault);
+					Global.authManager.tryLoginWithToken(_info.login, Global.startupInfo.loginToken);
+				}
 			} else if (_partnerUid) {
 				new LoginService(onGetPartnerCredentials, onLoginFault).getPartnerLoginInfo(_partnerUid);
 			} else if (_info.moduleId) {
@@ -154,8 +158,8 @@ package com.kavalok.login
 			} else {
 				if (Global.moduleManager.loading)
 					Global.moduleManager.abortLoading();
-				var events:ModuleEvents=Global.moduleManager.loadModule(Modules.LOGIN, {info:_info});
-				events.destroyEvent.addListener(onGuiLogin);
+				var defaultEvents:ModuleEvents=Global.moduleManager.loadModule(Modules.LOGIN, {info:_info});
+				defaultEvents.destroyEvent.addListener(onGuiLogin);
 			}
 		}
 
@@ -164,10 +168,7 @@ package com.kavalok.login
 			changeServer(_info.server, _info.moduleId);
 		}
 
-		private function processLogin():void
-		{
-			new LoginService(onLoginSuccess, onLoginFault).login(_info.login, _info.password, Localiztion.locale);
-		}
+
 
 		private function onGuiLogin(module:ModuleBase):void
 		{
@@ -201,9 +202,44 @@ package com.kavalok.login
 
 		private function onLoginSuccess(result:String):void
 		{
+			handleLoginSuccess(result, null);
+		}
+
+		private function onLoginFault(result:Object):void
+		{
+			handleLoginFault();
+		}
+		
+		private function onAuthLoginSuccess(result:LoginResultTO):void
+		{
+			Global.authManager.loginEvent.removeListenerIfHas(onAuthLoginSuccess);
+			Global.authManager.faultEvent.removeListenerIfHas(onAuthLoginFault);
+			handleLoginSuccess(null, result);
+		}
+		
+		private function onAuthLoginFault(result:LoginResultTO):void
+		{
+			Global.authManager.loginEvent.removeListenerIfHas(onAuthLoginSuccess);
+			Global.authManager.faultEvent.removeListenerIfHas(onAuthLoginFault);
+			
+			// Clear the invalid token
+			Global.startupInfo.loginToken = null;
+			
+			handleLoginFault();
+		}
+		
+		private function handleLoginSuccess(guestResult:String, authResult:LoginResultTO):void
+		{
 			_logedIn=true;
-			if (_info.prefix)
-				_info.login=result;
+			
+			if (guestResult && _info.prefix) {
+				_info.login = guestResult;
+			}
+			
+			if (authResult && authResult.loginToken) {
+				// Store the new login token for future use
+				Global.startupInfo.loginToken = authResult.loginToken;
+			}
 
 			initChar();
 			
@@ -212,11 +248,9 @@ package com.kavalok.login
 				_firstEnter = false;
 				checkPlayerVersion();
 			}
-			
-		//must be called cause securityKey will be loaded
 		}
-
-		private function onLoginFault(result:Object):void
+		
+		private function handleLoginFault():void
 		{
 			Dialogs.showOkDialog("Login fault :" + _info.login + ". Try to clear out your browser cache. If it's doesn't work, contact support.");
 		}

@@ -48,6 +48,22 @@ package com.kavalok.login
 			}
 		}
 		
+		public function tryLoginWithToken(login:String, token:String) : void
+		{
+			if (checkLocalConnection())
+			{
+				new LoginService(onResult, onFault).loginWithToken(login, token, Localiztion.locale);
+			}
+			else
+			{
+				var result:LoginResultTO = new LoginResultTO();
+				result.active = false;
+				result.success = false;
+				result.reason = ERROR_LOCAL_CONNECTION;
+				_faultEvent.sendEvent(result);
+			}
+		}
+		
 		private function checkLocalConnection():Boolean
 		{
 			return true; //added temporarily. need research;

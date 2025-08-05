@@ -195,23 +195,15 @@ public class LoginService extends DataServiceBase {
   }
 
   public LoginResultTO login(String login, String password, String locale) {
-    LoginResultTO resultTO = new LoginResultTO();
     UserDAO userDAO = new UserDAO(getSession());
-    BlackIPDAO blackIPDAO = new BlackIPDAO(getSession());
-    User user = userDAO.findByLogin(login);
+    User user = findUserByLogin(login, userDAO);
+    
     if (user == null) {
-      user = userDAO.findByLogin(login.toLowerCase());
-    }
-    if (user == null || user.getDeleted()) {
-      resultTO.setSuccess(false);
-      resultTO.setReason(ERROR_BAD_LOGIN);
-      return resultTO;
+      return createErrorResult(ERROR_BAD_LOGIN);
     }
 
     if (!user.checkPassword(password, user.getSalt())) {
-      resultTO.setSuccess(false);
-      resultTO.setReason(ERROR_BAD_PASSW);
-      return resultTO;
+      return createErrorResult(ERROR_BAD_PASSW);
     }
 
     // Migrate legacy users (salt not present, has plaintext password)
@@ -223,16 +215,38 @@ public class LoginService extends DataServiceBase {
       userDAO.makePersistent(user);
     }
 
+    // Generate login token
+    String loginToken = com.kavalok.utils.StringUtil.generateRandomString(32);
+    user.setLoginToken(loginToken);
+    
+    return performLogin(user, userDAO, locale, loginToken);
+  }
+
+  private LoginResultTO createErrorResult(String reason) {
+    LoginResultTO result = new LoginResultTO();
+    result.setSuccess(false);
+    result.setReason(reason);
+    return result;
+  }
+
+  private User findUserByLogin(String login, UserDAO userDAO) {
+    User user = userDAO.findByLogin(login);
+    if (user == null) {
+      user = userDAO.findByLogin(login.toLowerCase());
+    }
+    if (user == null || user.getDeleted()) {
+      return null;
+    }
+    return user;
+  }
+
+  private LoginResultTO performLogin(User user, UserDAO userDAO, String locale, String loginToken) {
     if (user.isBaned()) {
-      resultTO.setSuccess(false);
-      resultTO.setReason(ERROR_LOGIN_BANNED);
-      return resultTO;
+      return createErrorResult(ERROR_LOGIN_BANNED);
     }
 
     if (!user.isEnabled()) {
-      resultTO.setSuccess(false);
-      resultTO.setReason(ERROR_LOGIN_DISABLED);
-      return resultTO;
+      return createErrorResult(ERROR_LOGIN_DISABLED);
     }
 
     UserExtraInfo uei = user.getUserExtraInfo();
@@ -241,11 +255,10 @@ public class LoginService extends DataServiceBase {
       lastIp = uei.getLastIp();
     }
 
+    BlackIPDAO blackIPDAO = new BlackIPDAO(getSession());
     BlackIP blackIP = blackIPDAO.findByIp(lastIp);
     if (blackIP != null && blackIP.isBaned()) {
-      resultTO.setSuccess(false);
-      resultTO.setReason(ERROR_IP_BANNED);
-      return resultTO;
+      return createErrorResult(ERROR_IP_BANNED);
     }
 
     boolean updateUser = false;
@@ -263,7 +276,7 @@ public class LoginService extends DataServiceBase {
       if (!currentServer.getId().equals(server.getId())) {
         new UserUtil().kickOut(user, false, getSession());
       } else {
-        UserAdapter adapter = UserManager.getInstance().getUser(login);
+        UserAdapter adapter = UserManager.getInstance().getUser(user.getLogin());
         if (adapter != null) {
           adapter.executeCommand("KickOutCommand", false);
         }
@@ -281,22 +294,22 @@ public class LoginService extends DataServiceBase {
     }
 
     UserManager manager = UserManager.getInstance();
-    UserAdapter priorUserAdapter = manager.getUser(login);
+    UserAdapter priorUserAdapter = manager.getUser(user.getLogin());
 
     if (priorUserAdapter != null) {
-      logger.info("Kicking out prior existing session for user: {}", login);
+      logger.info("Kicking out prior existing session for user: {}", user.getLogin());
       priorUserAdapter.kickOut(SOMEONE_USED_YOUR_LOGIN, false);
     }
 
     // Get adapter for current session
     UserAdapter userAdapter = manager.getCurrentUser();
 
-    userAdapter.setLogin(login);
+    userAdapter.setLogin(user.getLogin());
     userAdapter.setServer(server);
     userAdapter.setUserId(user.getId());
 
     userAdapter.setAccessType(AccessUser.class);
-    boolean updateUei = processComboLogin(user, uei); // Consecutive login days rewards e.g. (10, 20, 30) days in row
+    boolean updateUei = processComboLogin(user, uei);
 
     String currentIP = userAdapter.getConnection().getRemoteAddress();
     if (updateUei || !currentIP.equals(uei.getLastIp())) {
@@ -307,9 +320,13 @@ public class LoginService extends DataServiceBase {
     if (updateUser) {
       user.setUserExtraInfo(uei);
       userDAO.makePersistent(user);
+    } else {
+      userDAO.makePersistent(user);
     }
 
-    return new LoginResultTO(true, user.isActive(), UserUtil.getAge(user), SUCCESS);
+    LoginResultTO result = new LoginResultTO(true, user.isActive(), UserUtil.getAge(user), SUCCESS);
+    result.setLoginToken(loginToken);
+    return result;
   }
 
   private boolean processComboLogin(User user, UserExtraInfo uei) {
@@ -542,5 +559,25 @@ public class LoginService extends DataServiceBase {
       return null;
     }
     return null;
+  }
+
+  public LoginResultTO loginWithToken(String login, String token, String locale) {
+    UserDAO userDAO = new UserDAO(getSession());
+    User user = findUserByLogin(login, userDAO);
+    
+    if (user == null) {
+      return createErrorResult(ERROR_BAD_LOGIN);
+    }
+
+    if (!token.equals(user.getLoginToken())) {
+      return createErrorResult(ERROR_BAD_PASSW);
+    }
+
+    // Generate a new token for the next login (token rotation)
+    String newLoginToken = com.kavalok.utils.StringUtil.generateRandomString(32);
+    user.setLoginToken(newLoginToken);
+    userDAO.makePersistent(user);
+    
+    return performLogin(user, userDAO, locale, newLoginToken);
   }
 }
