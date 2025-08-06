@@ -31,11 +31,15 @@ package com.kavalok.remoting
 	import com.kavalok.utils.Timers;
 	
 	import flash.events.Event;
+	import flash.events.IOErrorEvent;
 	import flash.events.NetStatusEvent;
 	import flash.events.TimerEvent;
 	import flash.net.NetConnection;
 	import flash.net.ObjectEncoding;
+	import flash.net.URLLoader;
+	import flash.net.URLRequest;
 	import flash.system.ApplicationDomain;
+	import flash.system.Capabilities;
 	import flash.utils.Timer;
 	import flash.utils.getDefinitionByName;
 	
@@ -134,9 +138,20 @@ internal class RemoteConnectionInstance
 		timeoutTimer.addEventListener(TimerEvent.TIMER, function(e:TimerEvent):void {
 			trace("RemoteConnection: Connection timeout - no response after 10 seconds");
 			trace("RemoteConnection: This might indicate RTMPS protocol issues or server not responding");
+			trace("RemoteConnection: Checking if server is reachable...");
+			
+			// Test basic network connectivity to the server
+			testServerConnectivity();
+			
 			if (!_connected) {
-				trace("RemoteConnection: Connection still not established, sending error event");
-				error.sendEvent(new Event("ConnectionTimeout"));
+				trace("RemoteConnection: Connection still not established, sending NetStatusEvent");
+				// Create a NetStatusEvent instead of a generic Event
+				var timeoutEvent:NetStatusEvent = new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, {
+					code: "NetConnection.Connect.Failed",
+					level: "error",
+					description: "Connection timeout - no response from server"
+				});
+				error.sendEvent(timeoutEvent);
 			}
 		});
 		timeoutTimer.start();
@@ -244,6 +259,16 @@ internal class RemoteConnectionInstance
 		if (event.info.code == "NetConnection.Connect.Failed") {
 			trace("RemoteConnection: RTMPS connection failed - this might be a protocol support issue");
 			trace("RemoteConnection: Check if Flash Player supports RTMPS or if server is configured for RTMPS");
+			trace("RemoteConnection: Connection URL was: " + BaseRed5Delegate.defaultConnectionUrl);
+			trace("RemoteConnection: Flash Player version: " + flash.system.Capabilities.version);
+			trace("RemoteConnection: Flash Player OS: " + flash.system.Capabilities.os);
+			
+			// Check if this is likely a Flash Player RTMPS limitation
+			if (BaseRed5Delegate.defaultConnectionUrl.indexOf("rtmps://") == 0) {
+				trace("RemoteConnection: WARNING - Flash Player has very limited RTMPS support");
+				trace("RemoteConnection: RTMPS support varies by Flash Player version and platform");
+				trace("RemoteConnection: Consider using RTMP with a secure tunnel (stunnel/nginx) instead");
+			}
 		}
 		
 		switch(event.info.code)
@@ -304,6 +329,85 @@ internal class RemoteConnectionInstance
 		_connected = true;
 		connectEvent.sendEvent();
 		trace("RemoteConnection: connected set to true, connect event sent");
+	}
+	
+	private function testServerConnectivity() : void
+	{
+		trace("RemoteConnection: Testing server connectivity...");
+		
+		// Extract hostname from the connection URL
+		var url:String = BaseRed5Delegate.defaultConnectionUrl;
+		var hostname:String = "";
+		
+		if (url.indexOf("rtmps://") == 0) {
+			hostname = url.substring(8); // Remove "rtmps://"
+		} else if (url.indexOf("rtmp://") == 0) {
+			hostname = url.substring(7); // Remove "rtmp://"
+		}
+		
+		// Remove port and path
+		var slashIndex:int = hostname.indexOf("/");
+		if (slashIndex != -1) {
+			hostname = hostname.substring(0, slashIndex);
+		}
+		
+		// Remove port number
+		var colonIndex:int = hostname.indexOf(":");
+		if (colonIndex != -1) {
+			hostname = hostname.substring(0, colonIndex);
+		}
+		
+		trace("RemoteConnection: Extracted hostname: " + hostname);
+		
+		// Test HTTP connectivity to the server
+		var testUrl:String = "http://" + hostname + "/";
+		trace("RemoteConnection: Testing HTTP connectivity to: " + testUrl);
+		
+		// Also test the RTMPS hostname specifically
+		var rtmpsHostname:String = "rtmps." + hostname;
+		var rtmpsTestUrl:String = "http://" + rtmpsHostname + "/";
+		trace("RemoteConnection: Testing RTMPS hostname connectivity to: " + rtmpsTestUrl);
+		
+		var loader:URLLoader = new URLLoader();
+		loader.addEventListener(Event.COMPLETE, function(e:Event):void {
+			trace("RemoteConnection: HTTP connectivity test SUCCESS - server is reachable");
+			trace("RemoteConnection: This suggests the issue is with RTMPS protocol, not network connectivity");
+		});
+		loader.addEventListener(IOErrorEvent.IO_ERROR, function(e:IOErrorEvent):void {
+			trace("RemoteConnection: HTTP connectivity test FAILED - server may not be reachable");
+			trace("RemoteConnection: Error: " + e.text);
+		});
+		
+		// Test RTMPS hostname connectivity
+		var rtmpsLoader:URLLoader = new URLLoader();
+		rtmpsLoader.addEventListener(Event.COMPLETE, function(e:Event):void {
+			trace("RemoteConnection: RTMPS hostname HTTP test SUCCESS - rtmps subdomain is reachable");
+		});
+		rtmpsLoader.addEventListener(IOErrorEvent.IO_ERROR, function(e:IOErrorEvent):void {
+			trace("RemoteConnection: RTMPS hostname HTTP test FAILED - rtmps subdomain may not exist");
+			trace("RemoteConnection: Error: " + e.text);
+		});
+		
+		try {
+			loader.load(new URLRequest(testUrl));
+			rtmpsLoader.load(new URLRequest(rtmpsTestUrl));
+		} catch (error:Error) {
+			trace("RemoteConnection: HTTP connectivity test error: " + error.message);
+		}
+		
+		// Also test if the RTMPS port is open (this is limited but might help)
+		trace("RemoteConnection: Note: RTMPS port testing is limited in Flash Player");
+		trace("RemoteConnection: RTMPS typically uses port 443 or 8443");
+		trace("RemoteConnection: Server should be configured to accept RTMPS connections");
+		
+		// Check if the server is configured for RTMPS
+		var rtmpsUrl:String = BaseRed5Delegate.defaultConnectionUrl;
+		if (rtmpsUrl.indexOf("rtmps://") == 0) {
+			trace("RemoteConnection: RTMPS URL detected: " + rtmpsUrl);
+			trace("RemoteConnection: Server must be configured to accept RTMPS on port 8443");
+			trace("RemoteConnection: Red5 server must have RTMPS connector enabled");
+			trace("RemoteConnection: SSL certificates must be properly configured");
+		}
 	}
 	
 }
