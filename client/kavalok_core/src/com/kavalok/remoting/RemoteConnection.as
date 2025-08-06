@@ -363,8 +363,15 @@ internal class RemoteConnectionInstance
 		var testUrl:String = "http://" + hostname + "/";
 		trace("RemoteConnection: Testing HTTP connectivity to: " + testUrl);
 		
-		// Also test the RTMPS hostname specifically
-		var rtmpsHostname:String = "rtmps." + hostname;
+		// Also test the RTMPS hostname specifically (but don't double-prefix)
+		var rtmpsHostname:String = hostname;
+		if (hostname.indexOf("rtmps.") == 0) {
+			// Already has rtmps prefix, don't add another
+			rtmpsHostname = hostname;
+		} else {
+			// Add rtmps prefix if not present
+			rtmpsHostname = "rtmps." + hostname;
+		}
 		var rtmpsTestUrl:String = "http://" + rtmpsHostname + "/";
 		trace("RemoteConnection: Testing RTMPS hostname connectivity to: " + rtmpsTestUrl);
 		
