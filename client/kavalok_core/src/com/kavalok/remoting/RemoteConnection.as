@@ -114,8 +114,19 @@ internal class RemoteConnectionInstance
 	
 	public function connect() : void
 	{
-		trace("connecting to: " + BaseRed5Delegate.defaultConnectionUrl)
-        netConnection.connect(BaseRed5Delegate.defaultConnectionUrl);
+		trace("RemoteConnection: connect() called");
+		trace("RemoteConnection: connecting to: " + BaseRed5Delegate.defaultConnectionUrl);
+		trace("RemoteConnection: NetConnection object: " + netConnection);
+		trace("RemoteConnection: NetConnection connected: " + netConnection.connected);
+		trace("RemoteConnection: NetConnection uri: " + netConnection.uri);
+		
+		try {
+			netConnection.connect(BaseRed5Delegate.defaultConnectionUrl);
+			trace("RemoteConnection: connect() call completed successfully");
+		} catch (error:Error) {
+			trace("RemoteConnection: connect() error: " + error.message);
+			trace("RemoteConnection: connect() error stack: " + error.getStackTrace());
+		}
 	}
 	
 	public function onCommandInstance(properties:Object):void
@@ -201,21 +212,40 @@ internal class RemoteConnectionInstance
 	
 	private function onNetStatus(event : NetStatusEvent) : void
 	{
+		trace("RemoteConnection: onNetStatus() called");
+		trace("RemoteConnection: NetStatusEvent info: " + event.info);
+		trace("RemoteConnection: NetStatusEvent code: " + event.info.code);
+		trace("RemoteConnection: NetStatusEvent level: " + event.info.level);
+		trace("RemoteConnection: NetStatusEvent description: " + event.info.description);
+		
 		switch(event.info.code)
 		{
 			case NetConnectionCodes.SUCCESS:
+				trace("RemoteConnection: Connection SUCCESS");
 				setConnected();
 				break;
 			case NetConnectionCodes.CLOSED:
+				trace("RemoteConnection: Connection CLOSED");
+				setDisconnected();
+				break;
 			case NetConnectionCodes.APP_SHUTDOWN:
+				trace("RemoteConnection: Connection APP_SHUTDOWN");
 				setDisconnected();
 				break;
 			case NetConnectionCodes.REJECT:
+				trace("RemoteConnection: Connection REJECTED");
+				error.sendEvent(event);
+				break;
 			case NetConnectionCodes.FAILED:
+				trace("RemoteConnection: Connection FAILED");
+				error.sendEvent(event);
+				break;
 			case NetConnectionCodes.INVALID_APP:
+				trace("RemoteConnection: Connection INVALID_APP");
 				error.sendEvent(event);
 				break;
 			default:
+				trace("RemoteConnection: Unknown connection code: " + event.info.code);
 				throw new IllegalStateError();
 				break;
 		}
@@ -223,19 +253,29 @@ internal class RemoteConnectionInstance
 	
 	private function setDisconnected() : void
 	{
+		trace("RemoteConnection: setDisconnected() called");
+		trace("RemoteConnection: current connected state: " + connected);
+		
 		if(connected)
 		{
+			trace("RemoteConnection: setting connected to false");
 			_connected = false;
 			forceDisconnectEvent.sendEvent();
 			disconnectEvent.sendEvent();
+			trace("RemoteConnection: disconnect events sent");
+		} else {
+			trace("RemoteConnection: already disconnected, no action taken");
 		}
-		
 	}
 
 	private function setConnected() : void
 	{
+		trace("RemoteConnection: setConnected() called");
+		trace("RemoteConnection: current connected state: " + connected);
+		
 		_connected = true;
 		connectEvent.sendEvent();
+		trace("RemoteConnection: connected set to true, connect event sent");
 	}
 	
 }

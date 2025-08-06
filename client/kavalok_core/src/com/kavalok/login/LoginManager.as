@@ -68,12 +68,19 @@ package com.kavalok.login
 
 		public function login(startupInfo:StartupInfo):void
 		{
+			trace("LoginManager: login() called");
+			trace("LoginManager: startupInfo.url: " + startupInfo.url);
+			trace("LoginManager: startupInfo.server: " + startupInfo.server);
+			trace("LoginManager: startupInfo.login: " + startupInfo.login);
+			
 			_autoLogin=Boolean(startupInfo.login);
 			_server=startupInfo.server;
 			_info=startupInfo;
 			_connectCommand.connectEvent.addListener(onConnectSuccess);
 			BaseRed5Delegate.defaultConnectionUrl = startupInfo.url;
-
+			
+			trace("LoginManager: BaseRed5Delegate.defaultConnectionUrl set to: " + BaseRed5Delegate.defaultConnectionUrl);
+			trace("LoginManager: executing connect command");
 			_connectCommand.execute();
 		}
 
@@ -114,18 +121,31 @@ package com.kavalok.login
 
 		private function onGetServer(url:String):void
 		{
+			trace("LoginManager: onGetServer() called");
+			trace("LoginManager: server URL: " + url);
+			
 			RemoteConnection.instance.disconnect();
+			trace("LoginManager: disconnected from previous connection");
+			
 			var rtmpUrl:String = ConnectionConfig.buildRtmpUrl();
+			trace("LoginManager: built RTMP URL: " + rtmpUrl);
+			
 			BaseRed5Delegate.defaultConnectionUrl = rtmpUrl;
+			trace("LoginManager: BaseRed5Delegate.defaultConnectionUrl set to: " + BaseRed5Delegate.defaultConnectionUrl);
+			
 			_info.url = rtmpUrl;
 			_serverSelected = true;
+			trace("LoginManager: calling login() with info");
 			login(_info);
 		}
 
 		private function onConnectSuccess():void
 		{
+			trace("LoginManager: onConnectSuccess() called - connection established successfully");
 			_connectCommand.connectEvent.removeListener(onConnectSuccess);
+			trace("LoginManager: connect event listener removed");
 			new LoginService(onGetServerProperties).getServerProperties();
+			trace("LoginManager: LoginService.getServerProperties() called");
 		}
 		
 		private function onGetServerProperties(result:ServerPropertiesTO):void
@@ -319,11 +339,17 @@ package com.kavalok.login
 
 		private function onConnectFault(event:NetStatusEvent):void
 		{
+			trace("LoginManager: onConnectFault() called");
+			trace("LoginManager: NetStatusEvent info: " + event.info);
+			trace("LoginManager: NetStatusEvent code: " + event.info.code);
+			trace("LoginManager: NetStatusEvent level: " + event.info.level);
+			trace("LoginManager: NetStatusEvent description: " + event.info.description);
 			showError(event.info);
 		}
 
 		private function onDisconnect():void
 		{
+			trace("LoginManager: onDisconnect() called");
 			showError();
 		}
 
