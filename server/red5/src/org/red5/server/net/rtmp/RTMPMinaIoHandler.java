@@ -19,6 +19,7 @@ package org.red5.server.net.rtmp;
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
+import java.net.InetSocketAddress;
 import org.apache.mina.common.ByteBuffer;
 import org.apache.mina.common.IoHandlerAdapter;
 import org.apache.mina.common.IoSession;
@@ -88,7 +89,9 @@ public class RTMPMinaIoHandler extends IoHandlerAdapter implements ApplicationCo
   /** {@inheritDoc} */
   @Override
   public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
-    log.debug("Exception caught {}", cause);
+    log.error("=== RTMP EXCEPTION CAUGHT ===");
+    log.error("Exception caught from: {}:{}", session.getRemoteAddress(), session.getRemoteAddress() instanceof InetSocketAddress ? ((InetSocketAddress) session.getRemoteAddress()).getPort() : "unknown");
+    log.error("Exception details:", cause);
   }
 
   /** {@inheritDoc} */
@@ -171,9 +174,12 @@ public class RTMPMinaIoHandler extends IoHandlerAdapter implements ApplicationCo
   /** {@inheritDoc} */
   @Override
   public void sessionOpened(IoSession session) throws Exception {
+    log.info("=== RTMP SESSION OPENED ===");
+    log.info("Session opened from: {}:{}", session.getRemoteAddress(), session.getRemoteAddress() instanceof InetSocketAddress ? ((InetSocketAddress) session.getRemoteAddress()).getPort() : "unknown");
     super.sessionOpened(session);
 
     RTMP rtmp = (RTMP) session.getAttribute(ProtocolState.SESSION_KEY);
+    log.info("RTMP mode: {}", rtmp.getMode() == RTMP.MODE_CLIENT ? "CLIENT" : "SERVER");
     if (rtmp.getMode() == RTMP.MODE_CLIENT) {
       if (log.isDebugEnabled()) {
         log.debug("Handshake 1st phase");
@@ -185,6 +191,7 @@ public class RTMPMinaIoHandler extends IoHandlerAdapter implements ApplicationCo
       session.write(out);
     } else {
       final RTMPMinaConnection conn = (RTMPMinaConnection) session.getAttachment();
+      log.info("Calling connectionOpened on handler for connection: {}", conn);
       handler.connectionOpened(conn, rtmp);
     }
   }
@@ -192,12 +199,15 @@ public class RTMPMinaIoHandler extends IoHandlerAdapter implements ApplicationCo
   /** {@inheritDoc} */
   @Override
   public void sessionClosed(IoSession session) throws Exception {
+    log.info("=== RTMP SESSION CLOSED ===");
+    log.info("Session closed from: {}:{}", session.getRemoteAddress(), session.getRemoteAddress() instanceof InetSocketAddress ? ((InetSocketAddress) session.getRemoteAddress()).getPort() : "unknown");
     ByteBuffer buf = (ByteBuffer) session.getAttribute("buffer");
     if (buf != null) {
       buf.release();
     }
     final RTMP rtmp = (RTMP) session.getAttribute(ProtocolState.SESSION_KEY);
     final RTMPMinaConnection conn = (RTMPMinaConnection) session.getAttachment();
+    log.info("Closing connection: {}", conn);
     this.handler.connectionClosed(conn, rtmp);
     rtmpConnManager.removeConnection(conn.getId());
     session.removeAttribute(ProtocolState.SESSION_KEY);
@@ -207,17 +217,18 @@ public class RTMPMinaIoHandler extends IoHandlerAdapter implements ApplicationCo
   /** {@inheritDoc} */
   @Override
   public void sessionCreated(IoSession session) throws Exception {
-    if (log.isDebugEnabled()) {
-      log.debug("Session created");
-    }
+    log.info("=== RTMP SESSION CREATED ===");
+    log.info("Session created from: {}:{}", session.getRemoteAddress(), session.getRemoteAddress() instanceof InetSocketAddress ? ((InetSocketAddress) session.getRemoteAddress()).getPort() : "unknown");
     // moved protocol state from connection object to RTMP object
     RTMP rtmp = new RTMP(mode);
+    log.info("Created RTMP object with mode: {}", mode ? "SERVER" : "CLIENT");
     session.setAttribute(ProtocolState.SESSION_KEY, rtmp);
     session.getFilterChain().addFirst("protocolFilter", new ProtocolCodecFilter(this.codecFactory));
     if (log.isDebugEnabled()) {
       session.getFilterChain().addLast("logger", new LoggingFilter());
     }
     RTMPMinaConnection conn = createRTMPMinaConnection();
+    log.info("Created RTMP connection: {}", conn);
     conn.setIoSession(session);
     conn.setState(rtmp);
     session.setAttachment(conn);

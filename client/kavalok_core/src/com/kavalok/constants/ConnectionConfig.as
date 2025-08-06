@@ -2,7 +2,8 @@ package com.kavalok.constants {
     import flash.external.ExternalInterface;
 
     public class ConnectionConfig {
-        public static const RTMP_PORT:String = "8935";
+        public static const RTMP_SCHEME:String = "rtmps";
+        public static const RTMP_PORT:String = "8443";
         public static const RTMP_APP:String = "kavalok";
         private static const DEFAULT_HOST:String = "127.0.0.1";
 
@@ -28,7 +29,7 @@ package com.kavalok.constants {
 
         public static function buildRtmpUrl():String {
             var host:String = getHostFromJS();
-            return "rtmp://" + host + ":" + RTMP_PORT + "/" + RTMP_APP;
+            return RTMP_SCHEME + "://" + host + ":" + RTMP_PORT + "/" + RTMP_APP;
         }
     }
 }

@@ -191,113 +191,136 @@ public class RTMPHandler extends BaseRTMPHandler {
       if (!conn.isConnected()) {
         // Handle connection
         if (action.equals(ACTION_CONNECT)) {
+          log.info("=== RTMP CONNECTION ATTEMPT ===");
+          log.info("Connection from: {}:{}", conn.getRemoteAddress(), conn.getRemotePort());
           log.debug("connect");
 
           // Get parameters passed from client to
           // NetConnection#connection
           final Map params = invoke.getConnectionParams();
+          log.info("Connection parameters: {}", params);
 
           // Get hostname
           String host = getHostname((String) params.get("tcUrl"));
+          log.info("Host: {}", host);
 
           // Check up port
           if (host.endsWith(":1935")) {
             // Remove default port from connection string
             host = host.substring(0, host.length() - 5);
+            log.info("Host after port removal: {}", host);
           }
 
           // App name as path, but without query string if there is
           // one
           String path = (String) params.get("app");
+          log.info("Application path: {}", path);
           if (path.indexOf("?") != -1) {
             int idx = path.indexOf("?");
             params.put("queryString", path.substring(idx));
             path = path.substring(0, idx);
+            log.info("Application path after query string removal: {}", path);
           }
           params.put("path", path);
 
           final String sessionId = null;
+          log.info("Setting up connection with host: {}, path: {}", host, path);
           conn.setup(host, path, sessionId, params);
-          try {
-            // Lookup server scope when connected
-            // Use host and application name
-            IGlobalScope global = server.lookupGlobal(host, path);
-            if (global == null) {
-              call.setStatus(Call.STATUS_SERVICE_NOT_FOUND);
-              if (call instanceof IPendingServiceCall) {
-                StatusObject status = getStatus(NC_CONNECT_INVALID_APPLICATION);
-                status.setDescription("No scope \"" + path + "\" on this server.");
-                ((IPendingServiceCall) call).setResult(status);
-              }
-              log.info(
-                  "No application scope found for {} on host {}. Misspelled or missing application folder?",
-                  path,
-                  host);
-              disconnectOnReturn = true;
-            } else {
-              final IContext context = global.getContext();
-              IScope scope = null;
-              try {
-                scope = context.resolveScope(global, path);
-              } catch (ScopeNotFoundException err) {
+                      try {
+              // Lookup server scope when connected
+              // Use host and application name
+              log.info("Looking up global scope for host: {}, path: {}", host, path);
+              IGlobalScope global = server.lookupGlobal(host, path);
+              if (global == null) {
+                log.error("=== RTMP CONNECTION FAILED ===");
+                log.error("No application scope found for {} on host {}. Misspelled or missing application folder?", path, host);
                 call.setStatus(Call.STATUS_SERVICE_NOT_FOUND);
                 if (call instanceof IPendingServiceCall) {
-                  StatusObject status = getStatus(NC_CONNECT_REJECTED);
+                  StatusObject status = getStatus(NC_CONNECT_INVALID_APPLICATION);
                   status.setDescription("No scope \"" + path + "\" on this server.");
                   ((IPendingServiceCall) call).setResult(status);
                 }
-                log.info("Scope {} not found on {}", path, host);
+                log.info(
+                    "No application scope found for {} on host {}. Misspelled or missing application folder?",
+                    path,
+                    host);
                 disconnectOnReturn = true;
-              } catch (ScopeShuttingDownException err) {
-                call.setStatus(Call.STATUS_APP_SHUTTING_DOWN);
-                if (call instanceof IPendingServiceCall) {
-                  StatusObject status = getStatus(NC_CONNECT_APPSHUTDOWN);
-                  status.setDescription(
-                      "Application at \"" + path + "\" is currently shutting down.");
-                  ((IPendingServiceCall) call).setResult(status);
-                }
-                log.info("Application at {} currently shutting down on {}", path, host);
-                disconnectOnReturn = true;
-              }
-              if (scope != null) {
-                log.info("Connecting to: {}", scope);
-                // Setup application's classloader to be used for deserializing
-                ClassLoader loader = scope.getClassLoader();
-                if (loader == null) {
-                  // Fallback, should never happen
-                  loader = getClass().getClassLoader();
-                }
-                Thread.currentThread().setContextClassLoader(loader);
-
-                boolean okayToConnect;
+                          } else {
+                log.info("Global scope found: {}", global);
+                final IContext context = global.getContext();
+                IScope scope = null;
                 try {
-                  log.info("DEBUG - conn {}, scope {}, call {}", new Object[] {conn, scope, call});
-                  log.info("DEBUG - args {}", call.getArguments());
-                  if (call.getArguments() != null) {
-                    okayToConnect = conn.connect(scope, call.getArguments());
-                  } else {
-                    okayToConnect = conn.connect(scope);
+                  log.info("Resolving scope for path: {}", path);
+                  scope = context.resolveScope(global, path);
+                  log.info("Scope resolved successfully: {}", scope);
+                } catch (ScopeNotFoundException err) {
+                  log.error("=== RTMP CONNECTION FAILED ===");
+                  log.error("Scope " + path + " not found on " + host + " - " + err.getMessage());
+                  log.error("Exception details:", err);
+                  call.setStatus(Call.STATUS_SERVICE_NOT_FOUND);
+                  if (call instanceof IPendingServiceCall) {
+                    StatusObject status = getStatus(NC_CONNECT_REJECTED);
+                    status.setDescription("No scope \"" + path + "\" on this server.");
+                    ((IPendingServiceCall) call).setResult(status);
                   }
-                  if (okayToConnect) {
-                    log.debug("Connected - Client: {}", conn.getClient());
-                    call.setStatus(Call.STATUS_SUCCESS_RESULT);
-                    if (call instanceof IPendingServiceCall) {
-                      IPendingServiceCall pc = (IPendingServiceCall) call;
-                      pc.setResult(getStatus(NC_CONNECT_SUCCESS));
-                    }
-                    // Measure initial roundtrip time after
-                    // connecting
-                    conn.getChannel(2).write(new Ping(Ping.STREAM_CLEAR, 0, -1));
-                    conn.startRoundTripMeasurement();
-                  } else {
-                    log.debug("Connect failed");
-                    call.setStatus(Call.STATUS_ACCESS_DENIED);
-                    if (call instanceof IPendingServiceCall) {
-                      IPendingServiceCall pc = (IPendingServiceCall) call;
-                      pc.setResult(getStatus(NC_CONNECT_REJECTED));
-                    }
-                    disconnectOnReturn = true;
+                  log.info("Scope {} not found on {}", path, host);
+                  disconnectOnReturn = true;
+                } catch (ScopeShuttingDownException err) {
+                  log.error("=== RTMP CONNECTION FAILED ===");
+                  log.error("Application at " + path + " currently shutting down on " + host + " - " + err.getMessage());
+                  log.error("Exception details:", err);
+                  call.setStatus(Call.STATUS_APP_SHUTTING_DOWN);
+                  if (call instanceof IPendingServiceCall) {
+                    StatusObject status = getStatus(NC_CONNECT_APPSHUTDOWN);
+                    status.setDescription(
+                        "Application at \"" + path + "\" is currently shutting down.");
+                    ((IPendingServiceCall) call).setResult(status);
                   }
+                  log.info("Application at {} currently shutting down on {}", path, host);
+                  disconnectOnReturn = true;
+                }
+                if (scope != null) {
+                  log.info("Connecting to: {}", scope);
+                  // Setup application's classloader to be used for deserializing
+                  ClassLoader loader = scope.getClassLoader();
+                  if (loader == null) {
+                    // Fallback, should never happen
+                    loader = getClass().getClassLoader();
+                  }
+                  Thread.currentThread().setContextClassLoader(loader);
+
+                  boolean okayToConnect;
+                  try {
+                    log.info("Attempting to connect to scope: {}", scope.getName());
+                    log.info("Connection object: {}", conn);
+                    log.info("Call arguments: {}", call.getArguments());
+                    if (call.getArguments() != null) {
+                      okayToConnect = conn.connect(scope, call.getArguments());
+                    } else {
+                      okayToConnect = conn.connect(scope);
+                    }
+                    if (okayToConnect) {
+                      log.info("=== RTMP CONNECTION SUCCESSFUL ===");
+                      log.info("Connected - Client: {}", conn.getClient());
+                      call.setStatus(Call.STATUS_SUCCESS_RESULT);
+                      if (call instanceof IPendingServiceCall) {
+                        IPendingServiceCall pc = (IPendingServiceCall) call;
+                        pc.setResult(getStatus(NC_CONNECT_SUCCESS));
+                      }
+                      // Measure initial roundtrip time after
+                      // connecting
+                      conn.getChannel(2).write(new Ping(Ping.STREAM_CLEAR, 0, -1));
+                      conn.startRoundTripMeasurement();
+                    } else {
+                      log.error("=== RTMP CONNECTION FAILED ===");
+                      log.error("Connect failed - application rejected connection");
+                      call.setStatus(Call.STATUS_ACCESS_DENIED);
+                      if (call instanceof IPendingServiceCall) {
+                        IPendingServiceCall pc = (IPendingServiceCall) call;
+                        pc.setResult(getStatus(NC_CONNECT_REJECTED));
+                      }
+                      disconnectOnReturn = true;
+                    }
                 } catch (ClientRejectedException rejected) {
                   log.debug("Connect rejected");
                   call.setStatus(Call.STATUS_ACCESS_DENIED);

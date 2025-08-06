@@ -88,28 +88,28 @@
 		<level value="WARN" />
 	</logger>
 	<logger name="org.red5.server.net.rtmp">
-		<level value="WARN" />
+		<level value="DEBUG" />
 	</logger>	
 	<logger name="org.red5.server.net.rtmp.RTMPHandler">
-		<level value="WARN" />
+		<level value="DEBUG" />
 	</logger>
 	<logger name="org.red5.server.net.rtmp.BaseRTMPHandler">
-		<level value="WARN" />
+		<level value="DEBUG" />
 	</logger>
 	<logger name="org.red5.server.net.rtmp.codec">
-		<level value="WARN" />
+		<level value="DEBUG" />
 	</logger>
 	<logger name="org.red5.server.net.rtmp.RTMPMinaIoHandler">
-		<level value="OFF" />
+		<level value="DEBUG" />
 	</logger>
 	<logger name="org.red5.server.net.rtmp.RTMPMinaTransport">
-		<level value="WARN" />
+		<level value="DEBUG" />
 	</logger>
 	<logger name="org.red5.server.net.rtmp.status">
-		<level value="WARN" />
+		<level value="DEBUG" />
 	</logger>
 	<logger name="org.red5.server.net.rtmpt">
-		<level value="WARN" />
+		<level value="DEBUG" />
 	</logger>
 	<logger name="org.red5.server.persistence">
 		<level value="WARN" />

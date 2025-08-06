@@ -1,8 +1,12 @@
 <project default="build">
-	<property name="database.host" value="database"/>
-	<property name="database.name" value="chobots"/>
-	<property name="database.user" value="root"/>
-	<property name="database.password" value="root"/>
+	<!-- Database properties - must be provided via environment variables -->
+	<property environment="env"/>
+	<property name="database.host" value="${env.DATABASE_HOST}"/>
+	<property name="database.name" value="${env.DATABASE_NAME}"/>
+	<property name="database.user" value="${env.DATABASE_USER}"/>
+	<property name="database.password" value="${env.DATABASE_PASSWORD}"/>
+	
+	<!-- Other properties -->
 	<property name="java.output.dir" value="bin/java"/>
 	<property name="deploy.dir" value="red5/webapps/"/>
 	<property name="runtime_libs.dir" value="red5/lib/"/>

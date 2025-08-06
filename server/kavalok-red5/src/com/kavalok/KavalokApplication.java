@@ -518,7 +518,19 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
   }
 
   public boolean appConnect(IConnection conn, Object[] params) {
-    if (!started) return false;
+    logger.info("=== KAVALOK APP CONNECT ATTEMPT ===");
+    logger.info("Connection from: {}:{}", conn.getRemoteAddress(), conn.getRemotePort());
+    logger.info("Connection parameters: {}", params);
+    logger.info("Application started: {}", started);
+    
+    if (!started) {
+      logger.error("=== KAVALOK APP CONNECT FAILED ===");
+      logger.error("Application not started - rejecting connection");
+      return false;
+    }
+    
+    logger.info("=== KAVALOK APP CONNECT SUCCESSFUL ===");
+    logger.info("Connection accepted");
     return true;
   }
 

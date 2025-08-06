@@ -1,6 +1,12 @@
 services:
     server:
-        build: server
+        build: 
+            context: server
+            args:
+                DATABASE_HOST: database
+                DATABASE_NAME: chobots
+                DATABASE_USER: root
+                DATABASE_PASSWORD: root
         ports:
            - 8935:1935
            - 5080:5080

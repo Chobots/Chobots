@@ -1,0 +1,18 @@
+FROM alpine:latest
+
+RUN apk add --no-cache stunnel
+
+RUN mkdir -p /etc/stunnel && \
+  echo -e "pid = /var/run/stunnel.pid\n\
+foreground = yes\n\
+debug = 7\n\
+\n\
+[rtmps]\n\
+accept = 8443\n\
+connect = srv-captain--test-deployment:1935\n\
+cert = /certs/fullchain1.pem\n\
+key = /certs/privkey1.pem\n\
+sslVersion = TLSv1.2\n\
+ciphers = HIGH:!aNULL:!MD5" > /etc/stunnel/stunnel.conf
+
+CMD ["stunnel", "/etc/stunnel/stunnel.conf"]
