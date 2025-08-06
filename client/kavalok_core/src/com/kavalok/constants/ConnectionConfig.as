@@ -67,7 +67,7 @@ public class ConnectionConfig {
         
         var url:String;
         if (isHttps) {
-            url = "rtmps://rtmps." + host + ":" + RTMPS_PORT + "/" + RTMP_APP;
+            url = "rtmps://" + host + ":" + RTMPS_PORT + "/" + RTMP_APP;
             trace("ConnectionConfig: buildRtmpUrl() using RTMPS protocol");
         } else {
             url = "rtmp://" + host + ":" + RTMP_PORT + "/" + RTMP_APP;
