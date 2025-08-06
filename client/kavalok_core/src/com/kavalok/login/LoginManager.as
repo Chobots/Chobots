@@ -72,7 +72,7 @@ package com.kavalok.login
 			_server=startupInfo.server;
 			_info=startupInfo;
 			_connectCommand.connectEvent.addListener(onConnectSuccess);
-			BaseRed5Delegate.defaultConnectionUrl = startupInfo.url;
+			BaseRed5Delegate.defaultConnectionUrl = ConnectionConfig.buildRtmpUrl();
 
 			_connectCommand.execute();
 		}
@@ -115,9 +115,8 @@ package com.kavalok.login
 		private function onGetServer(url:String):void
 		{
 			RemoteConnection.instance.disconnect();
-			var rtmpUrl:String = ConnectionConfig.buildRtmpUrl();
-			BaseRed5Delegate.defaultConnectionUrl = rtmpUrl;
-			_info.url = rtmpUrl;
+			BaseRed5Delegate.defaultConnectionUrl = ConnectionConfig.buildRtmpUrl();
+			_info.url = ConnectionConfig.buildRtmpUrl();
 			_serverSelected = true;
 			login(_info);
 		}
