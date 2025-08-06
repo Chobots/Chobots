@@ -30,10 +30,13 @@ package com.kavalok.remoting
 	import com.kavalok.utils.Strings;
 	import com.kavalok.utils.Timers;
 	
+	import flash.events.Event;
 	import flash.events.NetStatusEvent;
+	import flash.events.TimerEvent;
 	import flash.net.NetConnection;
 	import flash.net.ObjectEncoding;
 	import flash.system.ApplicationDomain;
+	import flash.utils.Timer;
 	import flash.utils.getDefinitionByName;
 	
 internal class RemoteConnectionInstance 
@@ -97,10 +100,16 @@ internal class RemoteConnectionInstance
 	{
 		if(_netConnection == null)
 		{
+			trace("RemoteConnection: Creating new NetConnection");
 			_netConnection = BaseRed5Delegate.netConnection;
 	        _netConnection.objectEncoding = ObjectEncoding.AMF0;
+	        trace("RemoteConnection: NetConnection objectEncoding set to AMF0");
 	        _netConnection.addEventListener( NetStatusEvent.NET_STATUS , onNetStatus);
+	        trace("RemoteConnection: NetStatusEvent listener added");
 	        _netConnection.client = this;
+	        trace("RemoteConnection: NetConnection client set");
+		} else {
+			trace("RemoteConnection: Using existing NetConnection");
 		}
 		return _netConnection;
 	}
@@ -114,8 +123,32 @@ internal class RemoteConnectionInstance
 	
 	public function connect() : void
 	{
-		trace("connecting to: " + BaseRed5Delegate.defaultConnectionUrl)
-        netConnection.connect(BaseRed5Delegate.defaultConnectionUrl);
+		trace("RemoteConnection: connect() called");
+		trace("RemoteConnection: connecting to: " + BaseRed5Delegate.defaultConnectionUrl);
+		trace("RemoteConnection: NetConnection object: " + netConnection);
+		trace("RemoteConnection: NetConnection connected: " + netConnection.connected);
+		trace("RemoteConnection: NetConnection uri: " + netConnection.uri);
+		
+		// Add connection timeout check
+		var timeoutTimer:Timer = new Timer(10000, 1); // 10 second timeout
+		timeoutTimer.addEventListener(TimerEvent.TIMER, function(e:TimerEvent):void {
+			trace("RemoteConnection: Connection timeout - no response after 10 seconds");
+			trace("RemoteConnection: This might indicate RTMPS protocol issues or server not responding");
+			if (!_connected) {
+				trace("RemoteConnection: Connection still not established, sending error event");
+				error.sendEvent(new Event("ConnectionTimeout"));
+			}
+		});
+		timeoutTimer.start();
+		
+		try {
+			netConnection.connect(BaseRed5Delegate.defaultConnectionUrl);
+			trace("RemoteConnection: connect() call completed successfully");
+		} catch (error:Error) {
+			trace("RemoteConnection: connect() error: " + error.message);
+			trace("RemoteConnection: connect() error stack: " + error.getStackTrace());
+			timeoutTimer.stop();
+		}
 	}
 	
 	public function onCommandInstance(properties:Object):void
@@ -201,21 +234,46 @@ internal class RemoteConnectionInstance
 	
 	private function onNetStatus(event : NetStatusEvent) : void
 	{
+		trace("RemoteConnection: onNetStatus() called");
+		trace("RemoteConnection: NetStatusEvent info: " + event.info);
+		trace("RemoteConnection: NetStatusEvent code: " + event.info.code);
+		trace("RemoteConnection: NetStatusEvent level: " + event.info.level);
+		trace("RemoteConnection: NetStatusEvent description: " + event.info.description);
+		
+		// Add additional debugging for RTMPS issues
+		if (event.info.code == "NetConnection.Connect.Failed") {
+			trace("RemoteConnection: RTMPS connection failed - this might be a protocol support issue");
+			trace("RemoteConnection: Check if Flash Player supports RTMPS or if server is configured for RTMPS");
+		}
+		
 		switch(event.info.code)
 		{
 			case NetConnectionCodes.SUCCESS:
+				trace("RemoteConnection: Connection SUCCESS");
 				setConnected();
 				break;
 			case NetConnectionCodes.CLOSED:
+				trace("RemoteConnection: Connection CLOSED");
+				setDisconnected();
+				break;
 			case NetConnectionCodes.APP_SHUTDOWN:
+				trace("RemoteConnection: Connection APP_SHUTDOWN");
 				setDisconnected();
 				break;
 			case NetConnectionCodes.REJECT:
+				trace("RemoteConnection: Connection REJECTED");
+				error.sendEvent(event);
+				break;
 			case NetConnectionCodes.FAILED:
+				trace("RemoteConnection: Connection FAILED");
+				error.sendEvent(event);
+				break;
 			case NetConnectionCodes.INVALID_APP:
+				trace("RemoteConnection: Connection INVALID_APP");
 				error.sendEvent(event);
 				break;
 			default:
+				trace("RemoteConnection: Unknown connection code: " + event.info.code);
 				throw new IllegalStateError();
 				break;
 		}
@@ -223,19 +281,29 @@ internal class RemoteConnectionInstance
 	
 	private function setDisconnected() : void
 	{
+		trace("RemoteConnection: setDisconnected() called");
+		trace("RemoteConnection: current connected state: " + connected);
+		
 		if(connected)
 		{
+			trace("RemoteConnection: setting connected to false");
 			_connected = false;
 			forceDisconnectEvent.sendEvent();
 			disconnectEvent.sendEvent();
+			trace("RemoteConnection: disconnect events sent");
+		} else {
+			trace("RemoteConnection: already disconnected, no action taken");
 		}
-		
 	}
 
 	private function setConnected() : void
 	{
+		trace("RemoteConnection: setConnected() called");
+		trace("RemoteConnection: current connected state: " + connected);
+		
 		_connected = true;
 		connectEvent.sendEvent();
+		trace("RemoteConnection: connected set to true, connect event sent");
 	}
 	
 }
