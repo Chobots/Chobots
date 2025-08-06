@@ -3,6 +3,7 @@ import flash.external.ExternalInterface;
 
 public class ConnectionConfig {
     public static const RTMP_PORT:String = "8935";
+    public static const RTMPS_PORT:String = "8443";
     public static const RTMP_APP:String = "kavalok";
     private static const DEFAULT_HOST:String = "127.0.0.1";
 
@@ -66,7 +67,7 @@ public class ConnectionConfig {
         
         var url:String;
         if (isHttps) {
-            url = "rtmps://rtmps." + host + "/" + RTMP_APP;
+            url = "rtmps://rtmps." + host + ":" + RTMPS_PORT + "/" + RTMP_APP;
             trace("ConnectionConfig: buildRtmpUrl() using RTMPS protocol");
         } else {
             url = "rtmp://" + host + ":" + RTMP_PORT + "/" + RTMP_APP;
