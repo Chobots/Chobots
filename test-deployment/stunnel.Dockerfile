@@ -8,11 +8,13 @@ foreground = yes\n\
 debug = 7\n\
 \n\
 [rtmps]\n\
-accept = 8443\n\
+accept = 443\n\
 connect = srv-captain--test-deployment:1935\n\
 cert = /certs/fullchain1.pem\n\
 key = /certs/privkey1.pem\n\
-sslVersion = TLSv1.2\n\
+client = no\n\
+sslVersionMin = TLSv1.2\n\
+sslVersionMax = TLSv1.3\n\
 ciphers = HIGH:!aNULL:!MD5" > /etc/stunnel/stunnel.conf
 
 CMD ["stunnel", "/etc/stunnel/stunnel.conf"]
