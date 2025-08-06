@@ -46,6 +46,12 @@ RUN mkdir -p /etc \
     '(' \
     '  {' \
     '    name: "tls";' \
+    '    sni_hostnames: ["rtmps.test-server.chobots.org"];' \
+    '    host: "srv-captain--test-deployment-stunnel";' \
+    '    port: "443";' \
+    '  },' \
+    '  {' \
+    '    name: "tls";' \
     '    host: "captain-nginx";' \
     '    port: "443";' \
     '  }' \
