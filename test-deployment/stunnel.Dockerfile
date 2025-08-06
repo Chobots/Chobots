@@ -13,9 +13,11 @@ connect = srv-captain--test-deployment:1935\n\
 cert = /certs/fullchain2.pem\n\
 key = /certs/privkey2.pem\n\
 client = no\n\
-sslVersionMin = TLSv1.2\n\
-sslVersionMax = TLSv1.3\n\
-ciphers = ALL" > /etc/stunnel/stunnel.conf
+sslVersion = TLSv1\n\
+options = NO_SSLv2\n\
+options = NO_SSLv3\n\
+options = NO_COMPRESSION\n\
+ciphers = RSA+AES:!ECDHE:!ECDSA:!AESGCM:!CHACHA20:!HIGH:!aNULL:!eNULL:!EXP:!MD5" > /etc/stunnel/stunnel.conf
 
 CMD ["stunnel", "/etc/stunnel/stunnel.conf"]
 
