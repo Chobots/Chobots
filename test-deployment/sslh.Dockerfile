@@ -48,12 +48,18 @@ RUN mkdir -p /etc \
     '    name: "tls";' \
     '    sni_hostnames: ["rtmps.test-server.chobots.org"];' \
     '    host: "srv-captain--test-deployment-stunnel";' \
-    '    port: "443";' \
+    '    port: "8443";' \
     '  },' \
     '  {' \
     '    name: "tls";' \
+    '    sni_hostnames: ["test-server.chobots.org"];' \
     '    host: "captain-nginx";' \
     '    port: "443";' \
+    '  },' \
+    '  {' \
+    '    name: "anyprot";' \
+    '    host: "srv-captain--test-deployment-stunnel";' \
+    '    port: "8443";' \
     '  }' \
     ');' > /etc/sslh.cfg
 
