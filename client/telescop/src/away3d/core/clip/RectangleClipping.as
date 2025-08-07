@@ -1,68 +1,45 @@
 package away3d.core.clip
 {
-    import away3d.core.draw.*;
+	import away3d.core.render.*;
 
-    /** Rectangle clipping */
+    /**
+    * Rectangle clipping
+    */
     public class RectangleClipping extends Clipping
     {
-        public function RectangleClipping(minX:Number = -1000000, minY:Number = -1000000, maxX:Number = 1000000, maxY:Number = 1000000)
+        public function RectangleClipping(init:Object = null)
         {
-            this.minX = minX;
-            this.maxX = maxX;
-            this.minY = minY;
-            this.maxY = maxY;
+            super(init);
+            
+            objectCulling = ini.getBoolean("objectCulling", false);
         }
         
 		/**
 		 * @inheritDoc
 		 */
-        public override function asRectangleClipping():RectangleClipping
+        public override function checkPrimitive(renderer:Renderer, priIndex:uint):Boolean
         {
-            return this;
-        }
-        
-		/**
-		 * @inheritDoc
-		 */
-        public override function check(pri:DrawPrimitive):Boolean
-        {
-            if (pri.maxX < minX)
+        	var primitiveProperties:Vector.<Number> = renderer.primitiveProperties;
+        	var index:uint = priIndex*9;
+            if (primitiveProperties[uint(index + 3)] < minX)
                 return false;
-            if (pri.minX > maxX)
+            if (primitiveProperties[uint(index + 2)] > maxX)
                 return false;
-            if (pri.maxY < minY)
+            if (primitiveProperties[uint(index + 5)] < minY)
                 return false;
-            if (pri.minY > maxY)
+            if (primitiveProperties[uint(index + 4)] > maxY)
                 return false;
-
+			
             return true;
         }
         
-		/**
-		 * @inheritDoc
-		 */
-        public override function rect(minX:Number, minY:Number, maxX:Number, maxY:Number):Boolean
+		public override function clone(object:Clipping = null):Clipping
         {
-            if (this.maxX < minX)
-                return false;
-            if (this.minX > maxX)
-                return false;
-            if (this.maxY < minY)
-                return false;
-            if (this.minY > maxY)
-                return false;
-
-            return true;
-        }
-		
-		/**
-		 * Used to trace the values of a rectangle clipping object.
-		 * 
-		 * @return A string representation of the rectangle clipping object.
-		 */
-        public function toString():String
-        {
-        	return "{minX:" + minX + " maxX:" + maxX + " minY:" + minY + " maxY:" + maxY + "}";
+        	var clipping:RectangleClipping = (object as RectangleClipping) || new RectangleClipping();
+        	
+        	super.clone(clipping);
+        	
+        	return clipping;
         }
     }
 }

@@ -1,15 +1,15 @@
 ﻿package away3d.primitives
 {
-	import away3d.core.*;
+	import away3d.arcane;
 	import away3d.core.base.*;
     
+	use namespace arcane;
+	
     /**
     * Creates a 3d wire plane primitive.
     */ 
-    public class WirePlane extends AbstractWirePrimitive
+    public class WirePlane extends AbstractPrimitive
     {
-    	use namespace arcane
-    	
         private var grid:Array;
     	private var _width:Number;
         private var _height:Number;
@@ -17,34 +17,37 @@
         private var _segmentsH:int;
         private var _yUp:Boolean;
         
-        private function buildWirePlane(width:Number, height:Number, segmentsW:int, segmentsH:int, yUp:Boolean):void
-        {
+		/**
+		 * @inheritDoc
+		 */
+    	protected override function buildPrimitive():void
+    	{
+    		super.buildPrimitive();
+    		
             var i:int;
             var j:int;
 
-            grid = new Array(segmentsW+1);
-            for (i = 0; i <= segmentsW; i++)
+            grid = new Array(_segmentsW+1);
+            for (i = 0; i <= _segmentsW; ++i)
             {
-                grid[i] = new Array(segmentsH+1);
-                for (j = 0; j <= segmentsH; j++) {
-                	if (yUp)
-                    	grid[i][j] = createVertex((i / segmentsW - 0.5) * width, 0, (j / segmentsH - 0.5) * height);
+                grid[i] = new Array(_segmentsH+1);
+                for (j = 0; j <= _segmentsH; ++j) {
+                	if (_yUp)
+                    	grid[i][j] = createVertex((i / _segmentsW - 0.5) * _width, 0, (j / _segmentsH - 0.5) * _height);
                     else
-                    	grid[i][j] = createVertex((i / segmentsW - 0.5) * width, (j / segmentsH - 0.5) * height, 0);
+                    	grid[i][j] = createVertex((i / _segmentsW - 0.5) * _width, (j / _segmentsH - 0.5) * _height, 0);
                 }
             }
 
-            for (i = 0; i < segmentsW; i++)
-                for (j = 0; j < segmentsH + 1; j++)
+            for (i = 0; i < _segmentsW; ++i)
+                for (j = 0; j < _segmentsH + 1; ++j)
                     addSegment(createSegment(grid[i][j], grid[i+1][j]));
 
-            for (i = 0; i < segmentsW + 1; i++)
-                for (j = 0; j < segmentsH; j++)
+            for (i = 0; i < _segmentsW + 1; ++i)
+                for (j = 0; j < _segmentsH; ++j)
                     addSegment(createSegment(grid[i][j], grid[i][j+1]));
-					
-
-        }
-        
+    	}
+    	
     	/**
     	 * Defines the width of the wire plane. Defaults to 100.
     	 */
@@ -146,22 +149,10 @@
             _segmentsW = ini.getInt("segmentsW", segments, {min:1});
             _segmentsH = ini.getInt("segmentsH", segments, {min:1});
     		_yUp = ini.getBoolean("yUp", true);
-    		
-            buildWirePlane(_width, _height, _segmentsW, _segmentsH, _yUp);
             
 			type = "WirePlane";
         	url = "primitive";
         }
-    	
-		/**
-		 * @inheritDoc
-		 */
-    	public override function buildPrimitive():void
-    	{
-    		super.buildPrimitive();
-    		
-            buildWirePlane(_width, _height, _segmentsW, _segmentsH, _yUp);
-    	}
         
 		/**
 		 * Returns the vertex object specified by the grid position of the mesh.
@@ -171,6 +162,9 @@
 		 */
         public function vertex(i:int, j:int):Vertex
         {
+        	if (_primitiveDirty)
+    			updatePrimitive();
+    		
             return grid[i][j];
         }
     }

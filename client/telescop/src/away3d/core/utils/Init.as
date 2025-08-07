@@ -1,17 +1,18 @@
 package away3d.core.utils
 {
-    import away3d.core.*;
+    import away3d.arcane;
     import away3d.core.base.*;
-    import away3d.core.math.*;
     import away3d.materials.*;
     import away3d.primitives.data.*;
     
-    import flash.display.BitmapData;
+    import flash.display.*;
+    import flash.geom.*;
 
+	use namespace arcane;
+	
     /** Convinient object initialization support */
     public class Init
     {
-    	use namespace arcane;
 		/** @private */
         arcane var init:Object;
 
@@ -172,20 +173,20 @@ package away3d.core.utils
             return getObject(name, Object3D) as Object3D;
         }
 
-        public function getNumber3D(name:String):Number3D
+        public function getVector3D(name:String):Vector3D
         {
-            return getObject(name, Number3D) as Number3D;
+            return getObject(name, Vector3D) as Vector3D;
         }
 
-        public function getPosition(name:String):Number3D
+        public function getPosition(name:String):Vector3D
         {
             var value:Object = getObject(name);
 
             if (value == null)
                 return null;
 
-            if (value is Number3D)
-                return value as Number3D;
+            if (value is Vector3D)
+                return value as Vector3D;
 
             if (value is Object3D)
             {
@@ -195,7 +196,7 @@ package away3d.core.utils
 
             if (value is String)
                 if (value == "center")
-                    return new Number3D();
+                    return new Vector3D();
 
             throw new CastError("Cast get position of "+value);
         }
@@ -280,7 +281,7 @@ package away3d.core.utils
             return result;
         }
 
-        public function getMaterial(name:String):ITriangleMaterial
+        public function getMaterial(name:String):Material
         {
             if (init == null)
                 return null;
@@ -288,22 +289,7 @@ package away3d.core.utils
             if (!init.hasOwnProperty(name))
                 return null;
         
-            var result:ITriangleMaterial = Cast.material(init[name]);
-
-            delete init[name];
-        
-            return result;
-        }
-
-        public function getSegmentMaterial(name:String):ISegmentMaterial
-        {
-            if (init == null)
-                return null;
-        
-            if (!init.hasOwnProperty(name))
-                return null;
-        
-            var result:ISegmentMaterial = Cast.wirematerial(init[name]);
+            var result:Material = Cast.material(init[name]);
 
             delete init[name];
         

@@ -12,7 +12,7 @@ package com.kavalok.games
 			y = py;
 		}
 		
-		public function copyVector(v:Vector):void
+		public function copyVector(v:com.kavalok.games.Vector):void
 		{
 			x = v.x;
 			y = v.y;
@@ -24,13 +24,13 @@ package com.kavalok.games
 			y = py;
 		}
 		
-		public function addVector( v:Vector ):void
+		public function addVector( v:com.kavalok.games.Vector ):void
 		{
 			x += v.x;
 			y += v.y;
 		}
 		
-		public function subVector( v:Vector ):void
+		public function subVector( v:com.kavalok.games.Vector ):void
 		{
 			x -= v.x;
 			y -= v.y;
@@ -42,9 +42,9 @@ package com.kavalok.games
 			y *= i;
 		}
 		
-		public function getMulScalar(i:Number):Vector
+		public function getMulScalar(i:Number):com.kavalok.games.Vector
 		{
-			return new Vector(x*i, y*i);
+			return new com.kavalok.games.Vector(x*i, y*i);
 		}
 		
 		public function magnitude():Number
@@ -57,17 +57,17 @@ package com.kavalok.games
 			return x*x + y*y;
 		}
 		
-		public function vectorProjectionOnto(v:Vector):Vector
+		public function vectorProjectionOnto(v:com.kavalok.games.Vector):com.kavalok.games.Vector
 		{
-			var res:Vector = v.getUnitVector();
+			var res:com.kavalok.games.Vector = v.getUnitVector();
 			res.mulScalar(scalarProjectionOnto(v));
 			return res;
 		}
 		
-		public function getUnitVector():Vector
+		public function getUnitVector():com.kavalok.games.Vector
 		{
 			var len:Number = magnitude();
-			var res:Vector = new Vector(x,y);
+			var res:com.kavalok.games.Vector = new com.kavalok.games.Vector(x,y);
 			if (len) {
 				res.x /= len;
 				res.y /= len;
@@ -76,7 +76,7 @@ package com.kavalok.games
 		}
 		
 		// returns the scalar projection of this vector onto v
-		public function scalarProjectionOnto(v:Vector):Number
+		public function scalarProjectionOnto(v:com.kavalok.games.Vector):Number
 		{
 			return (x*v.x + y*v.y)/v.magnitude();
 		}

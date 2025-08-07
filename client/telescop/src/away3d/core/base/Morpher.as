@@ -7,8 +7,8 @@ package away3d.core.base
     {
         private var weight:Number;
         private var vertices:Mesh;
-    	private var _vertices:Array;
-    	private var _verticesComp:Array;
+    	private var _vertices:Vector.<Vertex>;
+    	private var _verticesComp:Vector.<Vertex>;
 		/**
 		 * Creates a new <code>Morpher</code> object.
 		 *
@@ -45,7 +45,7 @@ package away3d.core.base
             _verticesComp = comp.geometry.vertices;
             
             var length:int = _vertices.length;
-            for (var i:int = 0; i < length; i++)
+            for (var i:int = 0; i < length; ++i)
             {
                 _vertices[i].x += _verticesComp[i].x * k;
                 _vertices[i].y += _verticesComp[i].y * k;

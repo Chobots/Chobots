@@ -240,10 +240,16 @@
 
 	<!-- rpc -->
     <component id="AMFChannel" class="mx.messaging.channels.AMFChannel"/>
+    <component id="AsyncToken" class="mx.rpc.AsyncToken"/>
+    <component id="CallResponder" class="mx.rpc.CallResponder"/>  
     <component id="ChannelSet" class="mx.messaging.ChannelSet"/>  
     <component id="Consumer" class="mx.messaging.Consumer"/>
     <component id="HTTPChannel" class="mx.messaging.channels.HTTPChannel"/>
     <component id="HTTPService" class="mx.rpc.http.mxml.HTTPService"/>
+    <component id="HTTPMultiService" class="mx.rpc.http.mxml.HTTPMultiService"/>
+    <component id="HTTPOperation" class="mx.rpc.http.Operation"/>
+    <component id="MultiTopicProducer" class="mx.messaging.MultiTopicProducer"/>
+    <component id="MultiTopicConsumer" class="mx.messaging.MultiTopicConsumer"/>
     <component id="Producer" class="mx.messaging.Producer"/>
     <component id="RemoteObject" class="mx.rpc.remoting.mxml.RemoteObject"/>
     <component id="RemoteObjectOperation" class="mx.rpc.remoting.mxml.Operation"/>

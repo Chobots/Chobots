@@ -19,11 +19,11 @@ package away3d.core.geom
             this.c = c;
         }
 
-        public static function from2points(v0:ScreenVertex, v1:ScreenVertex):Line2D
+        public static function from2points(v0x:Number, v0y:Number, v1x:Number, v1y:Number):Line2D
         {
-            var a:Number = v1.y - v0.y;
-            var b:Number = v0.x - v1.x;
-            var c:Number = -(b*v0.y + a*v0.x);
+            var a:Number = v1y - v0y;
+            var b:Number = v0x - v1x;
+            var c:Number = -(b*v0y + a*v0x);
 
             return new Line2D(a, b, c);
         }

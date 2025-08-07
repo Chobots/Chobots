@@ -1,5 +1,6 @@
 package away3d.core.utils
 {
+	import away3d.materials.BitmapMaterial;
 	import flash.display.BitmapData;
 	import flash.geom.Matrix;
 	import flash.geom.Point;
@@ -8,14 +9,14 @@ package away3d.core.utils
 	
 	/**
 	 * Provides static pre-blurred bitmap images for depth of field-effect
-	 * when used together with billboarded sprites, such as particles.
+	 * when used together with billboarded sprites, such as Billboards.
 	 */
 	public class DofCache
 	{
 		private var bitmaps:Array;
 		private var levels:Number;
-		private var maxBitmap:BitmapData;
-		private var minBitmap:BitmapData;
+		private var maxBitmap:BitmapMaterial;
+		private var minBitmap:BitmapMaterial;
 
 		static public var focus:Number;
 
@@ -41,47 +42,47 @@ package away3d.core.utils
 			}
 		}
 		
-		static public function getDofCache(bitmap:BitmapData):DofCache
+		static public function getDofCache(material:BitmapMaterial):DofCache
 		{
-			if(caches[bitmap] == null)
+			if(caches[material] == null)
 			{
 				if(!usedof)
 				{
-					caches[bitmap] = new DofCache(1, bitmap);
+					caches[material] = new DofCache(1, material);
 				}
 				else
 				{
-					caches[bitmap] = new DofCache(doflevels, bitmap);					
+					caches[material] = new DofCache(doflevels, material);					
 				}
 			}	
 			
-			return caches[bitmap];
+			return caches[material];
 		}
 		
-		public function DofCache(levels:Number, texture:BitmapData)
+		public function DofCache(levels:Number, material:BitmapMaterial)
 		{			
 			this.levels = levels;
 			
 			var mat:Matrix = new Matrix();
 			var pnt:Point = new Point(0,0);
 			bitmaps = new Array(levels);
-			for(var j:Number = 0;j<levels;j++)
+			for(var j:Number = 0;j<levels;++j)
 			{
 				var tfilter:BlurFilter = new BlurFilter(2+maxblur*j/levels, 2+maxblur*j/levels, 4);
 				mat.identity();
-				var t:int =(texture.width*(1+j/(levels/2)));
-				mat.translate(-texture.width/2, -texture.height/2);
+				var t:int =(material.width*(1+j/(levels/2)));
+				mat.translate(-material.width/2, -material.height/2);
 				mat.translate(t/2,t/2);
 				var tbmp:BitmapData = new BitmapData(t,t,true,0);
-				tbmp.draw(texture, mat);
+				tbmp.draw(material.bitmap, mat);
 				tbmp.applyFilter(tbmp, tbmp.rect,pnt,tfilter);
-				bitmaps[j] = tbmp;
+				bitmaps[j] = new BitmapMaterial(tbmp);
 			}					
 			minBitmap = bitmaps[0];
 			maxBitmap = bitmaps[bitmaps.length-1];
 		}
 		
-		public function getBitmap(depth:Number):BitmapData
+		public function getBitmapMaterial(depth:Number):BitmapMaterial
 		{
 			var t:Number = focus-depth;
 			if(focus-depth<0) t = -t;

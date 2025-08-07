@@ -1,9 +1,9 @@
 package away3d.loaders.data
 {
 	import away3d.animators.*;
-	import away3d.containers.*;
 	import away3d.core.base.*;
 	
+	import flash.geom.*;
 	import flash.utils.*;
 	
 	/**
@@ -12,17 +12,7 @@ package away3d.loaders.data
 	 * @see away3d.loaders.data.MeshData
 	 */
 	public class AnimationData
-	{
-		/**
-		 * String representing a vertex animation.
-		 */
-		public static const VERTEX_ANIMATION:String = "vertexAnimation";
-		
-		/**
-		 * String representing a skin animation.
-		 */
-		public static const SKIN_ANIMATION:String = "skinAnimation";
-		
+	{	
 		/**
 		 * The name of the animation used as a unique reference.
 		 */
@@ -31,12 +21,12 @@ package away3d.loaders.data
 		/**
 		 * Reference to the animation object of the resulting animation.
 		 */
-		public var animation:IMeshAnimation;
+		public var animator:Animator;
 		
 		/**
 		 * Reference to the time the animation starts.
 		 */
-		public var start:Number = 0;
+		public var start:Number = Infinity;
 		
 		/**
 		 * Reference to the number of seconds the animation ends.
@@ -46,12 +36,22 @@ package away3d.loaders.data
 		/**
 		 * String representing the animation type.
 		 */
-		public var animationType:String = SKIN_ANIMATION;
+		public var animationType:String;
 		
 		/**
-		 * Dictonary of names representing the animation channels used in the animation.
+		 * Dictonary of names representing the animation channels used in skin animation.
 		 */
 		public var channels:Dictionary = new Dictionary(true);
+		
+		/**
+		 * Array representing the frames used in vertex animation.
+		 */
+		public var frames:Vector.<Vector.<Vector3D>> = new Vector.<Vector.<Vector3D>>();
+		
+		/**
+		 * Array representing the vertices used in vertex animation.
+		 */
+		public var vertices:Vector.<Vertex> = new Vector.<Vertex>();
 		
 		public function clone(object:Object3D):AnimationData
 		{
@@ -60,7 +60,7 @@ package away3d.loaders.data
     		animationData.start = start;
     		animationData.end = end;
     		animationData.animationType = animationType;
-    		animationData.animation = animation.clone(object as ObjectContainer3D);
+    		animationData.animator = animator.clone();
     		
     		return animationData;
 		}

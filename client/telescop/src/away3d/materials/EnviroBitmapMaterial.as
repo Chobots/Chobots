@@ -1,9 +1,9 @@
 package away3d.materials
 {
-	import away3d.core.utils.*;
 	import away3d.materials.shaders.*;
 	
 	import flash.display.*;
+	import flash.geom.ColorTransform;
 	
 	/**
 	 * Bitmap material with environment shading.
@@ -12,7 +12,7 @@ package away3d.materials
 	{
 		private var _mode:String;
 		private var _reflectiveness:Number;	
-		private var _bitmapMaterial:BitmapMaterial;
+		private var _textureMaterial:BitmapMaterial;
 		private var _enviroShader:EnviroShader;
 		
 		/**
@@ -40,6 +40,7 @@ package away3d.materials
 		public function set reflectiveness(val:Number):void
 		{
 			_reflectiveness = val;
+			_textureMaterial.colorTransform = new ColorTransform(1 - _reflectiveness, 1 - _reflectiveness, 1 - _reflectiveness, 1);
 			_enviroShader.reflectiveness = val;
 		}
 		
@@ -52,11 +53,11 @@ package away3d.materials
 		}
         
         /**
-        * Returns the bitmapData object being used as the material texture.
+        * Returns the bitmap material being used as the material texture.
         */
-		public function get bitmap():BitmapData
+		public function get textureMaterial():BitmapMaterial
 		{
-			return _bitmapMaterial.bitmap;
+			return _textureMaterial;
 		}
 		
 		/**
@@ -68,8 +69,9 @@ package away3d.materials
 		 */
 		public function EnviroBitmapMaterial(bitmap:BitmapData, enviroMap:BitmapData, init:Object = null)
 		{
-			if (init && init.materials)
-				delete init.materials;
+			//remove any reference to materials
+			if (init && init["materials"])
+				delete init["materials"];
 			
 			super(init);
 			
@@ -77,11 +79,12 @@ package away3d.materials
 			_reflectiveness = ini.getNumber("reflectiveness", 0.5, {min:0, max:1});
 			
 			//create new materials
-			_bitmapMaterial = new BitmapMaterial(bitmap, ini);
-			_enviroShader = new EnviroShader(enviroMap, {mode:_mode, reflectiveness:_reflectiveness});
+			_textureMaterial = new BitmapMaterial(bitmap, ini);
+			_textureMaterial.colorTransform = new ColorTransform(1 - _reflectiveness, 1 - _reflectiveness, 1 - _reflectiveness, 1);
+			_enviroShader = new EnviroShader(enviroMap, {mode:_mode, reflectiveness:_reflectiveness, blendMode:BlendMode.ADD});
 			
 			//add to materials array
-			addMaterial(_bitmapMaterial);
+			addMaterial(_textureMaterial);
 			addMaterial(_enviroShader);
 			
 		}

@@ -48,14 +48,14 @@ package away3d.loaders.data
          * 
          * @see away3d.animators.skin.SkinVertex
          */
-        public var skinVertices:Array = new Array();
+        public var skinVertices:Array = [];
         
         /**
          * Array of skin controller objects used in bone animations
          * 
          * @see away3d.animators.skin.SkinController
          */
-        public var skinControllers:Array = new Array();
+        public var skinControllers:Array = [];
 		
 		/**
 		 * Reference to the geometry object of the resulting geometry.

@@ -15,6 +15,11 @@ package away3d.events
     	public static const UPDATE_SCENE:String = "updateScene";
     	
     	/**
+    	 * Defines the value of the type property of a renderComplete event object.
+    	 */
+    	public static const RENDER_COMPLETE:String = "renderComplete";
+    	
+    	/**
     	 * A reference to the view object that is relevant to the event.
     	 */
         public var view:View3D;

@@ -15,6 +15,7 @@ package away3d.core.traverse
     	 */
         public function match(node:Object3D):Boolean
         {
+            node;//TODO : FDT Warning
             return true;
         }
 		

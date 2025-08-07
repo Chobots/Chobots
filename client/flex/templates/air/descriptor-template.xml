@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<application xmlns="http://ns.adobe.com/air/application/1.0">
+<application xmlns="http://ns.adobe.com/air/application/1.5.3">
 
 <!-- Adobe AIR Application Descriptor File Template.
 
 	Specifies parameters for identifying, installing, and launching AIR applications.
-	See http://www.adobe.com/go/air_1.0_application_descriptor for complete documentation.
 
-	xmlns - The Adobe AIR namespace: http://ns.adobe.com/air/application/1.0
+	xmlns - The Adobe AIR namespace: http://ns.adobe.com/air/application/1.5.3
 			The last segment of the namespace specifies the version 
 			of the AIR runtime required for this application to run.
 			
@@ -20,22 +19,27 @@
 	<!-- Used as the filename for the application. Required. -->
 	<filename></filename>
 
-	<!-- The name that is displayed in the AIR application installer. Optional. -->
+	<!-- The name that is displayed in the AIR application installer. 
+	     May have multiple values for each language. See samples or xsd schema file. Optional. -->
 	<name></name>
 
 	<!-- An application version designator (such as "v1", "2.5", or "Alpha 1"). Required. -->
 	<version>v1</version>
 
-	<!-- Description, displayed in the AIR application installer. Optional. -->
+	<!-- Description, displayed in the AIR application installer.
+	     May have multiple values for each language. See samples or xsd schema file. Optional. -->
 	<!-- <description></description> -->
 
 	<!-- Copyright information. Optional -->
 	<!-- <copyright></copyright> -->
 
+	<!-- Publisher ID. Used if you're updating an application created prior to 1.5.3 -->
+	<!-- <publisherID></publisherID> -->
+
 	<!-- Settings for the application's initial window. Required. -->
 	<initialWindow>
 		<!-- The main SWF or HTML file of the application. Required. -->
-		<!-- Note: In Flex Builder, the SWF reference is set automatically. -->
+		<!-- Note: In Flash Builder, the SWF reference is set automatically. -->
 		<content></content>
 		
 		<!-- The title of the main window. Optional. -->
@@ -44,7 +48,7 @@
 		<!-- The type of system chrome to use (either "standard" or "none"). Optional. Default standard. -->
 		<!-- <systemChrome></systemChrome> -->
 
-		<!-- Whether the window is transparent. Only applicable when systemChrome is false. Optional. Default false. -->
+		<!-- Whether the window is transparent. Only applicable when systemChrome is none. Optional. Default false. -->
 		<!-- <transparent></transparent> -->
 
 		<!-- Whether the window is initially visible. Optional. Default false. -->
@@ -81,7 +85,7 @@
 	<!-- The subpath of the standard default installation location to use. Optional. -->
 	<!-- <installFolder></installFolder> -->
 
-	<!-- The subpath of the Windows Start/Programs menu to use. Optional. -->
+	<!-- The subpath of the Programs menu to use. (Ignored on operating systems without a Programs menu.) Optional. -->
 	<!-- <programMenuFolder></programMenuFolder> -->
 
 	<!-- The icon the system uses for the application. For at least one resolution,
@@ -117,7 +121,7 @@
 			<!-- The description of the file type. Optional. -->
 			<!-- <description></description> -->
 			
-			<!-- The MIME type. Optional. -->
+			<!-- The MIME content type. -->
 			<!-- <contentType></contentType> -->
 			
 			<!-- The icon to display for the file type. Optional. -->

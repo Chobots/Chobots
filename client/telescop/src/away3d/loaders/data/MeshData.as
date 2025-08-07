@@ -1,7 +1,5 @@
 package away3d.loaders.data
 {
-	import flash.utils.*;
-	
 	/**
 	 * Data class for the mesh data of a 3d object
 	 */

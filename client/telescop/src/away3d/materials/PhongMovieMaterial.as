@@ -1,6 +1,5 @@
 package away3d.materials
 {
-	import away3d.core.utils.*;
 	import away3d.materials.shaders.*;
 	
 	import flash.display.*;
@@ -62,8 +61,8 @@ package away3d.materials
 		 */
 		public function PhongMovieMaterial(movie:Sprite, init:Object=null)
 		{
-			if (init && init.materials)
-				delete init.materials;
+			if (init && init["materials"])
+				delete init["materials"];
 			
 			super(init);
 			

@@ -1,9 +1,9 @@
 package away3d.events
 {
 	import away3d.containers.*;
-    import away3d.core.draw.*;
     import away3d.materials.*;
     import away3d.core.base.*;
+	import away3d.core.vos.*;
     
     import flash.events.Event;
     
@@ -36,6 +36,16 @@ package away3d.events
     	 * Defines the value of the type property of a mouseMove3d event object.
     	 */
     	public static const MOUSE_MOVE:String = "mouseMove3d";
+    	
+    	/**
+    	 * Defines the value of the type property of a rollOver3d event object.
+    	 */
+    	public static const ROLL_OVER:String = "rollOver3d";
+    	
+    	/**
+    	 * Defines the value of the type property of a rollOut3d event object.
+    	 */
+    	public static const ROLL_OUT:String = "rollOut3d";
     	
     	/**
     	 * The horizontal coordinate at which the event occurred in view coordinates.
@@ -80,17 +90,12 @@ package away3d.events
 		/**
 		 * The 3d element inside which the event took place.
 		 */
-        public var element:Object;
-        	
-		/**
-		 * The draw primitive inside which the event took place.
-		 */
-        public var drawpri:DrawPrimitive;
+        public var elementVO:ElementVO;
         	
 		/**
 		 * The material of the 3d element inside which the event took place.
 		 */
-        public var material:IUVMaterial;
+        public var material:Material;
         	
 		/**
 		 * The uv coordinate inside the draw primitive where the event took place.
@@ -114,7 +119,7 @@ package away3d.events
 		 */
         public function MouseEvent3D(type:String)
         {
-            super(type);
+            super(type, false, true);
         }
 		
 		/**
@@ -123,6 +128,9 @@ package away3d.events
         public override function clone():Event
         {
             var result:MouseEvent3D = new MouseEvent3D(type);
+
+			if(isDefaultPrevented())
+            	result.preventDefault();
 
             result.screenX = screenX;
             result.screenY = screenY;
@@ -134,8 +142,7 @@ package away3d.events
                                      
             result.view = view;
             result.object = object;
-            result.element = element;
-            result.drawpri = drawpri;
+            result.elementVO = elementVO;
             result.material = material;
             result.uv = uv;
                                      

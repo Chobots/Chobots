@@ -1,7 +1,9 @@
 package away3d.core.base
 {
-    import away3d.core.*;
+    import away3d.arcane;
     import away3d.core.utils.*;
+    
+    use namespace arcane;
     
 	/**
 	 * Texture coordinates value object.
@@ -9,7 +11,6 @@ package away3d.core.base
 	 */
     public class UV extends ValueObject
     {
-        use namespace arcane;
 		/** @private */
         arcane var _u:Number;
 		/** @private */

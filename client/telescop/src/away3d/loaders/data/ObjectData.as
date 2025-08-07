@@ -1,6 +1,6 @@
 package away3d.loaders.data
 {
-	import away3d.core.math.Matrix3D;
+	import flash.geom.*;
 	
 	/**
 	 * Data class for a generic 3d object

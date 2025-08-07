@@ -1,88 +1,83 @@
 package away3d.materials
 {
+	import away3d.arcane;
 	import away3d.containers.*;
-	import away3d.core.*;
-	import away3d.core.base.*;
-	import away3d.core.draw.*;
-	import away3d.core.render.*;
+	import away3d.core.base.*;	import away3d.core.render.*;
 	import away3d.core.utils.*;
-	import away3d.events.*;
+	import away3d.core.vos.*;
+	import away3d.lights.*;
 	
 	import flash.display.*;
 	import flash.filters.*;
 	import flash.geom.*;
 	import flash.utils.*;
 
+    use namespace arcane;
+    
     /**
     * Bitmap material with flat white lighting
     */
-    public class WhiteShadingBitmapMaterial extends CenterLightingMaterial implements IUVMaterial
+    public class WhiteShadingBitmapMaterial extends BitmapMaterial
     {
-        use namespace arcane;
-        
-        private var _bitmap:BitmapData;
-        private var _texturemapping:Matrix;
-        private var _faceVO:FaceVO;
-        private var _faceDictionary:Dictionary = new Dictionary(true);
-        private var blackrender:Boolean;
-        private var whiterender:Boolean;
-        private var whitek:Number = 0.2;
-		private var bitmapPoint:Point = new Point(0, 0);
-		private var colorTransform:ColorMatrixFilter = new ColorMatrixFilter();
-        private var cache:Dictionary;
-        private var step:int = 1;
-		private var mapping:Matrix;
-		private var br:Number;
-         
-        private function ladder(v:Number):Number
+    	/** @private */
+        arcane  override function updateMaterial(source:Object3D, view:View3D):void
         {
-            if (v < 1/0xFF)
-                return 0;
-            if (v > 0xFF)
-                v = 0xFF;
-            return Math.exp(Math.round(Math.log(v)*step)/step);
+        	var _source_scene_directionalLights:Array = source.scene.directionalLights;
+        	for each (var directional:DirectionalLight3D in _source_scene_directionalLights) {
+        		if (!directional.diffuseTransform[source] || view._updatedObjects[source]) {
+        			directional.setDiffuseTransform(source);
+        			_materialDirty = true;
+        		}
+        		
+        		if (!directional.specularTransform[source])
+        			directional.specularTransform[source] = new Dictionary(true);
+        		
+        		if (!directional.specularTransform[source][view] || view._updatedObjects[source] || view.updated) {
+        			directional.setSpecularTransform(source, view);
+        			_materialDirty = true;
+        		}
+        	}
+        	
+        	var _source_scene_pointLights:Array = source.scene.pointLights;
+        	for each (var point:PointLight3D in _source_scene_pointLights) {
+        		if (!point.viewPositions[view] || view._updatedObjects[source] || view.updated) {
+        			point.setViewPosition(view);
+        			_materialDirty = true;
+        		}
+        	}
+        	
+        	super.updateMaterial(source, view);
         }
-        
-        /**
-        * Calculates the mapping matrix required to draw the triangle texture to screen.
-        * 
-        * @param	tri		The data object holding all information about the triangle to be drawn.
-        * @return			The required matrix object.
-        */
-		protected function getMapping(tri:DrawTriangle):Matrix
-		{
-			_faceVO = getFaceVO(tri.face, tri.source, tri.view);
-			if (_faceVO.texturemapping)
-				return _faceVO.texturemapping;
-			
-			_texturemapping = tri.transformUV(this).clone();
-			_texturemapping.invert();
-			
-			return _faceVO.texturemapping = _texturemapping;
-		}
-		
-        /** @private */
-        protected override function renderTri(tri:DrawTriangle, session:AbstractRenderSession, kar:Number, kag:Number, kab:Number, kdr:Number, kdg:Number, kdb:Number, ksr:Number, ksg:Number, ksb:Number):void
+    	/** @private */
+        arcane override function renderTriangle(priIndex:uint, viewSourceObject:ViewSourceObject, renderer:Renderer):void
         {
-            br = (kar + kag + kab + kdr + kdg + kdb + ksr + ksg + ksb) / (255*3);
+        	_source = viewSourceObject.source;
+			_session = renderer._session;
+            _view = renderer._view;
+        	
+        	_startIndex = renderer.primitiveProperties[uint(priIndex*9)];
+        	_endIndex = renderer.primitiveProperties[uint(priIndex*9+1)];
+        	_faceVO = renderer.primitiveElements[priIndex] as FaceVO;
+			_uvs = renderer.primitiveUVs[priIndex];
+			_generated = renderer.primitiveGenerated[priIndex];
+        	
+        	_screenVertices = viewSourceObject.screenVertices;
+			_screenIndices = viewSourceObject.screenIndices;
+			_screenUVTs = viewSourceObject.screenUVTs;
 			
-            mapping = getMapping(tri);
-            	
-            v0 = tri.v0;
-            v1 = tri.v1;
-            v2 = tri.v2;
-            
-                //trace(br);
-            if ((br < 1) && (blackrender || ((step < 16) && (!_bitmap.transparent))))
+        	var shade:FaceNormalShaderVO = shader.getTriangleShade(priIndex, viewSourceObject, renderer, shininess);
+            br = (shade.kar + shade.kag + shade.kab + shade.kdr + shade.kdg + shade.kdb + shade.ksr + shade.ksg + shade.ksb)/3;
+			
+			if ((br < 1) && (blackrender || ((step < 16) && (!_bitmap.transparent))))
             {
-                session.renderTriangleBitmap(_bitmap, mapping, v0, v1, v2, smooth, repeat);
-                session.renderTriangleColor(0x000000, 1 - br, v0, v1, v2);
+            	_session.renderTriangleBitmap(bitmap, getUVData(priIndex, viewSourceObject, renderer), viewSourceObject.screenVertices, viewSourceObject.screenIndices, _startIndex, _endIndex, smooth, repeat);
+                _session.renderTriangleColor(0x000000, 1 - br, viewSourceObject.screenVertices, renderer.primitiveCommands[priIndex], viewSourceObject.screenIndices, _startIndex, _endIndex);
             }
             else
             if ((br > 1) && (whiterender))
             {
-                session.renderTriangleBitmap(_bitmap, mapping, v0, v1, v2, smooth, repeat);
-                session.renderTriangleColor(0xFFFFFF, (br - 1)*whitek, v0, v1, v2);
+            	_session.renderTriangleBitmap(bitmap, getUVData(priIndex, viewSourceObject, renderer), viewSourceObject.screenVertices, viewSourceObject.screenIndices, _startIndex, _endIndex, smooth, repeat);
+                _session.renderTriangleColor(0xFFFFFF, (br - 1)*whitek, viewSourceObject.screenVertices, renderer.primitiveCommands[priIndex], viewSourceObject.screenIndices, _startIndex, _endIndex);
             }
             else
             {
@@ -94,64 +89,51 @@ package away3d.materials
                 if (bitmap == null)
                 {
                 	bitmap = new BitmapData(_bitmap.width, _bitmap.height, true, 0x00000000);
-                	colorTransform.matrix = [brightness, 0, 0, 0, 0, 0, brightness, 0, 0, 0, 0, 0, brightness, 0, 0, 0, 0, 0, 1, 0];
-                	bitmap.applyFilter(_bitmap, bitmap.rect, bitmapPoint, colorTransform);
+                	colorMatrix.matrix = [brightness, 0, 0, 0, 0, 0, brightness, 0, 0, 0, 0, 0, brightness, 0, 0, 0, 0, 0, 1, 0];
+                	bitmap.applyFilter(_bitmap, bitmap.rect, bitmapPoint, colorMatrix);
                     cache[brightness] = bitmap;
                 }
-                session.renderTriangleBitmap(bitmap, mapping, v0, v1, v2, smooth, repeat);
+                _session.renderTriangleBitmap(bitmap, getUVData(priIndex, viewSourceObject, renderer), viewSourceObject.screenVertices, viewSourceObject.screenIndices, _startIndex, _endIndex, smooth, repeat);
             }
         }
         
-    	/**
-    	 * Determines if texture bitmap is smoothed (bilinearly filtered) when drawn to screen
-    	 */
-        public var smooth:Boolean;
-        
-        /**
-        * Determines if texture bitmap will tile in uv-space
-        */
-        public var repeat:Boolean;
-        
-		/**
-		 * @inheritDoc
-		 */
-        public function get width():Number
+        private var blackrender:Boolean;
+        private var whiterender:Boolean;
+        private var whitek:Number = 0.2;
+		private var bitmapPoint:Point = new Point(0, 0);
+		private var colorMatrix:ColorMatrixFilter = new ColorMatrixFilter();
+        private var cache:Dictionary;
+        private var step:int = 1;
+		private var br:Number;
+		private var shader:FaceNormalShader = new FaceNormalShader();
+		
+        private function doubleStepTo(limit:int):void
         {
-            return _bitmap.width;
+            if (step < limit)
+                step *= 2;
         }
-        
-		/**
-		 * @inheritDoc
-		 */
-        public function get height():Number
+         
+        private function ladder(v:Number):Number
         {
-            return _bitmap.height;
-        }
-        
-		/**
-		 * @inheritDoc
-		 */
-        public function get bitmap():BitmapData
-        {
-        	return _bitmap;
-        }
-        
-		/**
-		 * @inheritDoc
-		 */
-        public override function get visible():Boolean
-        {
-            return true;
-        }
-        
-		/**
-		 * @inheritDoc
-		 */
-        public function getPixel32(u:Number, v:Number):uint
-        {
-        	return _bitmap.getPixel32(u*_bitmap.width, (1 - v)*_bitmap.height);
+            if (v < 1/0xFF)
+                return 0;
+            if (v > 0xFF)
+                v = 0xFF;
+            return Math.exp(Math.round(Math.log(v)*step)/step);
         }
     	
+        protected override function invalidateFaces(source:Object3D = null, view:View3D = null):void
+        {
+        	super.invalidateFaces(source, view);
+        	
+        	CacheStore.whiteShadingCache[_bitmap] = new Dictionary(true);
+        }
+        
+        /**
+        * Coefficient for shininess level
+        */
+        public var shininess:Number;
+        
 		/**
 		 * Creates a new <code>WhiteShadingBitmapMaterial</code> object.
 		 * 
@@ -160,53 +142,23 @@ package away3d.materials
 		 */
         public function WhiteShadingBitmapMaterial(bitmap:BitmapData, init:Object = null)
         {
-            _bitmap = bitmap;
-            
-            super(init);
-
-			
-            smooth = ini.getBoolean("smooth", false);
-            repeat = ini.getBoolean("repeat", false);
+            super(bitmap, init);
             
             if (!CacheStore.whiteShadingCache[_bitmap])
             	CacheStore.whiteShadingCache[_bitmap] = new Dictionary(true);
             	
             cache = CacheStore.whiteShadingCache[_bitmap];
-        }
-		
-        public function doubleStepTo(limit:int):void
-        {
-            if (step < limit)
-                step *= 2;
+            
+            shininess = ini.getNumber("shininess", 20);
         }
         
-        public function getFaceVO(face:Face, source:Object3D, view:View3D = null):FaceVO
+        /**
+        * Clear the cached bitmaps used for shading
+        */
+        public function clearCache():void
         {
-        	if ((_faceVO = _faceDictionary[face]))
-        		return _faceVO;
-        	
-        	return _faceDictionary[face] = new FaceVO();
-        }
-        
-        public function removeFaceDictionary():void
-        {
-			_faceDictionary = new Dictionary(true);
-        }
-        
-		/**
-		 * @inheritDoc
-		 */
-        public function addOnMaterialResize(listener:Function):void
-        {
-        	addEventListener(MaterialEvent.MATERIAL_RESIZED, listener, false, 0, true);
-        }
-        
-		/**
-		 * @inheritDoc
-		 */
-        public function removeOnMaterialResize(listener:Function):void
-        {
-        	removeEventListener(MaterialEvent.MATERIAL_RESIZED, listener, false);
+        	CacheStore.whiteShadingCache[_bitmap] = new Dictionary(true);
+			cache = CacheStore.whiteShadingCache[_bitmap];
         }
     }
 }

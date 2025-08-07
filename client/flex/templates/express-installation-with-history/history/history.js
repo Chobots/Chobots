@@ -99,23 +99,40 @@ BrowserHistory = (function() {
         return document.getElementById("safari_remember_field");
     }
 
-    /* Get the Flash player object for performing ExternalInterface callbacks. */
-    function getPlayer(objectId) {
-        var objectId = objectId || null;
-        var player = null; /* AJH, needed?  = document.getElementById(getPlayerId()); */
-        if (browser.ie && objectId != null) {
-            player = document.getElementById(objectId);
-        }
-        if (player == null) {
-            player = document.getElementsByTagName('object')[0];
-        }
-        
-        if (player == null || player.object == null) {
-            player = document.getElementsByTagName('embed')[0];
-        }
-
-        return player;
-    }
+    // Get the Flash player object for performing ExternalInterface callbacks.
+    // Updated for changes to SWFObject2.
+    function getPlayer(id) {
+		if (id && document.getElementById(id)) {
+			var r = document.getElementById(id);
+			if (typeof r.SetVariable != "undefined") {
+				return r;
+			}
+			else {
+				var o = r.getElementsByTagName("object");
+				var e = r.getElementsByTagName("embed");
+				if (o.length > 0 && typeof o[0].SetVariable != "undefined") {
+					return o[0];
+				}
+				else if (e.length > 0 && typeof e[0].SetVariable != "undefined") {
+					return e[0];
+				}
+			}
+		}
+		else {
+			var o = document.getElementsByTagName("object");
+			var e = document.getElementsByTagName("embed");
+			if (e.length > 0 && typeof e[0].SetVariable != "undefined") {
+				return e[0];
+			}
+			else if (o.length > 0 && typeof o[0].SetVariable != "undefined") {
+				return o[0];
+			}
+			else if (o.length > 1 && typeof o[1].SetVariable != "undefined") {
+				return o[1];
+			}
+		}
+		return undefined;
+	}
     
     function getPlayers() {
         var players = [];
@@ -290,14 +307,17 @@ BrowserHistory = (function() {
             // For Safari, we have to check to see if history.length changed.
             if (currentHistoryLength >= 0 && history.length != currentHistoryLength) {
                 //alert("did change: " + history.length + ", " + historyHash.length + "|" + historyHash[history.length] + "|>" + historyHash.join("|"));
-                // If it did change, then we have to look the old state up
-                // in our hand-maintained array since document.location.hash
-                // won't have changed, then call back into BrowserManager.
-                currentHistoryLength = history.length;
-                var flexAppUrl = historyHash[currentHistoryLength];
-                if (flexAppUrl == '') {
-                    //flexAppUrl = defaultHash;
+                var flexAppUrl = getHash();
+                if (browser.version < 528.16 /* Anything earlier than Safari 4.0 */)
+                {    
+                    // If it did change and we're running Safari 3.x or earlier, 
+                    // then we have to look the old state up in our hand-maintained 
+                    // array since document.location.hash won't have changed, 
+                    // then call back into BrowserManager.
+                    currentHistoryLength = history.length;
+                    flexAppUrl = historyHash[currentHistoryLength];
                 }
+
                 //ADR: to fix multiple
                 if (typeof BrowserHistory_multiple != "undefined" && BrowserHistory_multiple == true) {
                     var pl = getPlayers();
@@ -567,8 +587,6 @@ BrowserHistory = (function() {
                addHistoryEntry(baseUrl, newUrl, flexAppUrl);
                currentHistoryLength = history.length;
            }
-
-           return false;
         }, 
 
         browserURLChange: function(flexAppUrl) {
@@ -592,6 +610,12 @@ BrowserHistory = (function() {
             }
 
             currentObjectId = null;
+        },
+        getUserAgent: function() {
+            return navigator.userAgent;
+        },
+        getPlatform: function() {
+            return navigator.platform;
         }
 
     }

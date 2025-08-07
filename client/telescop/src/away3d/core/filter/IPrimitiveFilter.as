@@ -1,9 +1,6 @@
 package away3d.core.filter
 {
-	import away3d.cameras.*;
-    import away3d.containers.*;
-    import away3d.core.clip.*;
-    import away3d.core.render.*;
+	import away3d.core.render.*;
 
     /**
     * Interface for filters that work on primitive arrays
@@ -17,7 +14,8 @@ package away3d.core.filter
     	 * @param	scene		The scene to which the primitives belongs.
     	 * @param	camera		The camera being used in the renderer for the primitives.
     	 * @param	clip		The clipping object used in the renderer for the primitive's view.
+    	 * @return				The filtered array of primitives.
     	 */
-        function filter(primitives:Array, scene:Scene3D, camera:Camera3D, clip:Clipping):Array;
+        function filter(renderer:Renderer):void;
     }
 }

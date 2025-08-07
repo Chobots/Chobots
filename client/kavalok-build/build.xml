@@ -157,7 +157,7 @@ ${log-content}
             <param name="input.file" value="KavalokAdmin.mxml"/>
             <param name="library.path" value="../kavalok_admin/flash-lib,${flash.output.dir},${flash.static.lib}"/>
             <param name="external.library.path" value=""/>
-            <param name="custom.compiler" value=""/>
+            <param name="custom.compiler" value="-include-libraries ../kavalok_admin/flash-lib/datavisualization.swc"/>
         </antcall>
     </target>
 

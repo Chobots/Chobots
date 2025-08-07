@@ -1,18 +1,18 @@
 package away3d.materials
 {
-	import away3d.core.*;
+	import away3d.arcane;
 	import away3d.core.utils.*;
 	import away3d.materials.shaders.*;
 	
 	import flash.display.*;
+	
+	use namespace arcane;
 	
 	/**
 	 * Color material with phong shading.
 	 */
 	public class PhongColorMaterial extends CompositeMaterial
 	{
-		use namespace arcane;
-		
 		private var _shininess:Number;
 		private var _specular:Number;
 		private var _phongShader:CompositeMaterial;
@@ -26,7 +26,7 @@ package away3d.materials
     	 * @see away3d.materials.CompositeMaterial#color
     	 * @see away3d.materials.CompositeMaterial#alpha
     	 */
-		protected override function setColorTransform():void
+		protected override function updateColorTransform():void
 		{
 			_colorTransformDirty = false;
 			
@@ -37,7 +37,7 @@ package away3d.materials
 			} else {
 				_phongShader.color = 0xFFFFFF;
 				_phongShader.alpha = 1;
-				super.setColorTransform();
+				super.updateColorTransform();
 			}
 		}
 		
@@ -95,8 +95,8 @@ package away3d.materials
 		 */
 		public function PhongColorMaterial(color:*, init:Object = null)
 		{
-			if (init && init.materials)
-				delete init.materials;
+			if (init && init["materials"])
+				delete init["materials"];
 			
 			super(init);
 			

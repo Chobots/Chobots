@@ -1,43 +1,39 @@
 package away3d.core.geom
 {
 	import away3d.core.base.*;
-	import away3d.core.geom.*;
-	import away3d.core.math.*;
 	
-	/** b at turbulent dot ca */
-	/* based on Tim Knip and Don Picco's frustum works */
+	import flash.geom.*;
 	
 	public class Frustum
 	{
-		public static const NEAR:int = 0;
-		public static const LEFT:int = 1;
-		public static const RIGHT:int = 2;
-		public static const TOP:int = 3;
-		public static const BOTTOM:int = 4;
+		public static const LEFT:int = 0;
+		public static const RIGHT:int = 1;
+		public static const TOP:int = 2;
+		public static const BOTTOM:int = 3;
+		public static const NEAR:int = 4;
 		public static const FAR:int = 5;
 		
-		public var planeNames:Array = ['NEAR','LEFT','RIGHT','TOP','BOTTOM','FAR'];
-		
 		//clasification
+		public static const OUT:int = 0;
 		public static const IN:int = 1;
-		public static const OUT:int = -1;
-		public static const INTERSECT:int = 0;
+		public static const INTERSECT:int = 2;
 		
-		public var planes:Array;
+		public var planes:Vector.<Plane3D>;
 		
 		private var _matrix:Matrix3D = new Matrix3D();
-		
+		private var _distance:Number;
+    	
 		/**
 		 * Creates a frustum consisting of 6 planes in 3d space.
 		 */
 		public function Frustum()
 		{
-			planes = new Array(6);
-			planes[NEAR] = new Plane3D();
+			planes = new Vector.<Plane3D>(6, true);
 			planes[LEFT] = new Plane3D();
 			planes[RIGHT] = new Plane3D();
 			planes[TOP] = new Plane3D();
 			planes[BOTTOM] = new Plane3D();
+			planes[NEAR] = new Plane3D();
 			planes[FAR] = new Plane3D();
 		}
 		
@@ -54,22 +50,38 @@ package away3d.core.geom
 		 * Classify this sphere against this frustum
 		 * @return int Frustum.IN, Frustum.OUT or Frustum.INTERSECT
 		 */
-		public function classifySphere(center:Number3D, radius:Number):int
+		public function classifySphere(center:Vector3D, radius:Number):int
 		{
-			var dist:Number;
-			for(var p:int = 0; p < 6; p++)
-			{
-				dist = Plane3D(planes[p]).distance(center);
-				if(dist < -radius)
-				{
+			var _plane:Plane3D;
+			for each(_plane in planes) {
+				_distance = _plane.distance(center);
+				
+				if(_distance < -radius)
 					return OUT;
-				}
-				if(Math.abs(dist) < radius)
-				{
+				
+				if(Math.abs(_distance) < radius)
+					return INTERSECT;
+			}
+			
+			return IN;
+		}
+		
+		/**
+		 * Classify this radius against this frustum
+		 * @return int Frustum.IN, Frustum.OUT or Frustum.INTERSECT
+		 */
+		public function classifyRadius(radius:Number):int
+		{
+			var _plane:Plane3D;
+			for each(_plane in planes) {
+				if(_plane.d < -radius)
+					return OUT;
+				
+				if(Math.abs(_plane.d) < radius)
 					return INTERSECT;	
-				}
 				
 			}
+			
 			return IN;
 		}
 		
@@ -86,7 +98,7 @@ package away3d.core.geom
 				var plane:Plane3D = Plane3D(planes[p]);
 				var pointsIn:int = 0;	
 				
-				for( var i:int = 0; i < 8; i++)
+				for( var i:int = 0; i < 8; ++i)
 				{
 					if(plane.classifyPoint( points[i]) == Plane3D.FRONT)
 						pointsIn++;
@@ -110,10 +122,10 @@ package away3d.core.geom
 		{
 			_matrix = m;
 			
-			var sxx:Number = m.sxx, sxy:Number = m.sxy, sxz:Number = m.sxz, tx:Number = m.tx,
-			    syx:Number = m.syx, syy:Number = m.syy, syz:Number = m.syz, ty:Number = m.ty,
-			    szx:Number = m.szx, szy:Number = m.szy, szz:Number = m.szz, tz:Number = m.tz,
-			    swx:Number = m.swx, swy:Number = m.swy, swz:Number = m.swz, tw:Number = m.tw;
+			var sxx:Number = m.rawData[0], sxy:Number = m.rawData[4], sxz:Number = m.rawData[8], tx:Number = m.rawData[12],
+			    syx:Number = m.rawData[1], syy:Number = m.rawData[5], syz:Number = m.rawData[9], ty:Number = m.rawData[13],
+			    szx:Number = m.rawData[2], szy:Number = m.rawData[6], szz:Number = m.rawData[10], tz:Number = m.rawData[14],
+			    swx:Number = m.rawData[3], swy:Number = m.rawData[7], swz:Number = m.rawData[11], tw:Number = m.rawData[15];
 			
 			
 			var near:Plane3D = Plane3D(planes[NEAR]);

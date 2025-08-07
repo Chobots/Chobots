@@ -1,14 +1,18 @@
 package away3d.core.traverse
 {
-	import away3d.cameras.Camera3D;
+	import away3d.arcane;
+	import away3d.cameras.*;
+	import away3d.cameras.lenses.*;
 	import away3d.containers.*;
 	import away3d.core.base.*;
-	import away3d.core.light.*;
-	import away3d.core.math.*;
-	import away3d.core.project.*;
-	import away3d.core.render.*;
+	import away3d.core.clip.*;
+	import away3d.core.geom.*;
+	import away3d.graphs.bsp.BSPTree;
+	import away3d.core.utils.*;
 	
-	import flash.utils.*;
+	import flash.geom.*;
+	
+	use namespace arcane;
 	
     /**
     * Traverser that resolves the transform tree in a scene, ready for rendering.
@@ -16,10 +20,15 @@ package away3d.core.traverse
     public class ProjectionTraverser extends Traverser
     {
         private var _view:View3D;
-        private var _mesh:Mesh;
+        private var _frustum:Frustum;
+        private var _cameraVarsStore:CameraVarsStore;
         private var _camera:Camera3D;
-        private var _cameraview:Matrix3D;
-		private var _cameraviewtransforms:Dictionary;
+        private var _lens:AbstractLens;
+        private var _clipping:Clipping;
+        private var _cameraViewMatrix:Matrix3D;
+        private var _viewTransform:Matrix3D;
+        private var _nodeClassification:int;
+        private var _mesh:Mesh;
 		
 		/**
 		 * Defines the view being used.
@@ -31,11 +40,13 @@ package away3d.core.traverse
 		public function set view(val:View3D):void
 		{
 			_view = val;
-			_camera = _view.camera;
-            _cameraview = _camera.view;
-            _cameraviewtransforms = _camera.viewTransforms;
-//			if (_view.statsOpen)
-//				_view.statsPanel.clearObjects();
+			_cameraVarsStore = val.cameraVarsStore;
+			_clipping = val.clipping;
+			_camera = val.camera;
+			_lens = _camera.lens;
+            _cameraViewMatrix = _camera.viewMatrix;
+			if (val.statsOpen)
+				val.statsPanel.clearObjects();
 		}
 		    	
 		/**
@@ -55,11 +66,40 @@ package away3d.core.traverse
                 return false;
             
             //compute viewTransform matrix
-            _camera.createViewTransform(node).multiply(_cameraview, node.sceneTransform);
+            _viewTransform = _cameraVarsStore.createViewTransform(node);
+            _viewTransform.rawData = _cameraViewMatrix.rawData;
+            _viewTransform.prepend(node.sceneTransform);
             
-            //check which LODObject is visible
-            if (node is ILODObject)
-                return (node as ILODObject).matchLOD(_camera);
+            if (node is BSPTree) {
+            	BSPTree(node).update(_camera, _lens.getFrustum(node, _viewTransform), _cameraVarsStore);
+            	_cameraVarsStore.nodeClassificationDictionary[node] = Frustum.INTERSECT;
+			}
+            // only check culling if not pre-culled by a scene graph
+            else if (_clipping.objectCulling) {
+            	if (node._preCulled) {
+            		_cameraVarsStore.nodeClassificationDictionary[node] = node._preCullClassification;
+            		return true;
+            	}
+            	else {
+		        	_frustum = _lens.getFrustum(node, _viewTransform);
+		        	
+		            if ((node is Scene3D || _cameraVarsStore.nodeClassificationDictionary[node.parent] == Frustum.INTERSECT)) {
+		            	if (node.pivotZero)
+		            		_nodeClassification = _cameraVarsStore.nodeClassificationDictionary[node] = _frustum.classifyRadius(node.boundingRadius);
+		            	else
+		            		_nodeClassification = _cameraVarsStore.nodeClassificationDictionary[node] = _frustum.classifySphere(node.pivotPoint, node.boundingRadius);
+		            } else {
+		            	_nodeClassification = _cameraVarsStore.nodeClassificationDictionary[node] = _cameraVarsStore.nodeClassificationDictionary[node.parent];
+		            }
+		            if (_nodeClassification == Frustum.OUT) {
+		            	return false;
+		            }
+            	}
+            	
+            	//check which LODObject is visible
+	            if (node is ILODObject)
+	                return (node as ILODObject).matchLOD(_camera);
+            }
             
             return true;
         }
@@ -69,24 +109,19 @@ package away3d.core.traverse
 		 */
         public override function enter(node:Object3D):void
         {
-//        	if (_view.statsOpen && node is Mesh)
-//        		_view.statsPanel.addObject(node as Mesh);
+        	if (_view.statsOpen && node is Mesh)
+        		_view.statsPanel.addObject(node as Mesh);
         }
         
         public override function apply(node:Object3D):void
-        {
-            if (node.projector is ConvexBlockProjector)
-                (node.projector as ConvexBlockProjector).blockers(_view, _camera.viewTransforms[node], _view.blockerarray);
-            
+        { 
         	//add to scene meshes dictionary
             if ((_mesh = node as Mesh))
-            	_view.scene.meshes[node] = node;
+            	_mesh.updateMesh(_view);
         }
         
         public override function leave(node:Object3D):void
         {
-            //update object
-            node.updateObject();
         }
     }
 }
