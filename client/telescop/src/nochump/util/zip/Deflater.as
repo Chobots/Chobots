@@ -18,10 +18,8 @@ You should have received a copy of the GNU Lesser General Public License
 along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 */
 package nochump.util.zip {
-	
-	import flash.utils.Endian;
-	import flash.utils.ByteArray;
-	
+	import flash.utils.ByteArray;	
+
 	/**
 	 * This is the Deflater class.  The deflater class compresses input
 	 * with the deflate algorithm described in RFC 1951.  It uses the

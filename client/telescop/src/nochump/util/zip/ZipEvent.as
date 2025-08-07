@@ -1,8 +1,6 @@
-package nochump.util.zip
-{
+package nochump.util.zip {
 	import flash.events.Event;
-	import flash.utils.ByteArray;
-	import nochump.util.zip.ZipEntry;
+	import flash.utils.ByteArray;	
 
 	public class ZipEvent extends Event
 	{

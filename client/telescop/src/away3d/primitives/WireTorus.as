@@ -1,15 +1,15 @@
 ﻿package away3d.primitives
 {
-	import away3d.core.*;
+	import away3d.arcane;
     import away3d.core.base.*;
     
+	use namespace arcane;
+	
     /**
     * Creates a 3d wire torus primitive.
     */ 
-    public class WireTorus extends AbstractWirePrimitive
+    public class WireTorus extends AbstractPrimitive
     {
-    	use namespace arcane
-    	
         private var grid:Array;
         private var _radius:Number;
         private var _tube:Number;
@@ -17,39 +17,38 @@
         private var _segmentsT:int;
         private var _yUp:Boolean;
         
-        private function buildWireTorus(radius:Number, tube:Number, segmentsR:int, segmentsT:int, yUp:Boolean):void
-        {
+		/**
+		 * @inheritDoc
+		 */
+    	protected override function buildPrimitive():void
+    	{
+    		super.buildPrimitive();
+    		
             var i:int;
             var j:int;
 
-            grid = new Array(segmentsR);
-            for (i = 0; i < segmentsR; i++)
-            {
-                grid[i] = new Array(segmentsT);
-                for (j = 0; j < segmentsT; j++)
-                {
-                    var u:Number = i / segmentsR * 2 * Math.PI;
-                    var v:Number = j / segmentsT * 2 * Math.PI;
+            grid = new Array(_segmentsR);
+            for (i = 0; i < _segmentsR; ++i) {
+                grid[i] = new Array(_segmentsT);
+                for (j = 0; j < _segmentsT; ++j) {
+                    var u:Number = i / _segmentsR * 2 * Math.PI;
+                    var v:Number = j / _segmentsT * 2 * Math.PI;
                     
-                    if (yUp)
-                    	grid[i][j] = createVertex((radius + tube*Math.cos(v))*Math.cos(u), tube*Math.sin(v), (radius + tube*Math.cos(v))*Math.sin(u));
+                    if (_yUp)
+                    	grid[i][j] = createVertex((_radius + _tube*Math.cos(v))*Math.cos(u), _tube*Math.sin(v), (_radius + _tube*Math.cos(v))*Math.sin(u));
                     else
-                    	grid[i][j] = createVertex((radius + tube*Math.cos(v))*Math.cos(u), -(radius + tube*Math.cos(v))*Math.sin(u), tube*Math.sin(v));
+                    	grid[i][j] = createVertex((_radius + _tube*Math.cos(v))*Math.cos(u), -(_radius + _tube*Math.cos(v))*Math.sin(u), _tube*Math.sin(v));
                 }
             }
 
-            for (i = 0; i < segmentsR; i++)
-                for (j = 0; j < segmentsT; j++)
-                {
-                    addSegment(createSegment(grid[i][j], grid[(i+1) % segmentsR][j]));
-                    addSegment(createSegment(grid[i][j], grid[i][(j+1) % segmentsT]));
+            for (i = 0; i < _segmentsR; ++i) {
+                for (j = 0; j < _segmentsT; ++j) {
+                    addSegment(createSegment(grid[i][j], grid[(i+1) % _segmentsR][j]));
+                    addSegment(createSegment(grid[i][j], grid[i][(j+1) % _segmentsT]));
                 }
-				
-			type = "WireTorus";
-        	url = "primitive";
-				
-        }
-        
+            }
+    	}
+    	
     	/**
     	 * Defines the overall radius of the wire torus. Defaults to 100.
     	 */
@@ -150,21 +149,9 @@
             _segmentsT = ini.getInt("segmentsT", 6, {min:3});
 			_yUp = ini.getBoolean("yUp", true);
 			
-			buildWireTorus(_radius, _tube, _segmentsR, _segmentsT, _yUp);
-			
 			type = "WireTorus";
         	url = "primitive";
         }
-        
-		/**
-		 * @inheritDoc
-		 */
-    	public override function buildPrimitive():void
-    	{
-    		super.buildPrimitive();
-    		
-            buildWireTorus(_radius, _tube, _segmentsR, _segmentsT, _yUp);
-    	}
         
 		/**
 		 * Returns the vertex object specified by the grid position of the mesh.
@@ -174,6 +161,9 @@
 		 */
         public function vertex(r:int, t:int):Vertex
         {
+        	if (_primitiveDirty)
+    			updatePrimitive();
+    		
             return grid[t][r];
         }
     }

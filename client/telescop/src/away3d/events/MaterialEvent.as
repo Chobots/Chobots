@@ -15,7 +15,7 @@ package away3d.events
     	public static const LOAD_ERROR:String = "loadError";
     	
     	/**
-    	 * Defines the value of the type property of a laodProgress event object.
+    	 * Defines the value of the type property of a loadProgress event object.
     	 */
     	public static const LOAD_PROGRESS:String = "loadProgress";
     	
@@ -23,11 +23,6 @@ package away3d.events
     	 * Defines the value of the type property of a loadSuccess event object.
     	 */
     	public static const LOAD_SUCCESS:String = "loadSuccess";
-    	
-    	/**
-    	 * Defines the value of the type property of a materialResize event object.
-    	 */
-    	public static const MATERIAL_RESIZED:String = "materialResize";
     	
     	/**
     	 * Defines the value of the type property of a materialUpdated event object.
@@ -42,7 +37,7 @@ package away3d.events
     	/**
     	 * A reference to the material object that is relevant to the event.
     	 */
-        public var material:IMaterial;
+        public var material:Material;
 		
     	/**
     	 * A reference to a user defined extra object that is relevant to the event.
@@ -55,7 +50,7 @@ package away3d.events
 		 * @param	type		The type of the event. Possible values are: <code>MaterialEvent.RESIZED</code>.
 		 * @param	material	A reference to the material object that is relevant to the event.
 		 */
-        public function MaterialEvent(type:String, material:IMaterial)
+        public function MaterialEvent(type:String, material:Material)
         {
             super(type);
             this.material = material;

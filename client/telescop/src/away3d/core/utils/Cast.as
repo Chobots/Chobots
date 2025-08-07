@@ -50,7 +50,8 @@ package away3d.core.utils {
 
         private static function hexstring(string:String):Boolean
         {
-            for (var i:int = 0; i < string.length; i++)
+            var _length:int = string.length;
+            for (var i:int = 0; i < _length; ++i)
                 if (hexchars.indexOf(string.charAt(i)) == -1)
                     return false;
 
@@ -302,7 +303,7 @@ package away3d.core.utils {
             return name;
         }
 
-        public static function material(data:*):ITriangleMaterial
+        public static function material(data:*):Material
         {
             if (data == null)
                 return null;
@@ -322,7 +323,7 @@ package away3d.core.utils {
                 }
             }
 
-            if (data is IMaterial)
+            if (data is Material)
                 return data;
 
             if (data is int) 
@@ -349,15 +350,15 @@ package away3d.core.utils {
                         if (hash[0] == "")
                             return new WireframeMaterial(color(hash[1]));
                         else
-                           return new WireColorMaterial(color(hash[0]), {wirecolor:color(hash[1])});
+                           return new WireColorMaterial(color(hash[0]), {wireColor:color(hash[1])});
                     }
                     else
                     {
                         var line:Array = hash[1].split("|");
                         if (hash[0] == "")
-                            return new WireframeMaterial(color(line[0]), {width:parseFloat(line[1])});
+                            return new WireframeMaterial(color(line[0]), {thickness:parseFloat(line[1])});
                         else
-                            return new WireColorMaterial(color(hash[0]), {wirecolor:color(line[0]), width:parseFloat(line[1])});
+                            return new WireColorMaterial(color(hash[0]), {wireColor:color(line[0]), thickness:parseFloat(line[1])});
                     }
                 }
                 else
@@ -435,7 +436,7 @@ package away3d.core.utils {
                     if (wire == null)
                         return new ColorMaterial(color, {alpha:alpha});
                     else
-                        return new WireColorMaterial(color, {alpha:alpha, wirecolor:wire.color, wirealpha:wire.alpha, width:wire.width});
+                        return new WireColorMaterial(color, {alpha:alpha, wireColor:wire.wireColor, wireAlpha:wire.wireAlpha, thickness:wire.thickness});
                 }
 
                 if (wire != null)
@@ -445,12 +446,12 @@ package away3d.core.utils {
             throw new CastError("Can't cast to material: "+data);
         }
 
-        public static function wirematerial(data:*):ISegmentMaterial
+        public static function wirematerial(data:*):Material
         {
             if (data == null)
                 return null;
 
-            if (data is ISegmentMaterial)
+            if (data is Material)
                 return data;
 
             if (data is int) 
@@ -468,7 +469,7 @@ package away3d.core.utils {
                     return new WireframeMaterial(color(data));
 
                 var line:Array = (data as String).split("|");
-                return new WireframeMaterial(color(line[0]), {width:parseFloat(line[1])});
+                return new WireframeMaterial(color(line[0]), {thickness:parseFloat(line[1])});
             }
 
             if (data is Object)
@@ -476,9 +477,9 @@ package away3d.core.utils {
                 var dat:Init = Init.parse(data);
                 var color:uint = dat.getColor("color", 0);
                 var alpha:Number = dat.getNumber("alpha", 1, {min:0, max:1});
-                var width:Number = dat.getNumber("width", 1, {min:0});
+                var thickness:Number = dat.getNumber("thickness", 1, {min:0});
 
-                return new WireframeMaterial(color, {alpha:alpha, width:width});
+                return new WireframeMaterial(color, {alpha:alpha, thickness:thickness});
             }
 
             throw new CastError("Can't cast to wirematerial: "+data);

@@ -1,35 +1,41 @@
 ﻿package away3d.primitives
 {
-	import away3d.core.*;
+	import away3d.*;
 	import away3d.core.base.*;
-	import away3d.core.math.*;
-	import away3d.core.utils.*;
 	import away3d.materials.*;
+	import away3d.sprites.*;
     
+	use namespace arcane;
+	
     /**
-    * Creates a 3d cone primitive.
+    * Abstract base class for shaded primitives
     */ 
     public class AbstractPrimitive extends Mesh
     {
-    	use namespace arcane;
 		/** @private */
 		arcane var _v:Vertex;
 		/** @private */
-		arcane var _vStore:Array = new Array();
+		arcane var _vStore:Array = [];
 		/** @private */
-        arcane var _vActive:Array = new Array();
+        arcane var _vActive:Array = [];
 		/** @private */
 		arcane var _uv:UV;
 		/** @private */
-		arcane var _uvStore:Array = new Array();
+		arcane var _uvStore:Array = [];
 		/** @private */
-        arcane var _uvActive:Array = new Array();
+        arcane var _uvActive:Array = [];
 		/** @private */
 		arcane var _face:Face;
 		/** @private */
-		arcane var _faceStore:Array = new Array();
+		arcane var _faceStore:Array = [];
 		/** @private */
-        arcane var _faceActive:Array = new Array();
+        arcane var _faceActive:Array = [];
+        /** @private */
+		arcane var _segment:Segment;
+		/** @private */
+		arcane var _segmentStore:Array = [];
+		/** @private */
+        arcane var _segmentActive:Array = [];
 		/** @private */
         arcane var _primitiveDirty:Boolean;
 		/** @private */
@@ -37,9 +43,9 @@
 		{
 			if (_vStore.length) {
             	_vActive.push(_v = _vStore.pop());
-	            _v._x = x;
-	            _v._y = y;
-	            _v._z = z;
+	            _v.x = x;
+	            _v.y = y;
+	            _v.z = z;
    			} else {
             	_vActive.push(_v = new Vertex(x, y, z));
       		}
@@ -58,7 +64,7 @@
             return _uv;
 		}
 		/** @private */
-		arcane function createFace(v0:Vertex, v1:Vertex, v2:Vertex, material:ITriangleMaterial = null, uv0:UV = null, uv1:UV = null, uv2:UV = null):Face
+		arcane function createFace(v0:Vertex, v1:Vertex, v2:Vertex, material:Material = null, uv0:UV = null, uv1:UV = null, uv2:UV = null):Face
 		{
 			if (_faceStore.length) {
             	_faceActive.push(_face = _faceStore.pop());
@@ -74,6 +80,241 @@
    			}
             return _face;
 		}
+		/** @private */
+		arcane function createSegment(v0:Vertex, v1:Vertex, material:Material = null):Segment
+		{
+			if (_segmentStore.length) {
+            	_segmentActive.push(_segment = _segmentStore.pop());
+	            _segment.v0 = v0;
+	            _segment.v1 = v1;
+	            _segment.material = material;
+			} else {
+            	_segmentActive.push(_segment = new Segment(v0, v1, material));
+   			}
+            return _segment;
+		}
+		
+		private var _index:int;
+     	
+     	arcane function updatePrimitive():void
+     	{
+			buildPrimitive();
+    		
+        	//execute quarterFaces
+        	var i:int = geometry.quarterFacesTotal;
+        	while (i--)
+        		quarterFaces();
+     	}
+     	
+		/**
+		 * Builds the vertex, face and uv objects that make up the 3d primitive.
+		 */
+    	protected function buildPrimitive():void
+    	{
+    		_primitiveDirty = false;
+    		
+    		//remove all faces from the mesh
+    		_index = faces.length;
+    		while (_index--)
+    			removeFace(faces[_index]);
+    		
+    		//remove all segments from the mesh
+    		_index = segments.length;
+    		while (_index--)
+    			removeSegment(segments[_index]);
+    			
+    		//clear vertex objects
+    		_vStore = _vStore.concat(_vActive);
+        	_vActive = [];
+    		
+    		//clear uv objects
+    		_uvStore = _uvStore.concat(_uvActive);
+        	_uvActive = [];
+        	
+        	//clear face objects
+    		_faceStore = _faceStore.concat(_faceActive);
+        	_faceActive = [];
+        	
+        	//clear segment objects
+    		_segmentStore = _segmentStore.concat(_segmentActive);
+        	_segmentActive = [];
+    	}
+        
+		/**
+		 * @inheritDoc
+		 */
+        public override function get vertices():Vector.<Vertex>
+        {
+    		if (_primitiveDirty)
+    			updatePrimitive();
+    		
+            return _geometry.vertices;
+        }
+        
+		/**
+		 * @inheritDoc
+		 */
+        public override function get faces():Vector.<Face>
+        {
+    		if (_primitiveDirty)
+    			updatePrimitive();
+    		
+            return _geometry.faces;
+        }
+        
+		/**
+		 * @inheritDoc
+		 */
+        public override function get segments():Vector.<Segment>
+        {
+    		if (_primitiveDirty)
+    			updatePrimitive();
+    		
+            return _geometry.segments;
+        }
+        
+		/**
+		 * @inheritDoc
+		 */
+        public override function get sprites():Vector.<Sprite3D>
+        {
+    		if (_primitiveDirty)
+    			updatePrimitive();
+    		
+            return _geometry.sprites;
+        }
+        
+		/**
+		 * @inheritDoc
+		 */
+        public override function get elements():Vector.<Element>
+        {
+    		if (_primitiveDirty)
+    			updatePrimitive();
+    		
+            return _geometry.elements;
+        }
+        
+		/**
+		 * @inheritDoc
+		 */
+        public override function get geometry():Geometry
+        {
+    		if (_primitiveDirty)
+    			updatePrimitive();
+    		
+        	return _geometry;
+        }
+        
+		/**
+		 * @inheritDoc
+		 */
+        public override function get boundingRadius():Number
+        {
+            if (_primitiveDirty)
+    			updatePrimitive();
+           
+           return super.boundingRadius;
+        }
+        
+		/**
+		 * @inheritDoc
+		 */
+        public override function get maxX():Number
+        {
+            if (_primitiveDirty)
+    			updatePrimitive();
+           
+           return super.maxX;
+        }
+        
+		/**
+		 * @inheritDoc
+		 */
+        public override function get minX():Number
+        {
+            if (_primitiveDirty)
+    			updatePrimitive();
+           
+           return super.minX;
+        }
+        
+		/**
+		 * @inheritDoc
+		 */
+        public override function get maxY():Number
+        {
+            if (_primitiveDirty)
+    			updatePrimitive();
+           
+           return super.maxY;
+        }
+        
+		/**
+		 * @inheritDoc
+		 */
+        public override function get minY():Number
+        {
+            if (_primitiveDirty)
+    			updatePrimitive();
+           
+           return super.minY;
+        }
+        
+		/**
+		 * @inheritDoc
+		 */
+        public override function get maxZ():Number
+        {
+            if (_primitiveDirty)
+    			updatePrimitive();
+           
+           return super.maxZ;
+        }
+        
+		/**
+		 * @inheritDoc
+		 */
+        public override function get minZ():Number
+        {
+            if (_primitiveDirty)
+    			updatePrimitive();
+           
+           return super.minZ;
+        }
+        
+		/**
+		 * @inheritDoc
+		 */
+		public override function get objectWidth():Number
+		{
+            if (_primitiveDirty)
+    			updatePrimitive();
+           
+			return super.objectWidth;
+		}
+        
+		/**
+		 * @inheritDoc
+		 */
+		public override function get objectHeight():Number
+		{
+            if (_primitiveDirty)
+    			updatePrimitive();
+           
+			return super.objectHeight;
+		}
+        
+		/**
+		 * @inheritDoc
+		 */
+		public override function get objectDepth():Number
+		{
+            if (_primitiveDirty)
+    			updatePrimitive();
+           
+			return  super.objectDepth;
+		}
 		
 		/**
 		 * Creates a new <code>AbstractPrimitive</code> object.
@@ -83,39 +324,8 @@
 		public function AbstractPrimitive(init:Object = null)
 		{
 			super(init);
+			
+			_primitiveDirty = true;
 		}
-		
-		public override function updateObject():void
-    	{
-    		if (_primitiveDirty)
-        		buildPrimitive();
-        	
-        	super.updateObject();
-     	}
-     	
-		/**
-		 * Builds the vertex, face and uv objects that make up the 3d primitive.
-		 */
-    	public function buildPrimitive():void
-    	{
-    		_primitiveDirty = false;
-    		_objectDirty = true;
-    		
-    		//remove all elements from the mesh
-    		for each (_face in faces)
-    			removeFace(_face);
-    		
-    		//clear vertex objects
-    		_vStore = _vStore.concat(_vActive);
-        	_vActive = new Array();
-    		
-    		//clear uv objects
-    		_uvStore = _uvStore.concat(_uvActive);
-        	_uvActive = new Array();
-        	
-        	//clear face objects
-    		_faceStore = _faceStore.concat(_faceActive);
-        	_faceActive = new Array();
-    	}
     }
 }

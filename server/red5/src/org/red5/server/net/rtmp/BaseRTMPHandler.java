@@ -94,9 +94,13 @@ public abstract class BaseRTMPHandler
 
   /** {@inheritDoc} */
   public void connectionOpened(RTMPConnection conn, RTMP state) {
+    log.info("=== RTMP CONNECTION OPENED ===");
+    log.info("Connection opened: " + conn + " from " + conn.getRemoteAddress() + ":" + conn.getRemotePort());
+    log.info("RTMP state mode: {}", state.getMode() == RTMP.MODE_SERVER ? "SERVER" : "CLIENT");
     if (state.getMode() == RTMP.MODE_SERVER && appCtx != null) {
       ISchedulingService service =
           (ISchedulingService) appCtx.getBean(ISchedulingService.BEAN_NAME);
+      log.info("Starting handshake wait for connection: {}", conn);
       conn.startWaitForHandshake(service);
     }
   }
@@ -230,6 +234,9 @@ public abstract class BaseRTMPHandler
 
   /** {@inheritDoc} */
   public void connectionClosed(RTMPConnection conn, RTMP state) {
+    log.info("=== RTMP CONNECTION CLOSED ===");
+    log.info("Connection closed: " + conn + " from " + conn.getRemoteAddress() + ":" + conn.getRemotePort());
+    log.info("RTMP state: {}", state.getState());
     state.setState(RTMP.STATE_DISCONNECTED);
     conn.close();
   }

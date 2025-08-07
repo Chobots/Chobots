@@ -1,39 +1,32 @@
-package away3d.core.filter
+﻿package away3d.core.filter
 {
-	import away3d.cameras.*;
-    import away3d.containers.*;
-    import away3d.core.*;
-    import away3d.core.base.*;
-    import away3d.core.clip.*;
-    import away3d.core.draw.*;
-    import away3d.core.render.*;
-    
-    import flash.utils.*;
+	import away3d.arcane;
+	import away3d.cameras.lenses.*;
+	import away3d.core.base.*;
+	import away3d.core.project.*;
+	import away3d.core.render.*;
+	import away3d.core.utils.*;
+	
+	import flash.utils.*;
 
+	use namespace arcane;
+	
     /**
     * Splits all intersecting triangles and line segments.
     */
     public class QuadrantRiddleFilter implements IPrimitiveQuadrantFilter
     {
-    	use namespace arcane;
-    	
         private var maxdelay:int;
         
+        private var renderer:QuadrantRenderer;
     	private var start:int;
         private var check:int;
-        
-        private var primitives:Array;
-        private var pri:DrawPrimitive;
+        private var primitives:Vector.<uint>;
         private var turn:int;
-        private var leftover:Array;
-        
-        private var rivals:Array;
-        private var rival:DrawPrimitive;
-        
+        private var rivals:Vector.<uint>;
         private var parts:Array;
-        private var part:DrawPrimitive;
-        private var subst:Array;
-        private var focus:Number;
+        private var lens:AbstractLens;
+        private var positiveArea:Number;
         
         private var av0z:Number;
         private var av0p:Number;
@@ -98,10 +91,6 @@ package away3d.core.filter
         private var sav0:Number;
         private var sav1:Number;
         private var sav2:Number;
-        
-        private var tv0:Vertex;
-        private var tv1:Vertex;
-        private var tv2:Vertex;
         
         private var q0x:Number;
         private var q0y:Number;
@@ -168,54 +157,83 @@ package away3d.core.filter
         private var d:Number;
         private var k0:Number;
         private var k1:Number;
-
+		private var k2:Number;
+		
         private var tv01z:Number;
         private var tv01p:Number;
         private var tv01x:Number;
         private var tv01y:Number;
-        private var v01:ScreenVertex = new ScreenVertex();
         
-    	private function riddle(q:DrawPrimitive, w:DrawPrimitive):Array
+        private var tv12z:Number;
+        private var tv12p:Number;
+        private var tv12x:Number;
+        private var tv12y:Number;
+        
+        private var tv20z:Number;
+        private var tv20p:Number;
+        private var tv20x:Number;
+        private var tv20y:Number;
+        
+        private var _viewSourceObjectQ:ViewSourceObject;
+        private var _viewSourceObjectW:ViewSourceObject;
+        private var _index:uint;
+        private var _startIndexQ:uint;
+        private var _startIndexW:uint;
+        private var _uvs:Vector.<UV>;
+        
+    	private function riddle(q:uint, w:uint):Array
         {
-            if (q is DrawTriangle)
-            { 
-                if (w is DrawTriangle)
-                    return riddleTT(q as DrawTriangle, w as DrawTriangle);
-                if (w is DrawSegment)
-                    return riddleTS(q as DrawTriangle, w as DrawSegment);
+            if (renderer.primitiveType[q] == PrimitiveType.FACE) { 
+                if (renderer.primitiveType[w] == PrimitiveType.FACE)
+                    return riddleTT(q, w);
+                if (renderer.primitiveType[w] == PrimitiveType.SEGMENT)
+                    return riddleTS(q, w);
             }
             else
-            if (q is DrawSegment)
-            {
-                if (w is DrawTriangle)
-                    return riddleTS(w as DrawTriangle, q as DrawSegment);
+            if (renderer.primitiveType[q] == PrimitiveType.SEGMENT) {
+                if (renderer.primitiveType[w] == PrimitiveType.FACE)
+                    return riddleTS(w, q);
             }
             return [];
         }
         
-        private final function riddleTT(q:DrawTriangle, w:DrawTriangle):Array
+        private final function riddleTT(q:uint, w:uint):Array
         {
+        	positiveArea = renderer.primitiveProperties[uint(q*9 + 8)];
+        	
+        	if (positiveArea < 0)
+        		positiveArea = -positiveArea;
+        	
+			_viewSourceObjectW = renderer.primitiveSource[w];
+			_startIndexW = renderer.primitiveProperties[uint(w*9)];
+			_viewSourceObjectQ = renderer.primitiveSource[q];
+        	_startIndexQ = renderer.primitiveProperties[uint(q*9)];
+        	
         	//return if triangle area below 10 or if actual rival triangles do not overlap
-            if (q.area < 10 || w.area < 10 || !overlap(q, w))
+            if (positiveArea < 10 || positiveArea < 10 || !overlap())
                 return null;
 			
+			
 			//deperspective rival v0 
-            av0z = w.v0.z;
-            av0p = 1 + av0z / focus;
-            av0x = w.v0.x * av0p;
-            av0y = w.v0.y * av0p;
+			_index = _viewSourceObjectW.screenIndices[_startIndexW];
+            av0z = lens.getScreenZ(_viewSourceObjectW.screenUVTs[uint(_index*3 + 2)]);
+            av0p = lens.getPerspective(av0z);
+            av0x = _viewSourceObjectW.screenVertices[uint(_index*2)] / av0p;
+            av0y = _viewSourceObjectW.screenVertices[uint(_index*2 + 1)] / av0p;
 			
 			//deperspective rival v1
-            av1z = w.v1.z;
-            av1p = 1 + av1z / focus;
-            av1x = w.v1.x * av1p;
-            av1y = w.v1.y * av1p;
+			_index = _viewSourceObjectW.screenIndices[uint(_startIndexW + 1)];
+            av1z = lens.getScreenZ(_viewSourceObjectW.screenUVTs[uint(_index*3 + 2)]);
+            av1p = lens.getPerspective(av1z);
+            av1x = _viewSourceObjectW.screenVertices[uint(_index*2)] / av1p;
+            av1y = _viewSourceObjectW.screenVertices[uint(_index*2 + 1)] / av1p;
 			
 			//deperspective rival v2
-            av2z = w.v2.z;
-            av2p = 1 + av2z / focus;
-            av2x = w.v2.x * av2p;
-            av2y = w.v2.y * av2p;
+			_index = _viewSourceObjectW.screenIndices[uint(_startIndexW + 2)];
+            av2z = lens.getScreenZ(_viewSourceObjectW.screenUVTs[uint(_index*3 + 2)]);
+            av2p = lens.getPerspective(av2z);
+            av2x = _viewSourceObjectW.screenVertices[uint(_index*2)] / av2p;
+            av2y = _viewSourceObjectW.screenVertices[uint(_index*2 + 1)] / av2p;
 			
 			//calculate rival face normal
             ad1x = av1x - av0x;
@@ -238,22 +256,25 @@ package away3d.core.filter
                 return null;
 			
 			//deperspective v0
-            tv0z = q.v0.z;
-            tv0p = 1 + tv0z / focus;
-            tv0x = q.v0.x * tv0p;
-            tv0y = q.v0.y * tv0p;
+			_index = _viewSourceObjectQ.screenIndices[_startIndexQ];
+            tv0z = lens.getScreenZ(_viewSourceObjectQ.screenUVTs[uint(_index*3 + 2)]);
+            tv0p = lens.getPerspective(tv0z);
+            tv0x = _viewSourceObjectQ.screenVertices[uint(_index*2)] / tv0p;
+            tv0y = _viewSourceObjectQ.screenVertices[uint(_index*2 + 1)] / tv0p;
 
 			//deperspective v1
-            tv1z = q.v1.z;
-            tv1p = 1 + tv1z / focus;
-            tv1x = q.v1.x * tv1p;
-            tv1y = q.v1.y * tv1p;
+			_index = _viewSourceObjectQ.screenIndices[uint(_startIndexQ + 1)];
+            tv1z = lens.getScreenZ(_viewSourceObjectQ.screenUVTs[uint(_index*3 + 2)]);
+            tv1p = lens.getPerspective(tv1z);
+            tv1x = _viewSourceObjectQ.screenVertices[uint(_index*2)] / tv1p;
+            tv1y = _viewSourceObjectQ.screenVertices[uint(_index*2 + 1)] / tv1p;
 			
 			//deperspective v2
-            tv2z = q.v2.z;
-            tv2p = 1 + tv2z / focus;
-            tv2x = q.v2.x * tv2p;
-            tv2y = q.v2.y * tv2p;
+			_index = _viewSourceObjectQ.screenIndices[uint(_startIndexQ + 2)];
+            tv2z = lens.getScreenZ(_viewSourceObjectQ.screenUVTs[uint(_index*3 + 2)]);
+            tv2p = lens.getPerspective(tv2z);
+            tv2x = _viewSourceObjectQ.screenVertices[uint(_index*2)] / tv2p;
+            tv2y = _viewSourceObjectQ.screenVertices[uint(_index*2 + 1)] / tv2p;
             
             //calculate the dot product of v0, v1 and v2 to the rival normal
             sv0 = apa*tv0x + apb*tv0y + apc*tv0z - apd;
@@ -306,47 +327,70 @@ package away3d.core.filter
                 return null;
 
             // TODO: segment cross check - now some extra cuts are made
+			d = sv0 - sv1;
+            k1 = sv0 / d;
+            k0 = -sv1 / d;
 
-            tv0 = q.v0.deperspective(focus);
-            tv1 = q.v1.deperspective(focus);
-            tv2 = q.v2.deperspective(focus);
-                
-            if (sv1*sv2 >= -1)
-            {
-                return q.fivepointcut(q.v2,  Vertex.weighted(tv2, tv0, -sv0, sv2).perspective(focus), q.v0, Vertex.weighted(tv0, tv1, sv1, -sv0).perspective(focus), q.v1,
-                    q.uv2, UV.weighted(q.uv2, q.uv0, -sv0, sv2), q.uv0, UV.weighted(q.uv0, q.uv1, sv1, -sv0), q.uv1);
-            }                                                           
-            else                                                        
-            if (sv0*sv1 >= -1)                                           
-            {
-                return q.fivepointcut(q.v1,  Vertex.weighted(tv1, tv2, -sv2, sv1).perspective(focus), q.v2, Vertex.weighted(tv2, tv0, sv0, -sv2).perspective(focus), q.v0,
-                    q.uv1, UV.weighted(q.uv1, q.uv2, -sv2, sv1), q.uv2, UV.weighted(q.uv2, q.uv0, sv0, -sv2), q.uv0);
-            }                                                           
-            else                                                        
-            {                                                           
-                return q.fivepointcut(q.v0,  Vertex.weighted(tv0, tv1, -sv1, sv0).perspective(focus), q.v1, Vertex.weighted(tv1, tv2, sv2, -sv1).perspective(focus), q.v2,
-                    q.uv0, UV.weighted(q.uv0, q.uv1, -sv1, sv0), q.uv1, UV.weighted(q.uv1, q.uv2, sv2, -sv1), q.uv2);
+            tv01z = (tv1z*k1 + tv0z*k0);
+            tv01p = lens.getPerspective(tv01z);
+            tv01x = (tv1x*k1 + tv0x*k0) * tv01p;
+            tv01y = (tv1y*k1 + tv0y*k0) * tv01p;
+            
+            d = sv1 - sv2;
+            k2 = sv1 / d;
+            k1 = -sv2 / d;
+
+            tv12z = (tv2z*k2 + tv1z*k1);
+            tv12p = lens.getPerspective(tv12z);
+            tv12x = (tv2x*k2 + tv1x*k1) * tv12p;
+            tv12y = (tv2y*k2 + tv1y*k1) * tv12p;
+            
+            d = sv2 - sv0;
+            k0 = sv2 / d;
+            k2 = -sv0 / d;
+
+            tv20z = (tv0z*k0 + tv2z*k2);
+            tv20p = lens.getPerspective(tv20z);
+            tv20x = (tv0x*k0 + tv2x*k2) * tv20p;
+            tv20y = (tv0y*k0 + tv2y*k2) * tv20p;
+            
+            _uvs = renderer.primitiveUVs[q];
+            
+			if (sv1*sv2 >= -1) {
+                return renderer.primitiveSource[q].fivepointcut(q, renderer, _startIndexQ+2, tv20x, tv20y, tv20z, _startIndexQ, tv01x, tv01y, tv01z, _startIndexQ+1,
+                    _uvs[uint(2)], UV.weighted(_uvs[uint(2)], _uvs[uint(0)], -sv0, sv2), _uvs[uint(0)], UV.weighted(_uvs[uint(0)], _uvs[uint(1)], sv1, -sv0), _uvs[uint(1)]);
+            } else if (sv0*sv1 >= -1) {
+                return renderer.primitiveSource[q].fivepointcut(q, renderer, _startIndexQ+1, tv12x, tv12y, tv12z, _startIndexQ+2, tv20x, tv20y, tv20z, _startIndexQ,
+                    _uvs[uint(1)], UV.weighted(_uvs[uint(1)], _uvs[uint(2)], -sv2, sv1), _uvs[uint(2)], UV.weighted(_uvs[uint(2)], _uvs[uint(0)], sv0, -sv2), _uvs[uint(0)]);
+            } else {                                                           
+                return renderer.primitiveSource[q].fivepointcut(q, renderer, _startIndexQ, tv01x, tv01y, tv01z, _startIndexQ+1, tv12x, tv12y, tv12z, _startIndexQ+2,
+                    _uvs[uint(0)], UV.weighted(_uvs[uint(0)], _uvs[uint(1)], -sv1, sv0), _uvs[uint(1)], UV.weighted(_uvs[uint(1)], _uvs[uint(2)], sv2, -sv1), _uvs[uint(2)]);
             }
 
-            return null;    
+            return null;
         }
          
-        private function overlap(q:DrawTriangle, w:DrawTriangle):Boolean
+        private function overlap():Boolean
         {
-        
-            q0x = q.v0.x;
-            q0y = q.v0.y;
-            q1x = q.v1.x;
-            q1y = q.v1.y;
-            q2x = q.v2.x;
-            q2y = q.v2.y;
-        
-            w0x = w.v0.x;
-            w0y = w.v0.y;
-            w1x = w.v1.x;
-            w1y = w.v1.y;
-            w2x = w.v2.x;
-            w2y = w.v2.y;
+        	_index = _viewSourceObjectQ.screenIndices[_startIndexQ]*2;
+            q0x = _viewSourceObjectQ.screenVertices[_index];
+            q0y = _viewSourceObjectQ.screenVertices[uint(_index + 1)];
+            _index = _viewSourceObjectQ.screenIndices[uint(_startIndexQ + 1)]*2;
+            q1x = _viewSourceObjectQ.screenVertices[_index];
+            q1y = _viewSourceObjectQ.screenVertices[uint(_index + 1)];
+            _index = _viewSourceObjectQ.screenIndices[uint(_startIndexQ + 2)]*2;
+            q2x = _viewSourceObjectQ.screenVertices[_index];
+            q2y = _viewSourceObjectQ.screenVertices[uint(_index + 1)];
+        	
+        	_index = _viewSourceObjectW.screenIndices[_startIndexW]*2;
+            w0x = _viewSourceObjectW.screenVertices[_index];
+            w0y = _viewSourceObjectW.screenVertices[uint(_index + 1)];
+            _index = _viewSourceObjectW.screenIndices[uint(_startIndexW + 1)]*2;
+            w1x = _viewSourceObjectW.screenVertices[_index];
+            w1y = _viewSourceObjectW.screenVertices[uint(_index + 1)];
+            _index = _viewSourceObjectW.screenIndices[uint(_startIndexW + 2)]*2;
+            w2x = _viewSourceObjectW.screenVertices[_index];
+            w2y = _viewSourceObjectW.screenVertices[uint(_index + 1)];
         
             ql01a = q1y - q0y;
             ql01b = q0x - q1x;
@@ -417,73 +461,79 @@ package away3d.core.filter
             return true;
         }
         
-        private function riddleTS(q:DrawTriangle, r:DrawSegment):Array
+        private function riddleTS(q:uint, w:uint):Array
         {
-
-            av0z = q.v0.z;
-            av0p = 1 + av0z / focus;
-            av0x = q.v0.x * av0p;
-            av0y = q.v0.y * av0p;
-
-            av1z = q.v1.z;
-            av1p = 1 + av1z / focus;
-            av1x = q.v1.x * av1p;
-            av1y = q.v1.y * av1p;
-
-            av2z = q.v2.z;
-            av2p = 1 + av2z / focus;
-            av2x = q.v2.x * av2p;
-            av2y = q.v2.y * av2p;
-                                      
+        	_viewSourceObjectQ = renderer.primitiveSource[q];
+			_startIndexQ = renderer.primitiveProperties[uint(q*9)];
+			
+        	_index = _viewSourceObjectQ.screenIndices[_startIndexQ];
+            av0z = lens.getScreenZ(_viewSourceObjectQ.screenUVTs[uint(_index*3 + 2)]);
+            av0p = lens.getPerspective(av0z);
+            av0x = _viewSourceObjectQ.screenVertices[uint(_index*2)] / av0p;
+            av0y = _viewSourceObjectQ.screenVertices[uint(_index*2 + 1)] / av0p;
+			
+			_index = _viewSourceObjectQ.screenIndices[uint(_startIndexQ + 1)];
+            av1z = lens.getScreenZ(_viewSourceObjectQ.screenUVTs[uint(_index*3 + 2)]);
+            av1p = lens.getPerspective(av1z);
+            av1x = _viewSourceObjectQ.screenVertices[uint(_index*2)] / av1p;
+            av1y = _viewSourceObjectQ.screenVertices[uint(_index*2 + 1)] / av1p;
+			
+			_index = _viewSourceObjectQ.screenIndices[uint(_startIndexQ + 2)];
+            av2z = lens.getScreenZ(_viewSourceObjectQ.screenUVTs[uint(_index*3 + 2)]);
+            av2p = lens.getPerspective(av2z);
+            av2x = _viewSourceObjectQ.screenVertices[uint(_index*2)] / av2p;
+            av2y = _viewSourceObjectQ.screenVertices[uint(_index*2 + 1)] / av2p;
+			   
             ad1x = av1x - av0x;
             ad1y = av1y - av0y;
             ad1z = av1z - av0z;
-
+			
             ad2x = av2x - av0x;
             ad2y = av2y - av0y;
             ad2z = av2z - av0z;
-
+			
             apa = ad1y*ad2z - ad1z*ad2y;
             apb = ad1z*ad2x - ad1x*ad2z;
             apc = ad1x*ad2y - ad1y*ad2x;
             apd = - (apa*av0x + apb*av0y + apc*av0z);
-
+			
             if (apa*apa + apb*apb + apc*apc < 1)
                 return null;
-
-            tv0z = r.v0.z;
-            tv0p = 1 + tv0z / focus;
-            tv0x = r.v0.x * tv0p;
-            tv0y = r.v0.y * tv0p;
-
-            tv1z = r.v1.z;
-            tv1p = 1 + tv1z / focus;
-            tv1x = r.v1.x * tv1p;
-            tv1y = r.v1.y * tv1p;
-
+			
+			_viewSourceObjectW = renderer.primitiveSource[w];
+        	_startIndexW = renderer.primitiveProperties[uint(w*9)];
+        	
+        	_index = _viewSourceObjectW.screenIndices[_startIndexW];
+            tv0z = lens.getScreenZ(_viewSourceObjectW.screenUVTs[uint(_index*3 + 2)]);
+            tv0p = lens.getPerspective(tv0z);
+            tv0x = _viewSourceObjectW.screenVertices[uint(_index*2)] / tv0p;
+            tv0y = _viewSourceObjectW.screenVertices[uint(_index*2 + 1)] / tv0p;
+			
+			_index = _viewSourceObjectW.screenIndices[uint(_startIndexW + 1)];
+            tv1z = lens.getScreenZ(_viewSourceObjectW.screenUVTs[uint(_index*3 + 2)]);
+            tv1p = lens.getPerspective(tv1z);
+            tv1x = _viewSourceObjectW.screenVertices[uint(_index*2)] / tv1p;
+            tv1y = _viewSourceObjectW.screenVertices[uint(_index*2 + 1)] / tv1p;
+			
             sv0 = apa*tv0x + apb*tv0y + apc*tv0z + apd;
             sv1 = apa*tv1x + apb*tv1y + apc*tv1z + apd;
-
+			
             if (sv0*sv1 >= 0)                                           
                 return null;
-
+			
             d = sv1 - sv0;
             k0 = sv1 / d;
             k1 = -sv0 / d;
-
+			
             tv01z = (tv0z*k0 + tv1z*k1);
-            tv01p = 1 / (1 + tv01z /  focus);
+            tv01p = lens.getPerspective(tv01z);
             tv01x = (tv0x*k0 + tv1x*k1) * tv01p;
             tv01y = (tv0y*k0 + tv1y*k1) * tv01p;
-
-            if (!q.contains(tv01x, tv01y))
+			
+            if (!_viewSourceObjectQ.contains(q, renderer, tv01x, tv01y))
                 return null;
 			
-			v01.x = tv01x;
-			v01.y = tv01y;
-			v01.z = tv01z;
-			
-			return r.onepointcut(v01);
+			return renderer.primitiveSource[w].onepointcut(w, renderer, tv01x, tv01y, tv01z);
         }
         
 		/**
@@ -499,50 +549,52 @@ package away3d.core.filter
 		/**
 		 * @inheritDoc
 		 */
-        public function filter(tree:QuadrantRenderer, scene:Scene3D, camera:Camera3D, clip:Clipping):void
+        public function filter(renderer:QuadrantRenderer):void
         {
+        	this.renderer = renderer;
             start = getTimer();
             check = 0;
-    		focus = camera.focus;
+    		lens = renderer._view.camera.lens;
     		
-            primitives = tree.list();
+            primitives = renderer.list();
             turn = 0;
             
             while (primitives.length > 0)
             {
-                var leftover:Array = new Array();
-                for each (pri in primitives)
+                var leftover:Vector.<uint> = new Vector.<uint>();
+				var priIndex:uint;
+                for each (priIndex in primitives)
                 {
                     
-                    check++;
+                    ++check;
                     if (check == 10)
                         if (getTimer() - start > maxdelay)
                             return;
                         else
                             check = 0;
                     
-                    rivals = tree.get(pri, pri.source);
+                    rivals = renderer.getRivals(priIndex, renderer.primitiveSource[priIndex].source);
+					var rival:uint;
                     for each (rival in rivals)
                     {
-                        if (rival == pri)
+                    	if (rival == priIndex)
+                            continue;
+                        if (renderer.primitiveProperties[uint(rival*9 + 6)] >= renderer.primitiveProperties[uint(priIndex*9 + 7)])
+                            continue;
+                        if (renderer.primitiveProperties[uint(rival*9 + 7)] <= renderer.primitiveProperties[uint(priIndex*9 + 6)])
                             continue;
                         
-                        if (rival.minZ >= pri.maxZ)
-                            continue;
-                        if (rival.maxZ <= pri.minZ)
-                            continue;
-                        
-                        parts = riddle(pri, rival);
+                        parts = riddle(priIndex, rival);
                         
                         if (parts == null)
                             continue;
-    
-                        tree.remove(pri);
+    					
+                        renderer.remove(priIndex);
+						var part:uint;
                         for each (part in parts)
-                        {
-                            leftover.push(part);
-                            tree.primitive(part);
-                        }
+                        	if (renderer.primitive(part))
+                            	leftover.push(part);
+                        
                         break;
                     }
                 }

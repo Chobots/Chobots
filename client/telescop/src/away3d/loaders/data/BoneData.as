@@ -1,6 +1,6 @@
 package away3d.loaders.data
 {
-	import away3d.core.math.*;
+	import flash.geom.*;
 	/**
 	 * Data class for a bone used in SkinAnimation.
 	 */

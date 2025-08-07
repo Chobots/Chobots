@@ -1,9 +1,12 @@
 package away3d.core.base
 {
-    import away3d.core.*;
+    import away3d.arcane;
+	import away3d.core.geom.*;
     import away3d.events.*;
     
     import flash.events.EventDispatcher;
+    
+    use namespace arcane;
     
 	 /**
 	 * Dispatched when the vertex of a 3d element changes.
@@ -32,7 +35,13 @@ package away3d.core.base
 	 */
     public class Element extends EventDispatcher
     {
-        use namespace arcane;
+    	protected var _index:int;
+		protected var _vertices:Vector.<Vertex> = new Vector.<Vertex>();
+		protected var _uvs:Vector.<UV> = new Vector.<UV>();
+		protected var _commands:Vector.<String> = new Vector.<String>();
+		protected var _pathCommands:Array = new Array();
+		protected var _lastAddedVertex:Vertex = new Vertex();
+    	
 		/** @private */
         arcane var _visible:Boolean = true;
 		/** @private */
@@ -68,10 +77,22 @@ package away3d.core.base
             
             dispatchEvent(_visiblechanged);
         }
-		
+		/** @private */
+        arcane function notifyMappingChange():void
+         {	
+            if (!hasEventListener(ElementEvent.MAPPING_CHANGED))
+                return;
+			
+            if (_mappingchanged == null)
+                _mappingchanged = new ElementEvent(ElementEvent.MAPPING_CHANGED, this);
+            
+            dispatchEvent(_mappingchanged);
+        }
+        
 		private var _vertexchanged:ElementEvent;
 		private var _vertexvaluechanged:ElementEvent;
 		private var _visiblechanged:ElementEvent;
+		private var _mappingchanged:ElementEvent;
 		
 		public var vertexDirty:Boolean;
 		
@@ -88,10 +109,26 @@ package away3d.core.base
 		/**
 		 * Returns an array of vertex objects that make up the 3d element.
 		 */
-        public function get vertices():Array
+        public function get vertices():Vector.<Vertex>
         {
-            throw new Error("Not implemented");
+            return _vertices;
         }
+        
+		/**
+		 * Returns an array of drawing command strings that make up the 3d element.
+		 */
+        public function get commands():Vector.<String>
+        {
+            return _commands;
+        }
+                
+        /**
+		 * Returns an array of drawing command objects that are used by the face.
+		 */
+        public function get pathCommands():Array
+        {
+			return _pathCommands;
+		}
         
 		/**
 		 * Determines whether the 3d element is visible in the scene.
@@ -173,7 +210,41 @@ package away3d.core.base
         {
             return -Math.sqrt(radius2);
         }
-		
+		        
+        
+        /**
+         * Offsets the vertices of the face by given amounts in x, y and z.
+         * @param x [Number] Offset in x.
+         * @param y [Number] Offset in y.
+         * @param z [Number] Offset in z.
+         * 
+         */    
+        public function offset(x:Number, y:Number, z:Number):void
+        {
+        	for(var i:uint; i<_pathCommands.length; i++)
+			{
+				var command:PathCommand = _pathCommands[i];
+				if(command.pControl)
+				{
+					command.pControl.x += x;
+					command.pControl.y += y;
+					command.pControl.z += z;
+				}
+				if(command.pEnd)
+				{
+					command.pEnd.x += x;
+					command.pEnd.y += y;
+					command.pEnd.z += z; 
+				}
+			}
+			
+			for each (var _vertex:Vertex in _vertices) {
+				_vertex.x += x;
+				_vertex.y += y;
+				_vertex.z += z; 
+			}
+        }
+        
 		/**
 		 * Default method for adding a vertexchanged event listener
 		 * 
@@ -233,7 +304,25 @@ package away3d.core.base
         {
             removeEventListener(ElementEvent.VISIBLE_CHANGED, listener, false);
         }
-
-
+        
+		/**
+		 * Default method for adding a mappingchanged event listener
+		 * 
+		 * @param	listener		The listener function
+		 */
+        public function addOnMappingChange(listener:Function):void
+        {
+            addEventListener(ElementEvent.MAPPING_CHANGED, listener, false, 0, true);
+        }
+		
+		/**
+		 * Default method for removing a mappingchanged event listener
+		 * 
+		 * @param	listener		The listener function
+		 */
+        public function removeOnMappingChange(listener:Function):void
+        {
+            removeEventListener(ElementEvent.MAPPING_CHANGED, listener, false);
+        }
     }
 }

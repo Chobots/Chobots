@@ -504,7 +504,7 @@ CREATE TABLE `InfoPanel`
     `id`      bigint(20)                                               NOT NULL AUTO_INCREMENT,
     `created` datetime                                                          DEFAULT NULL,
     `caption` varchar(255)                                                      DEFAULT NULL,
-    `data`    text CHARACTER SET utf8mb3 COLLATE utf8mb3_uca1400_ai_ci NOT NULL,
+    `data`    text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
     `enabled` bit(1)                                                   NOT NULL DEFAULT b'0',
     PRIMARY KEY (`id`),
     UNIQUE KEY `caption` (`caption`)

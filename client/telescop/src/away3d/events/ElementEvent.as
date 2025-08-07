@@ -10,9 +10,13 @@ package away3d.events
     public class ElementEvent extends Event
     {
     	/**
+    	 * Defines the value of the type property of a mappingChanged event object.
+    	 */
+    	public static const MAPPING_CHANGED:String = "mappingChanged";
+    	/**
     	 * Defines the value of the type property of a vertexChanged event object.
     	 */
-    	public static const VERTEX_CHANGED:String = "vertexCchanged";
+    	public static const VERTEX_CHANGED:String = "vertexChanged";
     	
     	/**
     	 * Defines the value of the type property of a vertexvalueChanged event object.

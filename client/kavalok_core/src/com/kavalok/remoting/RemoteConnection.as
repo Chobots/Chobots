@@ -2,8 +2,6 @@ package com.kavalok.remoting
 {
 	public class RemoteConnection
 	{
-		public static const CONNECTION_URL_FORMAT : String = "rtmp://{0}";
-
 		private static var _instance : RemoteConnectionInstance;
 		
 		public static function get instance() : RemoteConnectionInstance

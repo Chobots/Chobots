@@ -62,7 +62,7 @@ package {
 		
 		private function onReady():void
 		{
-			BaseRed5Delegate.defaultConnectionUrl = Global.startupInfo.url;
+			BaseRed5Delegate.defaultConnectionUrl = ConnectionConfig.buildRtmpUrl();
 			var command:ConnectCommand = new ConnectCommand();
 			command.connectEvent.addListener(onConnect);
 			command.execute();

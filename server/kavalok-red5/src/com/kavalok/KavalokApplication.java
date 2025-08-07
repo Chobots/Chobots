@@ -421,6 +421,7 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       case "CharService.getCharViewLogin":
       case "LoginService.login":
       case "LoginService.loginWithToken":
+      case "LoginService.register":
         // Public methods (no login or permission required)
         return 0;
 
@@ -518,7 +519,19 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
   }
 
   public boolean appConnect(IConnection conn, Object[] params) {
-    if (!started) return false;
+    logger.debug("=== KAVALOK APP CONNECT ATTEMPT ===");
+    logger.debug("Connection from: {}:{}", conn.getRemoteAddress(), conn.getRemotePort());
+    logger.debug("Connection parameters: {}", params);
+    logger.debug("Application started: {}", started);
+    
+    if (!started) {
+      logger.error("=== KAVALOK APP CONNECT FAILED ===");
+      logger.error("Application not started - rejecting connection");
+      return false;
+    }
+    
+    logger.debug("=== KAVALOK APP CONNECT SUCCESSFUL ===");
+    logger.debug("Connection accepted");
     return true;
   }
 

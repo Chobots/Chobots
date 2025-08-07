@@ -100,7 +100,7 @@
 		<level value="WARN" />
 	</logger>
 	<logger name="org.red5.server.net.rtmp.RTMPMinaIoHandler">
-		<level value="OFF" />
+		<level value="WARN" />
 	</logger>
 	<logger name="org.red5.server.net.rtmp.RTMPMinaTransport">
 		<level value="WARN" />

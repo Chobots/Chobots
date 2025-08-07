@@ -12,8 +12,7 @@ package away3d.loaders.data
 	 */
 	public class MaterialData
 	{
-		private var _material:IMaterial;
-		private var _element:Element;
+		private var _material:Material;
 		
 		/**
 		 * String representing a texture material.
@@ -73,27 +72,29 @@ package away3d.loaders.data
 		/**
 		 * defines the material object of the resulting material.
 		 */
-		public function get material():IMaterial
+		public function get material():Material
         {
         	return _material;
         }
 		
-		public function set material(val:IMaterial):void
+		public function set material(val:Material):void
         {
         	if (_material == val)
                 return;
             
             _material = val;
             
-            if (_material is IUVMaterial)
-            	textureBitmap = (_material as IUVMaterial).bitmap;
+            if (_material is BitmapMaterial)
+            	textureBitmap = (_material as BitmapMaterial).bitmap;
             
-            if(_material is ITriangleMaterial)
+            var _element:Element;
+            
+            if(_material is Material)
             	for each(_element in elements)
-            		(_element as Face).material = _material as ITriangleMaterial;		
-			else if(_material is ISegmentMaterial)
+            		(_element as Face).material = _material as Material;		
+			else if(_material is Material)
             	for each(_element in elements)
-            		(_element as Segment).material = _material as ISegmentMaterial;
+            		(_element as Segment).material = _material as Material;
         }
         		
 		/**
@@ -105,5 +106,28 @@ package away3d.loaders.data
 		 * Array of indexes representing the elements that use the material.
 		 */
 		public var elements:Array = [];
+		
+		public function clone(targetObj:Object3D):MaterialData
+		{
+			var cloneMatData:MaterialData = targetObj.materialLibrary.addMaterial(name);
+			
+    		cloneMatData.materialType = materialType;
+    		cloneMatData.ambientColor = ambientColor;
+    		cloneMatData.diffuseColor = diffuseColor;
+    		cloneMatData.shininess = shininess;
+    		cloneMatData.specularColor = specularColor;
+    		cloneMatData.textureBitmap = textureBitmap;
+    		cloneMatData.textureFileName = textureFileName;
+    		cloneMatData.material = material;
+    		
+    		for each(var element:Element in elements)
+    		{
+    			var parentGeometry:Geometry = element.parent;
+    			var correspondingElement:Element = parentGeometry.cloneElementDictionary[element];
+    			cloneMatData.elements.push(correspondingElement);
+    		}
+    		
+    		return cloneMatData;
+		}
 	}
 }

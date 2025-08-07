@@ -120,7 +120,7 @@ package com.kavalok.telescop
 		private function initLights():void
 		{
 			light = new DirectionalLight3D({x:-100, y:-100, z:-100, ambient:0.2});
-			scene.addChild(light);
+			scene.addLight(light);
 		}
 		
 		/**

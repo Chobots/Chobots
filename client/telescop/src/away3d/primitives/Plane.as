@@ -1,59 +1,63 @@
 ﻿package away3d.primitives
 {
-	import away3d.core.*;
+	import away3d.arcane;
 	import away3d.core.base.*;
 	import away3d.core.utils.*;
 	import away3d.materials.*;
     
+	use namespace arcane;
+	
     /**
     * Creates a 3d plane primitive.
     */ 
     public class Plane extends AbstractPrimitive
     {
-    	use namespace arcane
-    	
         private var grid:Array;
     	private var _width:Number;
         private var _height:Number;
         private var _segmentsW:int;
         private var _segmentsH:int;
         private var _yUp:Boolean;
-        
-        private function buildPlane(width:Number, height:Number, segmentsW:int, segmentsH:int, yUp:Boolean):void
-        {
+		
+		/**
+		 * @inheritDoc
+		 */
+    	protected override function buildPrimitive():void
+    	{
+    		super.buildPrimitive();
+    		
             var i:int;
             var j:int;
-
-            grid = new Array(segmentsW+1);
-            for (i = 0; i <= segmentsW; i++)
-            {
-                grid[i] = new Array(segmentsH+1);
-                for (j = 0; j <= segmentsH; j++) {
-                	if (yUp)
-                    	grid[i][j] = createVertex((i / segmentsW - 0.5) * width, 0, (j / segmentsH - 0.5) * height);
+			
+            grid = new Array(_segmentsW+1);
+            for (i = 0; i <= _segmentsW; ++i) {
+                grid[i] = new Array(_segmentsH+1);
+                for (j = 0; j <= _segmentsH; ++j) {
+                	if (_yUp)
+                    	grid[i][j] = createVertex((i / _segmentsW - 0.5) * _width, 0, (j / _segmentsH - 0.5) * _height);
                     else
-                    	grid[i][j] = createVertex((i / segmentsW - 0.5) * width, (j / segmentsH - 0.5) * height, 0);
+                    	grid[i][j] = createVertex((i / _segmentsW - 0.5) * _width, (j / _segmentsH - 0.5) * _height, 0);
                 }
             }
-
-            for (i = 0; i < segmentsW; i++)
-                for (j = 0; j < segmentsH; j++)
-                {
+			
+            for (i = 0; i < _segmentsW; ++i) {
+                for (j = 0; j < _segmentsH; ++j) {
                     var a:Vertex = grid[i  ][j  ]; 
                     var b:Vertex = grid[i+1][j  ];
                     var c:Vertex = grid[i  ][j+1]; 
                     var d:Vertex = grid[i+1][j+1];
 
-                    var uva:UV = createUV(i     / segmentsW, j     / segmentsH);
-                    var uvb:UV = createUV((i+1) / segmentsW, j     / segmentsH);
-                    var uvc:UV = createUV(i     / segmentsW, (j+1) / segmentsH);
-                    var uvd:UV = createUV((i+1) / segmentsW, (j+1) / segmentsH);
+                    var uva:UV = createUV(i     / _segmentsW, j     / _segmentsH);
+                    var uvb:UV = createUV((i+1) / _segmentsW, j     / _segmentsH);
+                    var uvc:UV = createUV(i     / _segmentsW, (j+1) / _segmentsH);
+                    var uvd:UV = createUV((i+1) / _segmentsW, (j+1) / _segmentsH);
 
                     addFace(createFace(a, b, c, null, uva, uvb, uvc));
                     addFace(createFace(d, c, b, null, uvd, uvc, uvb));
                 }
-        }
-		
+            }
+    	}
+    	
     	/**
     	 * Defines the width of the plane. Defaults to 100, or the width of the uv material (if one is applied).
     	 */
@@ -157,9 +161,9 @@
 
             if (width*height == 0)
             {
-                if (material is IUVMaterial)
+                if (material is BitmapMaterial)
                 {
-                    var uvm:IUVMaterial = material as IUVMaterial;
+                    var uvm:BitmapMaterial = material as BitmapMaterial;
                     if (width == 0)
                         width = uvm.width;
                     if (height == 0)
@@ -172,21 +176,9 @@
                 }
             }
 			
-			buildPlane(_width, _height, _segmentsW, _segmentsH, _yUp);
-			
 			type = "Plane";
         	url = "primitive";
         }
-    	
-		/**
-		 * @inheritDoc
-		 */
-    	public override function buildPrimitive():void
-    	{
-    		super.buildPrimitive();
-    		
-            buildPlane(_width, _height, _segmentsW, _segmentsH, _yUp);
-    	}
         
 		/**
 		 * Returns the vertex object specified by the grid position of the mesh.
@@ -196,6 +188,9 @@
 		 */
         public function vertex(w:int, h:int):Vertex
         {
+			if (_primitiveDirty)
+    			updatePrimitive();
+    		
             return grid[h][w];
         }
 

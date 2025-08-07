@@ -53,7 +53,6 @@ package nochump.util.zip {
 		private static const MAXBITS:int = 15; // maximum bits in a code
 		private static const MAXLCODES:int = 286; // maximum number of literal/length codes
 		private static const MAXDCODES:int = 30; // maximum number of distance codes
-		private static const MAXCODES:int = MAXLCODES + MAXDCODES; // maximum codes lengths to read
 		private static const FIXLCODES:int = 288; // number of fixed literal/length codes
 		// Size base for length codes 257..285
 		private static const LENS:Array = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258];
@@ -176,24 +175,24 @@ package nochump.util.zip {
 		private function construct(h:Object, length:Array, n:int):int {
 			var offs:Array = []; // offsets in symbol table for each length
 			// count number of codes of each length
-			for(var len:int = 0; len <= MAXBITS; len++) h.count[len] = 0;
+			for(var len:int = 0; len <= MAXBITS; len++) h["count"][len] = 0;
 			// assumes lengths are within bounds
-			for(var symbol:int = 0; symbol < n; symbol++) h.count[length[symbol]]++;
+			for(var symbol:int = 0; symbol < n; symbol++) h["count"][length[symbol]]++;
 			// no codes! complete, but decode() will fail
-			if(h.count[0] == n) return 0;
+			if(h["count"][0] == n) return 0;
 			// check for an over-subscribed or incomplete set of lengths
 			var left:int = 1; // one possible code of zero length
 			for(len = 1; len <= MAXBITS; len++) {
 				left <<= 1; // one more bit, double codes left
-				left -= h.count[len]; // deduct count from possible codes
+				left -= h["count"][len]; // deduct count from possible codes
 				if(left < 0) return left; // over-subscribed--return negative
 			} // left > 0 means incomplete
 			// generate offsets into symbol table for each length for sorting
 			offs[1] = 0;
-			for(len = 1; len < MAXBITS; len++) offs[len + 1] = offs[len] + h.count[len];
+			for(len = 1; len < MAXBITS; len++) offs[len + 1] = offs[len] + h["count"][len];
 			// put symbols in table sorted by length, by symbol order within each length
 			for(symbol = 0; symbol < n; symbol++)
-				if(length[symbol] != 0) h.symbol[offs[length[symbol]]++] = symbol;
+				if(length[symbol] != 0) h["symbol"][offs[length[symbol]]++] = symbol;
 			// return zero for complete set, positive for incomplete set
 			return left;
 		}
@@ -204,9 +203,9 @@ package nochump.util.zip {
 			var index:int = 0; // index of first code of length len in symbol table
 			for(var len:int = 1; len <= MAXBITS; len++) { // current number of bits in code
 				code |= bits(1); // get next bit
-				var count:int = h.count[len]; // number of codes of length len
+				var count:int = h["count"][len]; // number of codes of length len
 				// if length len, return symbol
-				if(code < first + count) return h.symbol[index + (code - first)];
+				if(code < first + count) return h["symbol"][index + (code - first)];
 				index += count; // else update for next length
 				first += count;
 				first <<= 1;
@@ -304,12 +303,12 @@ package nochump.util.zip {
 			// build huffman table for literal/length codes
 			err = construct(lencode, lengths, nlen);
 			// only allow incomplete codes if just one code
-			if(err < 0 || (err > 0 && nlen - lencode.count[0] != 1))
+			if(err < 0 || (err > 0 && nlen - lencode["count"][0] != 1))
 				throw new Error("dynamic block code description: invalid literal/length code lengths", -7);
 			// build huffman table for distance codes
 			err = construct(distcode, lengths.slice(nlen), ndist);
 			// only allow incomplete codes if just one code
-			if(err < 0 || (err > 0 && ndist - distcode.count[0] != 1))
+			if(err < 0 || (err > 0 && ndist - distcode["count"][0] != 1))
 				throw new Error("dynamic block code description: invalid distance code lengths", -8);
 			return err;
 		}

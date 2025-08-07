@@ -1,86 +1,56 @@
 package away3d.materials
 {
-    import away3d.containers.*;
-    import away3d.core.*;
-    import away3d.core.base.*;
-    import away3d.core.draw.*;
-    import away3d.core.render.*;
-    import away3d.core.utils.*;
-    import away3d.events.*;
-    
-    import flash.events.*;
+    import away3d.arcane;
+	import away3d.core.render.*;
+	import away3d.core.utils.*;
+	
+	use namespace arcane;
 	
     /**
     * Material for solid color drawing
     */
-    public class ColorMaterial extends EventDispatcher implements ITriangleMaterial, IFogMaterial
+    public class ColorMaterial extends WireColorMaterial
     {
-    	use namespace arcane;
 		/** @private */
-        arcane function notifyMaterialUpdate():void
+        arcane override function renderTriangle(priIndex:uint, viewSourceObject:ViewSourceObject, renderer:Renderer):void
         {
-            if (!hasEventListener(MaterialEvent.MATERIAL_UPDATED))
-                return;
-			
-            if (_materialupdated == null)
-                _materialupdated = new MaterialEvent(MaterialEvent.MATERIAL_UPDATED, this);
-                
-            dispatchEvent(_materialupdated);
+        	if (debug)
+				renderer._session.renderTriangleLineFill(_thickness, _color, _alpha, _wireColor, _wireAlpha, viewSourceObject.screenVertices, renderer.primitiveCommands[priIndex], viewSourceObject.screenIndices, renderer.primitiveProperties[uint(priIndex*9)], renderer.primitiveProperties[uint(priIndex*9 + 1)]);
+        	else
+        		renderer._session.renderTriangleColor(_color, _alpha, viewSourceObject.screenVertices, renderer.primitiveCommands[priIndex], viewSourceObject.screenIndices, renderer.primitiveProperties[uint(priIndex*9)], renderer.primitiveProperties[uint(priIndex*9 + 1)]);
         }
         
-    	private var _color:uint;
-    	private var _alpha:Number;
-    	private var _faceDirty:Boolean;
-    	private var _materialupdated:MaterialEvent;
-    	
-        /**
-        * Instance of the Init object used to hold and parse default property values
-        * specified by the initialiser object in the 3d object constructor.
+		/** @private */
+        arcane override function renderSprite(priIndex:uint, viewSourceObject:ViewSourceObject, renderer:Renderer):void
+        {
+            renderer._session.renderSpriteColor(_color, _alpha, priIndex, viewSourceObject, renderer);
+        }
+        
+		/** @private */
+        arcane function renderFog(priIndex:uint, viewSourceObject:ViewSourceObject, renderer:Renderer):void
+        {
+        	viewSourceObject;
+            renderer._session.renderFogColor(_color, _alpha, renderer.primitiveProperties[uint(priIndex*9 + 2)], renderer.primitiveProperties[uint(priIndex*9 + 3)], renderer.primitiveProperties[uint(priIndex*9 + 4)], renderer.primitiveProperties[uint(priIndex*9 + 5)]);
+        }
+        
+        protected var _debug:Boolean;
+        
+    	/**
+        * Toggles debug mode: textured triangles are drawn with white outlines, precision correction triangles are drawn with blue outlines.
         */
-		protected var ini:Init;
-		
-		/**
-		 * 24 bit color value representing the material color
-		 */
-        public function set color(val:uint):void
+        public function get debug():Boolean
         {
-        	if (_color == val)
+        	return _debug;
+        }
+        
+        public function set debug(val:Boolean):void
+        {
+        	if (_debug == val)
         		return;
         	
-        	_color = val;
+        	_debug = val;
         	
-        	_faceDirty = true;
-        }
-        
-        public function get color():uint
-        {
-        	return _color;
-        }
-        
-		/**
-		 * @inheritDoc
-		 */
-        public function set alpha(val:Number):void
-        {
-        	if (_alpha == val)
-        		return;
-        	
-        	_alpha = val;
-        	
-        	_faceDirty = true;
-        }
-        
-        public function get alpha():Number
-        {
-        	return _alpha;
-        }
-        
-		/**
-		 * @inheritDoc
-		 */
-        public function get visible():Boolean
-        {
-            return (alpha > 0);
+        	_materialDirty = true;
         }
     	
 		/**
@@ -91,65 +61,25 @@ package away3d.materials
 		 */
         public function ColorMaterial(color:* = null, init:Object = null)
         {
-            if (color == null)
-                color = "random";
-
-            this.color = Cast.trycolor(color);
-
-            ini = Init.parse(init);
-            
-            _alpha = ini.getNumber("alpha", 1, {min:0, max:1});
+        	super(color, init);
+        	
+        	debug = ini.getBoolean("debug", false);
         }
         
-		/**
-		 * @inheritDoc
-		 */
-        public function updateMaterial(source:Object3D, view:View3D):void
-        {
-        	if (_faceDirty) {
-        		_faceDirty = false;
-        		notifyMaterialUpdate();
-        	}
-        }
         
 		/**
-		 * @inheritDoc
+		 * Duplicates the material properties to another material object.  Usage: existingMaterial = materialToClone.clone( existingMaterial ) as ColorMaterial;
+		 * 
+		 * @param	object	[optional]	The new material instance into which all properties are copied. The default is <code>ColorMaterial</code>.
+		 * @return						The new material instance with duplicated properties applied.
 		 */
-        public function renderTriangle(tri:DrawTriangle):void
+        public override function clone(material:Material = null):Material
         {
-            tri.source.session.renderTriangleColor(color, _alpha, tri.v0, tri.v1, tri.v2);
-        }
-        
-		/**
-		 * @inheritDoc
-		 */
-        public function renderFog(fog:DrawFog):void
-        {
-            fog.source.session.renderFogColor(fog.clip, color, _alpha);
-        }
-        
-		/**
-		 * @inheritDoc
-		 */
-        public function clone():IFogMaterial
-        {
-        	return new ColorMaterial(color, {alpha:alpha});
-        }
-        
-		/**
-		 * @inheritDoc
-		 */
-        public function addOnMaterialUpdate(listener:Function):void
-        {
-        	addEventListener(MaterialEvent.MATERIAL_UPDATED, listener, false, 0, true);
-        }
-        
-		/**
-		 * @inheritDoc
-		 */
-        public function removeOnMaterialUpdate(listener:Function):void
-        {
-        	removeEventListener(MaterialEvent.MATERIAL_UPDATED, listener, false);
+        	var mat:ColorMaterial = (material as ColorMaterial) || new ColorMaterial();
+        	super.clone(mat);
+        	mat.debug = _debug;
+        	
+        	return mat;
         }
     }
 }

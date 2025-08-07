@@ -1,6 +1,6 @@
 package away3d.events
 {
-	import away3d.core.render.*;
+	import away3d.core.session.AbstractSession;
 	
 	import flash.events.Event;
     
@@ -17,15 +17,15 @@ package away3d.events
     	/**
     	 * A reference to the session object that is relevant to the event.
     	 */
-        public var session:AbstractRenderSession;
+        public var session:AbstractSession;
 		
 		/**
 		 * Creates a new <code>FaceEvent</code> object.
 		 * 
-		 * @param	type	The type of the event. Possible values are: <code>FaceEvent.UPDATED</code></code>.
+		 * @param	type	The type of the event. Possible values are: <code>FaceEvent.UPDATED</code>.
 		 * @param	session	A reference to the session object that is relevant to the event.
 		 */
-        public function SessionEvent(type:String, session:AbstractRenderSession)
+        public function SessionEvent(type:String, session:AbstractSession)
         {
             super(type);
             this.session = session;

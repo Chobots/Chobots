@@ -1,15 +1,15 @@
 ﻿package away3d.primitives
 {
-	import away3d.core.*;
+	import away3d.arcane;
     import away3d.core.base.*;
     
+	use namespace arcane;
+	
     /**
     * Creates a 3d wire cylinder primitive.
     */ 
-    public class WireCylinder extends AbstractWirePrimitive
+    public class WireCylinder extends AbstractPrimitive
     {
-    	use namespace arcane
-    	
         private var grid:Array;
         private var _radius:Number;
         private var _height:Number;
@@ -17,59 +17,70 @@
         private var _segmentsH:int;
         private var _yUp:Boolean;
         
-        private function buildWireCylinder(radius:Number, height:Number, segmentsW:int, segmentsH:int, yUp:Boolean):void
+        private function buildWireCylinder():void
         {
+
+        }
+        
+		/**
+		 * @inheritDoc
+		 */
+    	protected override function buildPrimitive():void
+    	{
+    		super.buildPrimitive();
+    		
             var i:int;
             var j:int;
 
-            height /= 2;
-            segmentsH += 2;
+            _height /= 2;
+            _segmentsH += 2;
 
-            grid = new Array(segmentsH + 1);
+            grid = new Array(_segmentsH + 1);
 
-            var bottom:Vertex = yUp? createVertex(0, -height, 0) : createVertex(0, 0, -height);
-            grid[0] = new Array(segmentsW);
-            for (i = 0; i < segmentsW; i++) 
+            var bottom:Vertex = _yUp? createVertex(0, -_height, 0) : createVertex(0, 0, -_height);
+            grid[0] = new Array(_segmentsW);
+            
+            for (i = 0; i < _segmentsW; ++i)
                 grid[0][i] = bottom;
 
-            for (j = 1; j < segmentsH; j++)  
-            { 
-                var z:Number = -height + 2 * height * (j-1) / (segmentsH-2);
+            for (j = 1; j < _segmentsH; ++j) { 
+                var z:Number = -_height + 2 * _height * (j-1) / (_segmentsH-2);
 
-                grid[j] = new Array(segmentsW);
-                for (i = 0; i < segmentsW; i++) 
-                { 
-                    var verangle:Number = 2 * i / segmentsW * Math.PI;
-                    var x:Number = radius * Math.sin(verangle);
-                    var y:Number = radius * Math.cos(verangle);
+                grid[j] = new Array(_segmentsW);
+                
+                for (i = 0; i < _segmentsW; ++i) { 
+                    var verangle:Number = 2 * i / _segmentsW * Math.PI;
+                    var x:Number = _radius * Math.sin(verangle);
+                    var y:Number = _radius * Math.cos(verangle);
                     
-                    if (yUp)
+                    if (_yUp)
                     	grid[j][i] = createVertex(y, z, x);
                     else
                     	grid[j][i] = createVertex(y, -x, z);
                 }
             }
 
-            var top:Vertex = yUp? createVertex(0, height, 0) : createVertex(0, 0, height);
-            grid[segmentsH] = new Array(segmentsW);
-            for (i = 0; i < segmentsW; i++) 
-                grid[segmentsH][i] = top;
+            var top:Vertex = _yUp? createVertex(0, _height, 0) : createVertex(0, 0, _height);
+            grid[_segmentsH] = new Array(_segmentsW);
+            
+            for (i = 0; i < _segmentsW; ++i)
+                grid[_segmentsH][i] = top;
 
-            for (j = 1; j <= segmentsH; j++) 
-                for (i = 0; i < segmentsW; i++) 
-                {
+            for (j = 1; j <= _segmentsH; ++j) {
+                for (i = 0; i < _segmentsW; ++i) {
                     var a:Vertex = grid[j][i];
-                    var b:Vertex = grid[j][(i-1+segmentsW) % segmentsW];
-                    var c:Vertex = grid[j-1][(i-1+segmentsW) % segmentsW];
+                    var b:Vertex = grid[j][(i-1+_segmentsW) % _segmentsW];
+                    var c:Vertex = grid[j-1][(i-1+_segmentsW) % _segmentsW];
                     var d:Vertex = grid[j-1][i];
 
                     addSegment(createSegment(a, d));
                     addSegment(createSegment(b, c));
-                    if (j < segmentsH)  
+                    if (j < _segmentsH)  
                         addSegment(createSegment(a, b));
                 }
-        }
-        
+            }
+    	}
+    	
     	/**
     	 * Defines the radius of the wire cylinder. Defaults to 100.
     	 */
@@ -170,21 +181,9 @@
             _segmentsH = ini.getInt("segmentsH", 1, {min:1});
 			_yUp = ini.getBoolean("yUp", true);
 			
-			buildWireCylinder(_radius, _height, _segmentsW, _segmentsH, _yUp);
-			
 			type = "WireCylinder";
         	url = "primitive";
         }
-        
-		/**
-		 * @inheritDoc
-		 */
-    	public override function buildPrimitive():void
-    	{
-    		super.buildPrimitive();
-    		
-            buildWireCylinder(_radius, _height, _segmentsW, _segmentsH, _yUp);
-    	}
         
 		/**
 		 * Returns the vertex object specified by the grid position of the mesh.
@@ -194,6 +193,9 @@
 		 */
         public function vertex(w:int, h:int):Vertex
         {
+        	if (_primitiveDirty)
+    			updatePrimitive();
+    		
             return grid[h][w];
         }
     }

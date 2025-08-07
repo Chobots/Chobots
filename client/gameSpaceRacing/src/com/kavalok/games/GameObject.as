@@ -6,9 +6,9 @@ package com.kavalok.games
 	public class GameObject
 	{
 		public var content:MovieClip;
-		public var v:Vector = new Vector();
-		public var acc:Vector = new Vector();
-		public var dcc:Vector = new Vector(1, 1);
+		public var v:com.kavalok.games.Vector = new com.kavalok.games.Vector();
+		public var acc:com.kavalok.games.Vector = new com.kavalok.games.Vector();
+		public var dcc:com.kavalok.games.Vector = new com.kavalok.games.Vector(1, 1);
 		public var weight:Number;
 		public var radius:Number;
 		public var bounds:Rectangle;
@@ -49,7 +49,7 @@ package com.kavalok.games
 		{
 			var ball1:GameObject = this;
 			var ball2:GameObject = po;
-			var tv:Vector = new Vector(ball1.content.x - ball2.content.x, ball1.content.y-ball2.content.y);
+			var tv:com.kavalok.games.Vector = new com.kavalok.games.Vector(ball1.content.x - ball2.content.x, ball1.content.y-ball2.content.y);
 			var distance:Number = tv.magnitude();
 			var min_distance:Number = ball1.radius + ball2.radius;
 			
@@ -61,28 +61,33 @@ package com.kavalok.games
 			ball1.content.y += tv.y;
 		}
 		
+		public function set scale(value:Number):void
+		{
+			content.scaleX = content.scaleY = value;
+		}
+		
 		public function resolve(po:GameObject):void
 		{
 			var ball1:GameObject = this;
 			var ball2:GameObject = po;
-			var b1Velocity:Vector = new Vector(ball1.v.x, ball1.v.y);
-			var b2Velocity:Vector = new Vector(ball2.v.x, ball2.v.y);
+			var b1Velocity:com.kavalok.games.Vector = new com.kavalok.games.Vector(ball1.v.x, ball1.v.y);
+			var b2Velocity:com.kavalok.games.Vector = new com.kavalok.games.Vector(ball2.v.x, ball2.v.y);
 			var b1Mass:Number     = ball1.weight;
 			var b2Mass:Number     = ball2.weight;
 
-			var lineOfSight:Vector = new Vector(ball1.content.x - ball2.content.x,
+			var lineOfSight:com.kavalok.games.Vector = new com.kavalok.games.Vector(ball1.content.x - ball2.content.x,
 				ball1.content.y - ball2.content.y);
 				
-			var v1Prime:Vector = b1Velocity.vectorProjectionOnto(lineOfSight);
-			var v2Prime:Vector = b2Velocity.vectorProjectionOnto(lineOfSight);
+			var v1Prime:com.kavalok.games.Vector = b1Velocity.vectorProjectionOnto(lineOfSight);
+			var v2Prime:com.kavalok.games.Vector = b2Velocity.vectorProjectionOnto(lineOfSight);
 
-			var v1Prime2:Vector = new Vector();
+			var v1Prime2:com.kavalok.games.Vector = new com.kavalok.games.Vector();
 			v1Prime2.copyVector(v2Prime);
 			v1Prime2.mulScalar(2*b2Mass);
 			v1Prime2.addVector(v1Prime.getMulScalar(b1Mass - b2Mass));
 			v1Prime2.mulScalar(1.0/(b1Mass + b2Mass));
 
-			var v2Prime2:Vector = new Vector();
+			var v2Prime2:com.kavalok.games.Vector = new com.kavalok.games.Vector();
 			v2Prime2.copyVector(v1Prime);
 			v2Prime2.mulScalar(2*b1Mass);
 			v2Prime2.subVector(v2Prime.getMulScalar(b1Mass - b2Mass));

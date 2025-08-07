@@ -16,16 +16,16 @@
 		 * @param	material		The material to use for generating all six skybox sides.
 		 * 
 		 */
-        public function Skybox6(material:ITriangleMaterial)
+        public function Skybox6(material:Material)
         {
             super({material:material});
 
             var udelta:Number = 1 / 600;
             var vdelta:Number = 1 / 400;
 
-            if (material is IUVMaterial)
+            if (material is BitmapMaterial)
             {
-                var uvm:IUVMaterial = material as IUVMaterial;
+                var uvm:BitmapMaterial = material as BitmapMaterial;
                 udelta = 1 / uvm.width;
                 vdelta = 1 / uvm.height;
             }
@@ -85,8 +85,9 @@
             addFace(new Face(v000, v001, v010, null, uvbacka, uvbackb, uvbackd));
             addFace(new Face(v010, v001, v011, null, uvbackd, uvbackb, uvbackc));
 
-            addFace(new Face(v010, v011, v110, null, uvupb, uvupc, uvupa));
-            addFace(new Face(v011, v111, v110, null, uvupc, uvupd, uvupa));
+            addFace(new Face(v010, v011, v110, null, uvupd, uvupa, uvupc));
+			addFace(new Face(v011, v111, v110, null, uvupa, uvupb, uvupc));
+
 
             addFace(new Face(v000, v100, v001, null, uvdowna, uvdownb, uvdownd));
             addFace(new Face(v001, v100, v101, null, uvdownd, uvdownb, uvdownc));

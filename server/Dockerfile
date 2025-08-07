@@ -1,4 +1,17 @@
 FROM openjdk:8-jdk-slim AS builder
+
+# Accept build arguments
+ARG DATABASE_HOST
+ARG DATABASE_NAME
+ARG DATABASE_USER
+ARG DATABASE_PASSWORD
+
+# Set as environment variables for the build process
+ENV DATABASE_HOST=$DATABASE_HOST
+ENV DATABASE_NAME=$DATABASE_NAME
+ENV DATABASE_USER=$DATABASE_USER
+ENV DATABASE_PASSWORD=$DATABASE_PASSWORD
+
 RUN apt-get update && apt-get install -y \
     ant \
     wget \
