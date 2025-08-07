@@ -112,8 +112,8 @@ internal class RemoteConnectionInstance
 	
 	public function connect() : void
 	{
-		// trace("connecting to: " + BaseRed5Delegate.defaultConnectionUrl)
-        netConnection.connect("rtmps://rtmps.test-server.chobots.org/kavalok");
+		trace("connecting to: " + BaseRed5Delegate.defaultConnectionUrl)
+        netConnection.connect(BaseRed5Delegate.defaultConnectionUrl);
 	}
 	
 	public function onCommandInstance(properties:Object):void
