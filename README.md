@@ -34,6 +34,7 @@ Goals of this project are as follows but not limited to:
  - [ ] Add database rows required to fix missions, pets, robots
  - [x] Fix login error message on duplicate login
  - [ ] [Fix chat history bar not displaying](https://github.com/Chobots/Chobots/issues/6)
+ - [x] Upgrade to Flash Player 10 target
 
 ## Running the code
 
