@@ -14,7 +14,7 @@
 <flex-config>
     <!-- Specifies the minimum player version that will run the compiled SWF. -->
     <!-- 9.0.124 is the April 2008 security release -->
-    <target-player>9.0.124</target-player>
+    <target-player>10.0.0</target-player>
 
    <compiler>
 
