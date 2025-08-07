@@ -421,6 +421,7 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       case "CharService.getCharViewLogin":
       case "LoginService.login":
       case "LoginService.loginWithToken":
+      case "LoginService.register":
         // Public methods (no login or permission required)
         return 0;
 
