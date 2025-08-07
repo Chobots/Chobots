@@ -2,8 +2,6 @@ package com.kavalok.remoting
 {
 	public class RemoteConnection
 	{
-		public static const CONNECTION_URL_FORMAT : String = "rtmp://{0}";
-
 		private static var _instance : RemoteConnectionInstance;
 		
 		public static function get instance() : RemoteConnectionInstance
@@ -114,8 +112,8 @@ internal class RemoteConnectionInstance
 	
 	public function connect() : void
 	{
-		trace("connecting to: " + BaseRed5Delegate.defaultConnectionUrl)
-        netConnection.connect(BaseRed5Delegate.defaultConnectionUrl);
+		// trace("connecting to: " + BaseRed5Delegate.defaultConnectionUrl)
+        netConnection.connect("rtmps://rtmps.test-server.chobots.org/kavalok");
 	}
 	
 	public function onCommandInstance(properties:Object):void
