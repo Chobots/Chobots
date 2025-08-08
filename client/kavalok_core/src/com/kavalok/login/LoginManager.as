@@ -20,6 +20,7 @@ package com.kavalok.login
 	import com.kavalok.services.LoginService;
 	import com.kavalok.services.ServerService;
 	import com.kavalok.utils.Arrays;
+	import com.kavalok.utils.GraphUtils;
 	import com.kavalok.utils.IdleManager;
 	import com.kavalok.utils.Strings;
 	import com.kavalok.utils.Timers;
@@ -494,13 +495,27 @@ package com.kavalok.login
 	    }
 	    return parsedDataObj;
 	}
-		public static function showError(info:Object=null):void
+        public static function showError(info:Object=null):void
 		{
+			Global.isLocked = false;
 
-			var locMess:String=Global.resourceBundles.kavalok.messages.connectionErrorRedirect;
-			var message:String=locMess ? locMess : "Connection error. Please refresh.";
-			trace("Connection error info: "+info);
-			traceServiceError(info);
+            var locMess:String = Global.resourceBundles.kavalok.messages.connectionErrorRedirect;
+            var defaultMessage:String = locMess ? locMess : "Connection error. Please refresh.";
+            var message:String = defaultMessage;
+            trace("Connection error info: "+info);
+            traceServiceError(info);
+
+			var code:String = (info && info.hasOwnProperty("code")) ? String(info.code) : "";
+			if (code == "ConnectTimeout" || code == "NetConnection.Connect.Failed") {
+				message = "Connection Error.\nA connection could not be made to Chobots.";
+			} else {
+				message = defaultMessage;
+			}
+
+			// Hide McConnecting if it's still showing
+			if (Global.kavalokInstance) {
+				Global.kavalokInstance.hideConnecting();
+			}
 
 			//first thing that needs to be done is an error needs to be thrown,
 			//this will give you a stack trace for the place where the error was thrown.
@@ -521,7 +536,7 @@ package com.kavalok.login
 
 
 
-			Dialogs.showOkDialog(locMess, false);
+            Dialogs.showOkDialog(message, false);
             // Disable redirect as game doesn't run in a browser context anymore
 			// Timers.callAfter(doRedirect, 10000)
 		}

@@ -102,6 +102,15 @@ internal class RemoteConnectionInstance
 		}
 		return _netConnection;
 	}
+
+	public function recreateNetConnection():void {
+		// Create a brand new underlying NetConnection and reattach listeners
+		BaseRed5Delegate.resetNetConnection();
+		_netConnection = BaseRed5Delegate.netConnection;
+		_netConnection.objectEncoding = ObjectEncoding.AMF0;
+		_netConnection.addEventListener(NetStatusEvent.NET_STATUS, onNetStatus);
+		_netConnection.client = this;
+	}
 	
 	public function disconnect() : void
 	{

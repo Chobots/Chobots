@@ -2,10 +2,13 @@ package com.kavalok.remoting
 {
 	import com.kavalok.events.EventSender;
 	import com.kavalok.interfaces.ICommand;
-	import com.kavalok.services.SystemService;
-	import com.kavalok.utils.Timers;
+    import com.kavalok.services.SystemService;
+    import com.kavalok.utils.Timers;
 	
-	import flash.events.Event;
+    import flash.events.Event;
+    import flash.events.TimerEvent;
+    import flash.events.NetStatusEvent;
+    import flash.utils.Timer;
 
 	public class ConnectCommand implements ICommand
 	{
@@ -13,7 +16,10 @@ package com.kavalok.remoting
 		private var _error : EventSender = new EventSender();
 		private var _connectEvent : EventSender = new EventSender();
 		private var _disconnectEvent : EventSender = new EventSender();
-		private var _connectionQueue : Array = [];
+        private var _timeoutTimer:Timer;
+        private var _timeoutMs:int = 2000;
+        private var _attemptsMade:int = 0;
+        private var _maxAttempts:int = 5;
 		
 		public function ConnectCommand()
 		{
@@ -31,7 +37,7 @@ package com.kavalok.remoting
 
 		public function execute():void
 		{
-			createConnectionQueue();
+            _attemptsMade = 0;
 			RemoteConnection.instance.connectEvent.addListener(onConnect);
 			RemoteConnection.instance.error.addListener(onError);
 			tryConnect();
@@ -40,12 +46,14 @@ package com.kavalok.remoting
 		
 		private function tryConnect() : void
 		{
-			BaseRed5Delegate.defaultConnectionUrl = _connectionQueue.shift(); 
+            _attemptsMade++;
 			RemoteConnection.instance.connect();
+            startTimeout();
 		}
 		
 		private function onConnect() : void
 		{
+            clearTimeoutTimer();
 			RemoteConnection.instance.connectEvent.removeListener(onConnect);
 			RemoteConnection.instance.error.removeListener(onError);
 			new SystemService().clientTick();
@@ -53,21 +61,60 @@ package com.kavalok.remoting
 		}
 		private function onError(event : Event) : void
 		{
-			if(_connectionQueue.length > 0)
-			{
-				Timers.callAfter(tryConnect); //dont't invoke normally cause exception will be thrown
-			}
-			else
-			{
-				RemoteConnection.instance.connectEvent.removeListener(onConnect);
-				RemoteConnection.instance.error.removeListener(onError);
-				errorEvent.sendEvent(event);
-			}
+            clearTimeoutTimer();
+            var code:String = (event is NetStatusEvent && NetStatusEvent(event).info && NetStatusEvent(event).info.code) ? NetStatusEvent(event).info.code : "Unknown";
+            if (_attemptsMade < _maxAttempts) {
+                // Wait the same 2 seconds as timeout to give server time to recover
+                Timers.callAfter(retryConnect, _timeoutMs);
+                return;
+            }
+            RemoteConnection.instance.connectEvent.removeListener(onConnect);
+            RemoteConnection.instance.error.removeListener(onError);
+            // Dispatch a NetStatusEvent with metadata so UI can show custom message
+            errorEvent.sendEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, { code: code, attemptsMade: _attemptsMade, maxAttempts: _maxAttempts }));
 		}
-		private function createConnectionQueue() : void
+		
+		private function onConnectTimeout():void
 		{
-			_connectionQueue = [BaseRed5Delegate.defaultConnectionUrl];
+            // If still not connected after timeout, open a new connection and retry
+            clearTimeoutTimer();
+            if (!RemoteConnection.instance.connected) {
+                if (_attemptsMade < _maxAttempts) {
+                    retryConnect();
+                } else {
+                    RemoteConnection.instance.connectEvent.removeListener(onConnect);
+                    RemoteConnection.instance.error.removeListener(onError);
+                    errorEvent.sendEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, { code: "ConnectTimeout", attemptsMade: _attemptsMade, maxAttempts: _maxAttempts }));
+                }
+            }
 		}
+
+
+        private function startTimeout():void {
+            clearTimeoutTimer();
+            _timeoutTimer = new Timer(_timeoutMs, 1);
+            _timeoutTimer.addEventListener(TimerEvent.TIMER, onTimeoutTimer);
+            _timeoutTimer.start();
+        }
+
+        private function onTimeoutTimer(e:TimerEvent):void {
+            onConnectTimeout();
+        }
+
+        private function clearTimeoutTimer():void {
+            if (_timeoutTimer != null) {
+                try { _timeoutTimer.stop(); } catch (e:Error) {}
+                _timeoutTimer.removeEventListener(TimerEvent.TIMER, onTimeoutTimer);
+                _timeoutTimer = null;
+            }
+        }
+
+        private function retryConnect():void {
+            _attemptsMade++;
+            RemoteConnection.instance.recreateNetConnection();
+            RemoteConnection.instance.connect();
+            startTimeout();
+        }
 	
 	}
 }

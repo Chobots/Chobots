@@ -36,6 +36,7 @@ package
 	import com.kavalok.quest.LocationQuestBase;
 	import com.kavalok.quest.LocationQuestModuleBase;
 	import com.kavalok.remoting.BaseDelegate;
+	import com.kavalok.remoting.RemoteConnection;
 	import com.kavalok.robots.Robots;
 	import com.kavalok.utils.Debug;
 	import com.kavalok.utils.GraphUtils;
@@ -46,16 +47,19 @@ package
 
 	public class Kavalok
 	{
-		private var _connecting:McConnecting=new McConnecting();
-		private var _readyEvent:EventSender=new EventSender();
+			private var _connecting:McConnecting=new McConnecting();
+	private var _readyEvent:EventSender=new EventSender();
+	private var _assetsLoaded:Boolean = false;
+	private var _connectionEstablished:Boolean = false;
 
-		public function Kavalok(startupInfo:StartupInfo, root:Sprite)
-		{
-			var swfURL:String = root.loaderInfo.url.split('?')[0];
-			Global.urlPrefix = swfURL.substr(0, swfURL.lastIndexOf('/') + 1);
-			GraphUtils.stage = root.stage;
-			Global.startupInfo=startupInfo;
-			Global.initialize(root);
+			public function Kavalok(startupInfo:StartupInfo, root:Sprite)
+	{
+		var swfURL:String = root.loaderInfo.url.split('?')[0];
+		Global.urlPrefix = swfURL.substr(0, swfURL.lastIndexOf('/') + 1);
+		GraphUtils.stage = root.stage;
+		Global.startupInfo=startupInfo;
+		Global.initialize(root);
+		Global.kavalokInstance = this;
 
 			Security.allowDomain('*');
 
@@ -71,9 +75,19 @@ package
 			new PrivateChatListener().initialize();
 			new KeyboardListener(root.stage);
 
-			_connecting=new McConnecting();
-			root.addChild(_connecting);
-			loadAssets();
+					_connecting=new McConnecting();
+		root.addChild(_connecting);
+		
+		Global.isLocked = true;
+		
+		loadAssets();
+		
+		// Start connection process immediately
+		if (!Global.startupInfo.widget)
+			Global.loginManager.login(Global.startupInfo);
+		
+		// Listen for connection success
+		RemoteConnection.instance.connectEvent.addListener(onConnectionEstablished);
 		}
 
 		private function initRemoteObjects():void
@@ -133,17 +147,31 @@ package
 			Global.classLibrary.callbackOnReady(onAssetsReady, urlList);
 		}
 
-		private function onAssetsReady():void
+			private function onAssetsReady():void
+	{
+		_assetsLoaded = true;
+		checkReady();
+	}
+	
+	private function onConnectionEstablished():void
+	{
+		_connectionEstablished = true;
+		checkReady();
+	}
+	
+	private function checkReady():void
+	{
+		if (_assetsLoaded && _connectionEstablished)
 		{
 			GraphUtils.detachFromDisplay(_connecting);
 			_connecting.stop();
 			_connecting=null;
 
-			if (!Global.startupInfo.widget)
-				Global.loginManager.login(Global.startupInfo);
+			Global.isLocked = false;
 
 			_readyEvent.sendEvent();
 		}
+	}
 
 		private function onServiceFault(fault:Object):void
 		{
@@ -162,10 +190,20 @@ package
 			}
 		}
 
-		public function get readyEvent():EventSender
+			public function get readyEvent():EventSender
+	{
+		return _readyEvent;
+	}
+	
+	public function hideConnecting():void
+	{
+		if (_connecting != null)
 		{
-			return _readyEvent;
+			GraphUtils.detachFromDisplay(_connecting);
+			_connecting.stop();
+			_connecting = null;
 		}
+	}
 
 	}
 }

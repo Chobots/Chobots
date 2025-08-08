@@ -60,6 +60,7 @@ package com.kavalok
 		static private var _clientTicker:ClientTicker = new ClientTicker();
 		static public var partnerUserId:int = 0;
 		static public var debugging:Boolean = false;
+		static public var kavalokInstance:Kavalok;
 
 		public static function handleError(error : Error):void
 		{

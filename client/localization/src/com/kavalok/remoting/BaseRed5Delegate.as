@@ -20,6 +20,13 @@ package com.kavalok.remoting {
 			return _netConnection;
 		}
 		
+		public static function resetNetConnection() : void {
+			if (_netConnection != null) {
+				try { _netConnection.close(); } catch (e:Error) {}
+			}
+			_netConnection = new NetConnection();
+		}
+		
 		public function BaseRed5Delegate(resultHandler : Function, faultHandler : Function) {
 			super(resultHandler, faultHandler);
 			connectionUrl = defaultConnectionUrl;
