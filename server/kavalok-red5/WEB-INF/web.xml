@@ -123,6 +123,15 @@
         <url-pattern>/xmlrpc</url-pattern>
     </servlet-mapping>
 
+    <filter>
+        <filter-name>XmlRpcAuthFilter</filter-name>
+        <filter-class>com.kavalok.xmlrpc.XmlRpcAuthFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>XmlRpcAuthFilter</filter-name>
+        <url-pattern>/xmlrpc</url-pattern>
+    </filter-mapping>
+
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>Forbidden</web-resource-name>

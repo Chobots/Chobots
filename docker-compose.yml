@@ -7,6 +7,8 @@ services:
                 DATABASE_NAME: chobots
                 DATABASE_USER: root
                 DATABASE_PASSWORD: root
+        environment:
+            - KAVALOK_SECRET_KEY=${KAVALOK_SECRET_KEY}
         ports:
            - 8935:1935
            - 5080:5080

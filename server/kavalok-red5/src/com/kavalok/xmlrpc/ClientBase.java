@@ -5,9 +5,13 @@ import java.net.URL;
 import java.util.Hashtable;
 
 import org.apache.xmlrpc.XmlRpcException;
+import org.apache.xmlrpc.XmlRpcRequest;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
+import org.apache.xmlrpc.client.XmlRpcClientException;
+import org.apache.xmlrpc.client.XmlRpcCommonsTransport;
 import org.apache.xmlrpc.client.XmlRpcCommonsTransportFactory;
+import org.apache.xmlrpc.client.XmlRpcTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +42,24 @@ public class ClientBase {
       config.setConnectionTimeout(500);
       config.setReplyTimeout(500 * 1000);
       xmlRpcClient = new XmlRpcClient();
-      xmlRpcClient.setTransportFactory(new XmlRpcCommonsTransportFactory(xmlRpcClient));
+      xmlRpcClient.setTransportFactory(
+          new XmlRpcCommonsTransportFactory(xmlRpcClient) {
+            @Override
+            public XmlRpcTransport getTransport() {
+              return new XmlRpcCommonsTransport(this) {
+                @Override
+                protected void initHttpHeaders(XmlRpcRequest request)
+                    throws XmlRpcClientException {
+                  super.initHttpHeaders(request);
+                  String secret = System.getenv("KAVALOK_SECRET_KEY");
+                  if (secret != null && !secret.isEmpty()) {
+                    // Add shared secret header for server-to-server auth
+                    this.method.addRequestHeader("X-Kavalok-Secret", secret);
+                  }
+                }
+              };
+            }
+          });
       xmlRpcClient.setConfig(config);
     } catch (MalformedURLException e) {
       logger.info(e.getMessage(), e);
