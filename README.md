@@ -21,7 +21,7 @@ Goals of this project are as follows but not limited to:
  - [x] Pre-population of minimal database including servers, clothes, word lists, sensible configuration
  - [ ] Upgrading ancient dependencies or implementing patches to mitigate CVEs
  - [x] Ensuring that admin RTMP calls (many) can only be made by authorised users
- - [ ] Ensuring that XMLRPC calls require authentication
+ - [x] Ensuring that XMLRPC calls require authentication
  - [x] Ensuring that sensitive client RTMP calls (many) such as `retriveItem` are server validated to avoid abuse
  - [ ] Produce detailed software architecture documents
  - [x] Salt and hash passwords
