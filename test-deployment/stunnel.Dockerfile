@@ -20,10 +20,14 @@ setuid = nobody\n\
 setgid = nobody\n\
 socket = l:TCP_NODELAY=1\n\
 socket = r:TCP_NODELAY=1\n\
-socket = l:SO_KEEPALIVE=1\n\
-socket = r:SO_KEEPALIVE=1\n\
+socket = l:TCP_KEEPIDLE=60\n\
+socket = r:TCP_KEEPIDLE=60\n\
+socket = l:TCP_KEEPINTVL=10\n\
+socket = r:TCP_KEEPINTVL=10\n\
 sessionCacheSize = 1000\n\
 sessionCacheTimeout = 300\n\
+socket = l:SO_KEEPALIVE=1\n\
+socket = r:SO_KEEPALIVE=1\n\
 \n\
 [rtmps]\n\
 accept = 0.0.0.0:8443\n\
