@@ -49,8 +49,6 @@ import net.sf.cglib.core.ReflectUtils;
 
 public class KavalokApplication extends MultiThreadedApplicationAdapter {
 
-  public static final String CONTEXT_FORMAT = "%1s/%2$s";
-
   public static Logger logger = LoggerFactory.getLogger(KavalokApplication.class);
 
   private boolean started = false;
@@ -137,9 +135,8 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
 
     HibernateUtil.getSessionFactory();
     WordsCache.getInstance(); // load words
-    String name = scope.getName();
-    serverPath = String.format(CONTEXT_FORMAT, getHostIP(), name);
-    logger.info("Started (" + serverPath + ")");
+    this.serverPath = scope.getName();
+    logger.info("Started (" + this.serverPath + ")");
 
     refreshServerState(true);
 
@@ -183,10 +180,6 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
     serverUsageTimer.cancel();
   }
 
-  private String getHostIP() {
-    return properties.getProperty("host.ip");
-  }
-
   public ApplicationConfig getApplicationConfig() {
     return applicationConfig;
   }
@@ -216,7 +209,7 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
     try {
       strategy.beforeCall();
       ServerDAO serverDAO = new ServerDAO(strategy.getSession());
-      Server server = serverDAO.findByUrl(getCurrentServerPath());
+      Server server = serverDAO.findByScopeName(getCurrentServerPath());
       setServerName(server.getName());
 
       UserServerDAO usDAO = new UserServerDAO(strategy.getSession());
@@ -406,6 +399,7 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       case "StuffService.buyItem":
       case "CharService.makePresent":
       case "CharService.savePlayerCard":
+      case "CharService.gK":
         return 1;
         // Logged in user methods
       case "AdminService.adminLogin":

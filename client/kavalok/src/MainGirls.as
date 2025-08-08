@@ -4,7 +4,7 @@ package
 	import com.kavalok.Global;
 	import com.kavalok.StartupInfo;
 	import com.kavalok.utils.URLUtil;
-	import com.kavalok.constants.ConnectionConfig;
+	import com.kavalok.login.LoginManager;
 	
 	import flash.display.Sprite;
 	import flash.events.Event;
@@ -48,7 +48,7 @@ package
 			var rtmpHost:String = serverName;
 			var info:StartupInfo = new StartupInfo();
 			info.prefix = loaderInfo.parameters.guest;
-			info.url = ConnectionConfig.buildRtmpUrl();
+			info.url = LoginManager.buildRtmpUrl();
 			info.locale = loaderInfo.parameters.locale;
 			info.partnerUid = loaderInfo.parameters.partnerUid;
 			info.homeURL = loaderInfo.parameters.homeURL;

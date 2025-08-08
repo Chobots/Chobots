@@ -1263,21 +1263,16 @@ UNLOCK TABLES;
 DROP TABLE IF EXISTS `Server`;
 /*!40101 SET @saved_cs_client = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `Server`
-(
-    `id`        bigint(20) NOT NULL AUTO_INCREMENT,
-    `created`   datetime     DEFAULT NULL,
-    `available` tinyint(1)   DEFAULT 0,
-    `name`      varchar(255) DEFAULT NULL,
-    `running`   tinyint(1)   DEFAULT 0,
-    `url`       varchar(255) DEFAULT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `name` (`name`),
-    UNIQUE KEY `url` (`url`)
-) ENGINE = InnoDB
-  AUTO_INCREMENT = 2
-  DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_unicode_ci;
+CREATE TABLE `Server` (
+                          `id` bigint(20) NOT NULL AUTO_INCREMENT,
+                          `created` datetime DEFAULT NULL,
+                          `available` tinyint(1) DEFAULT 0,
+                          `running` tinyint(1) DEFAULT 0,
+                          `remoteHost` varchar(255) DEFAULT NULL,
+                          `scopeName` varchar(255) DEFAULT NULL,
+                          PRIMARY KEY (`id`),
+                          UNIQUE KEY `scopeName` (`scopeName`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1287,8 +1282,8 @@ CREATE TABLE `Server`
 LOCK TABLES `Server` WRITE;
 /*!40000 ALTER TABLE `Server`
     DISABLE KEYS */;
-INSERT INTO `Server`
-VALUES (1, '2025-01-01 00:00:00', 1, 'Serv1', 1, '127.0.0.1/kavalok');
+INSERT INTO `Server` (`id`, `created`, `available`, `running`, `remoteHost`, `scopeName`) VALUES
+    (1, '2025-01-01 00:00:00', 1, 1, NULL, 'kavalok');
 /*!40000 ALTER TABLE `Server`
     ENABLE KEYS */;
 UNLOCK TABLES;

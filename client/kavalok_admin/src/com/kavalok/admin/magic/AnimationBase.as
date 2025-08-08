@@ -28,14 +28,29 @@
 		public function AnimationBase()
 		{
 			super();
+			if (this.stage)
+				onAddedToStage();
+			else
+				addEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
+		}
+		
+		private function onAddedToStage(e:Event = null):void
+		{
+			removeEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
 			loadList();
+		}
+		
+		private function getResourceUrl(path:String):String
+		{
+			var swfUrl:String = loaderInfo.url.split('?')[0];
+			return swfUrl.substr(0, swfUrl.lastIndexOf('/') + 1) + path;
 		}
 		
 		private function loadList():void
 		{
 			var loader:URLLoader = new URLLoader();
 			loader.addEventListener(Event.COMPLETE, onLoadComplete);
-			loader.load(new URLRequest('resources/magic/magic.xml'));
+			loader.load(new URLRequest(getResourceUrl('resources/magic/magic.xml')));
 		}
 		
 		private function onLoadComplete(e:Event):void 
@@ -51,7 +66,7 @@
 		
 		protected function refreshByCombo():void 
 		{
-			animationURL = URL_PREFIX + urlCombo.selectedItem;
+			animationURL = getResourceUrl(URL_PREFIX + urlCombo.selectedItem);
 			urlField.text = animationURL;
 		}
 		

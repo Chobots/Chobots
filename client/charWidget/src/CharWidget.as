@@ -11,7 +11,7 @@ package {
 	import com.kavalok.services.CharService;
 	import com.kavalok.utils.Strings;
 	import com.kavalok.utils.URLUtil;
-	import com.kavalok.constants.ConnectionConfig;
+	import com.kavalok.login.LoginManager;
 	
 	import flash.display.Sprite;
 	import flash.events.Event;
@@ -44,7 +44,7 @@ package {
 			var serverName:String = getServerNameFromURL(swfURL);
 			
 			var info:StartupInfo = new StartupInfo();
-			info.url = ConnectionConfig.buildRtmpUrl();
+			info.url = LoginManager.buildRtmpUrl();
 			info.locale = loaderInfo.parameters.locale || "enUS";
 			info.widget = KavalokConstants.WIDGET_CHAR;
 			
@@ -62,7 +62,7 @@ package {
 		
 		private function onReady():void
 		{
-			BaseRed5Delegate.defaultConnectionUrl = ConnectionConfig.buildRtmpUrl();
+			BaseRed5Delegate.defaultConnectionUrl = LoginManager.buildRtmpUrl();
 			var command:ConnectCommand = new ConnectCommand();
 			command.connectEvent.addListener(onConnect);
 			command.execute();

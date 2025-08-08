@@ -24,7 +24,7 @@ public class AdminClient extends ClientBase {
     if (adminIP == null) {
       ServerDAO serverDAO = new ServerDAO(this.session);
       Server server = serverDAO.findRunning().get(0);
-      adminIP = server.getIp();
+      adminIP = server.getXMLRPCHost();
       adminCPath = server.getContextPath();
     }
     createXmlRpc(adminIP, adminCPath);

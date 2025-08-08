@@ -7,7 +7,7 @@ package com.kavalok.admin.main
 	import com.kavalok.remoting.BaseDelegate;
 	import com.kavalok.remoting.BaseRed5Delegate;
 	import com.kavalok.remoting.RemoteConnection;
-	import com.kavalok.constants.ConnectionConfig;
+	import com.kavalok.login.LoginManager;
 	
 	import flash.events.NetStatusEvent;
 	
@@ -36,7 +36,7 @@ package com.kavalok.admin.main
 		
 		protected function onCreationComplete(event : FlexEvent) : void
 		{
-			BaseRed5Delegate.defaultConnectionUrl = ConnectionConfig.buildRtmpUrl();
+			BaseRed5Delegate.defaultConnectionUrl = LoginManager.buildRtmpUrl();
 			BaseDelegate.defaultFaultHandler = onServiceFault;
 			RemoteConnection.instance.isAdmin = true;
 			RemoteConnection.instance.connectEvent.addListener(onConnect);

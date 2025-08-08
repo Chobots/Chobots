@@ -13,7 +13,7 @@ package com.kavalok.kongregateLoader
 	import com.kavalok.loaders.SafeLoader;
 	import com.kavalok.modules.LocationModule;
 	import com.kavalok.utils.Strings;
-	import com.kavalok.constants.ConnectionConfig;
+	import com.kavalok.login.LoginManager;
 	
 	import flash.display.Sprite;
 	import flash.events.Event;
@@ -88,7 +88,7 @@ package com.kavalok.kongregateLoader
 			info.server = "Serv1";
 			if(_domain)
 				info.url = Strings.substitute(Kavalok.SHORT_LOGIN_URL_FORMAT, _domain);
-			info.url = ConnectionConfig.buildRtmpUrl();
+			info.url = LoginManager.buildRtmpUrl();
 			info.errorLogEnabled = false;
 			info.moduleId = _location;
 //			info.moduleId = _game;

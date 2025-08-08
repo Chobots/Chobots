@@ -8,9 +8,9 @@ import javax.validation.constraints.NotNull;
 @Entity
 public class Server extends ModelBase {
 
-  private String url;
+  private String scopeName;
 
-  private String name;
+  private String remoteHost;
 
   private boolean available;
 
@@ -18,22 +18,21 @@ public class Server extends ModelBase {
 
   @NotNull
   @Column(unique = true)
-  public String getUrl() {
-    return url;
+  public String getScopeName() {
+    return scopeName;
   }
 
-  public void setUrl(String url) {
-    this.url = url;
+  public void setScopeName(String scopeName) {
+    this.scopeName = scopeName;
   }
 
-  @NotNull
-  @Column(unique = true)
-  public String getName() {
-    return name;
+  @Column
+  public String getRemoteHost() {
+    return remoteHost;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public void setRemoteHost(String remoteHost) {
+    this.remoteHost = remoteHost;
   }
 
   @NotNull
@@ -47,13 +46,18 @@ public class Server extends ModelBase {
   }
 
   @Transient
-  public String getIp() {
-    return getUrl().split("/")[0];
+  public String getContextPath() {
+    return getScopeName();
   }
 
   @Transient
-  public String getContextPath() {
-    return getUrl().split("/")[1];
+  public String getXMLRPCHost() {
+    return remoteHost != null ? remoteHost : "127.0.0.1";
+  }
+
+  @Transient
+  public String getName() {
+    return "Serv" + getId();
   }
 
   public Server() {

@@ -87,7 +87,7 @@ public class UserServerDAO extends DAO<UserServer> {
   @SuppressWarnings("unchecked")
   public List<Object[]> getServerLoad() throws HibernateException, SQLException {
     String sqlQuery =
-        "select name, count(*), url from UserServer u join Server s on serverId=s.id where available=1 group by serverId order by count(*) desc;";
+        "select s.id, count(*), s.scopeName from UserServer u join Server s on serverId=s.id where s.available=1 group by serverId order by count(*) desc;";
     SQLQuery query = getSession().createSQLQuery(sqlQuery);
     List<Object[]> result = query.list();
     return result;
