@@ -946,6 +946,82 @@ CREATE TABLE `PetItem`
 LOCK TABLES `PetItem` WRITE;
 /*!40000 ALTER TABLE `PetItem`
     DISABLE KEYS */;
+INSERT INTO `PetItem` (`id`, `created`, `name`, `placement`, `price`) VALUES
+    (2, '2015-01-01 00:00', 'body1', 'body', 300),
+    (3, '2015-01-01 00:00', 'body2', 'body', 300),
+    (4, '2015-01-01 00:00', 'body3', 'body', 300),
+    (5, '2015-01-01 00:00', 'body4', 'body', 300),
+    (6, '2015-01-01 00:00', 'body5', 'body', 300),
+    (7, '2015-01-01 00:00', 'body6', 'body', 300),
+    (8, '2015-01-01 00:00', 'body7', 'body', 300),
+    (9, '2015-01-01 00:00', 'body8', 'body', 300),
+    (10, '2015-01-01 00:00', 'body9', 'body', 300),
+    (11, '2015-01-01 00:00', 'body10', 'body', 300),
+    (12, '2015-01-01 00:00', 'body11', 'body', 300),
+    (13, '2015-01-01 00:00', 'body12', 'body', 300),
+    (14, '2015-01-01 00:00', 'body13', 'body', 300),
+    (15, '2015-01-01 00:00', 'body14', 'body', 300),
+    (16, '2015-01-01 00:00', 'body15', 'body', 300),
+    (100, '2015-01-01 00:00', 'bottom0', 'bottom', 300),
+    (101, '2015-01-01 00:00', 'bottom1', 'bottom', 300),
+    (102, '2015-01-01 00:00', 'bottom2', 'bottom', 300),
+    (103, '2015-01-01 00:00', 'bottom3', 'bottom', 300),
+    (104, '2015-01-01 00:00', 'bottom4', 'bottom', 300),
+    (105, '2015-01-01 00:00', 'bottom5', 'bottom', 300),
+    (106, '2015-01-01 00:00', 'bottom6', 'bottom', 300),
+    (107, '2015-01-01 00:00', 'bottom7', 'bottom', 300),
+    (108, '2015-01-01 00:00', 'bottom8', 'bottom', 300),
+    (109, '2015-01-01 00:00', 'bottom9', 'bottom', 300),
+    (110, '2015-01-01 00:00', 'bottom10', 'bottom', 300),
+    (111, '2015-01-01 00:00', 'bottom11', 'bottom', 300),
+    (112, '2015-01-01 00:00', 'bottom12', 'bottom', 300),
+    (113, '2015-01-01 00:00', 'bottom13', 'bottom', 300),
+    (114, '2015-01-01 00:00', 'bottom14', 'bottom', 300),
+    (200, '2015-01-01 00:00', 'face0', 'face', 300),
+    (201, '2015-01-01 00:00', 'face1', 'face', 300),
+    (202, '2015-01-01 00:00', 'face2', 'face', 300),
+    (203, '2015-01-01 00:00', 'face3', 'face', 300),
+    (204, '2015-01-01 00:00', 'face4', 'face', 300),
+    (205, '2015-01-01 00:00', 'face5', 'face', 300),
+    (206, '2015-01-01 00:00', 'face6', 'face', 300),
+    (207, '2015-01-01 00:00', 'face7', 'face', 300),
+    (208, '2015-01-01 00:00', 'face8', 'face', 300),
+    (209, '2015-01-01 00:00', 'face9', 'face', 300),
+    (210, '2015-01-01 00:00', 'face10', 'face', 300),
+    (211, '2015-01-01 00:00', 'face11', 'face', 300),
+    (212, '2015-01-01 00:00', 'face12', 'face', 300),
+    (214, '2015-01-01 00:00', 'face14', 'face', 300),
+    (215, '2015-01-01 00:00', 'face15', 'face', 300),
+    (300, '2015-01-01 00:00', 'side0', 'side', 300),
+    (301, '2015-01-01 00:00', 'side1', 'side', 300),
+    (302, '2015-01-01 00:00', 'side2', 'side', 300),
+    (303, '2015-01-01 00:00', 'side3', 'side', 300),
+    (304, '2015-01-01 00:00', 'side4', 'side', 300),
+    (305, '2015-01-01 00:00', 'side5', 'side', 300),
+    (306, '2015-01-01 00:00', 'side6', 'side', 300),
+    (307, '2015-01-01 00:00', 'side7', 'side', 300),
+    (308, '2015-01-01 00:00', 'side8', 'side', 300),
+    (309, '2015-01-01 00:00', 'side9', 'side', 300),
+    (310, '2015-01-01 00:00', 'side10', 'side', 300),
+    (311, '2015-01-01 00:00', 'side11', 'side', 300),
+    (312, '2015-01-01 00:00', 'side12', 'side', 300),
+    (313, '2015-01-01 00:00', 'side13', 'side', 300),
+    (314, '2015-01-01 00:00', 'side14', 'side', 300),
+    (400, '2015-01-01 00:00', 'top0', 'top', 300),
+    (401, '2015-01-01 00:00', 'top1', 'top', 300),
+    (402, '2015-01-01 00:00', 'top2', 'top', 300),
+    (403, '2015-01-01 00:00', 'top3', 'top', 300),
+    (404, '2015-01-01 00:00', 'top4', 'top', 300),
+    (405, '2015-01-01 00:00', 'top5', 'top', 300),
+    (406, '2015-01-01 00:00', 'top6', 'top', 300),
+    (407, '2015-01-01 00:00', 'top7', 'top', 300),
+    (408, '2015-01-01 00:00', 'top8', 'top', 300),
+    (409, '2015-01-01 00:00', 'top9', 'top', 300),
+    (410, '2015-01-01 00:00', 'top10', 'top', 300),
+    (411, '2015-01-01 00:00', 'top11', 'top', 300),
+    (412, '2015-01-01 00:00', 'top12', 'top', 300),
+    (413, '2015-01-01 00:00', 'top13', 'top', 300),
+    (414, '2015-01-01 00:00', 'top14', 'top', 300);
 /*!40000 ALTER TABLE `PetItem`
     ENABLE KEYS */;
 UNLOCK TABLES;
@@ -1252,6 +1328,37 @@ CREATE TABLE `RobotType`
 LOCK TABLES `RobotType` WRITE;
 /*!40000 ALTER TABLE `RobotType`
     DISABLE KEYS */;
+INSERT INTO `RobotType` (`id`, `created`, `accuracy`, `attack`, `catalog`, `defence`, `energy`, `hasColor`, `info`, `level`, `lifeTime`, `mobility`, `name`, `percent`, `placement`, `premium`, `price`, `robotName`, `useCount`) VALUES
+(1, NULL, 4, 6, 'robots', 3, 20, 1, 'super=MB;superMult=6', 1, 0, 2, 'vbot', 0, '#', 0, 3000, '#', -1);
+INSERT INTO `RobotType` (`id`, `created`, `accuracy`, `attack`, `catalog`, `defence`, `energy`, `hasColor`, `info`, `level`, `lifeTime`, `mobility`, `name`, `percent`, `placement`, `premium`, `price`, `robotName`, `useCount`) VALUES
+(2, NULL, 1, 1, 'robotStuffs', 1, 0, 1, '', 1, 0, 0, 'vbotHelmet1', 0, 'H', 0, 300, 'vbot', -1);
+INSERT INTO `RobotType` (`id`, `created`, `accuracy`, `attack`, `catalog`, `defence`, `energy`, `hasColor`, `info`, `level`, `lifeTime`, `mobility`, `name`, `percent`, `placement`, `premium`, `price`, `robotName`, `useCount`) VALUES
+(3, NULL, 2, 2, 'robotStuffs', 2, 0, 1, '', 10, 0, 3, 'vbotHelmet2', 0, 'H', 0, 900, 'vbot', -1);
+INSERT INTO `RobotType` (`id`, `created`, `accuracy`, `attack`, `catalog`, `defence`, `energy`, `hasColor`, `info`, `level`, `lifeTime`, `mobility`, `name`, `percent`, `placement`, `premium`, `price`, `robotName`, `useCount`) VALUES
+(4, NULL, 3, 3, 'robotStuffs', 4, 0, 1, '', 18, 0, -1, 'vbotHelmet3', 0, 'H', 0, 1400, 'vbot', -1),
+(5, NULL, 0, 1, 'robotStuffs', 2, 0, 1, '', 4, 0, 0, 'vbotArmor1', 0, 'S', 0, 600, 'vbot', -1),
+(6, NULL, 4, 3, 'robotStuffs', 5, 0, 1, '', 12, 0, 0, 'vbotArmor2', 0, 'S', 0, 1300, 'vbot', -1),
+(7, NULL, 1, 5, 'robotStuffs', 5, 0, 1, '', 20, 0, 2, 'vbotArmor3', 0, 'S', 0, 2000, 'vbot', -1),
+(8, NULL, 0, 2, 'robotStuffs', 2, 0, 1, '', 6, 0, 1, 'vbotChassis1', 0, 'R', 0, 900, 'vbot', -1),
+(9, NULL, -1, 3, 'robotStuffs', 3, 0, 1, '', 14, 0, 3, 'vbotChassis2', 0, 'R', 0, 1700, 'vbot', -1),
+(10, NULL, 3, 5, 'robotStuffs', 6, 0, 1, '', 22, 0, 3, 'vbotChassis3', 0, 'R', 0, 2500, 'vbot', -1),
+(11, NULL, 2, 5, 'robotStuffs', 0, 0, 1, '', 8, 0, 2, 'vbotWeapon1', 0, 'W', 0, 1200, 'vbot', -1),
+(12, NULL, 4, 10, 'robotStuffs', 3, 0, 1, '', 16, 0, 3, 'vbotWeapon2', 0, 'W', 0, 2100, 'vbot', -1),
+(13, NULL, 6, 20, 'robotStuffs', 5, 0, 1, '', 24, 0, 4, 'vbotWeapon3', 0, 'W', 0, 3190, '*', -1),
+(14, NULL, 0, 40, 'robotItems', 0, 0, 0, '', 10, 0, 0, 'lighting', 0, 'I', 0, 6000, '*', 2),
+(15, NULL, 0, 30, 'robotItems', 0, 0, 0, '', 8, 0, 0, 'rocket', 0, 'I', 0, 4800, '*', 2),
+(16, NULL, 0, 50, 'robotItems', 0, 0, 0, 'invalid', 12, 0, 0, 'rocket2', 1, 'I', 0, 5000, '*', 2),
+(17, NULL, 0, 0, 'robotItems', 75, 0, 0, '', 5, 2, 0, 'defencePlus', 1, 'A', 0, 4000, '*', -1),
+(18, NULL, 0, 50, 'robotItems', 0, 0, 0, '', 4, 2, 0, 'attackPlus', 1, 'A', 0, 5000, '*', -1),
+(19, NULL, 25, 25, 'robotItems', 25, 0, 0, '', 6, 3, 25, 'allPlus', 1, 'A', 0, 10000, '*', -1),
+(20, NULL, 0, 0, 'robotItems', 0, 30, 0, '', 2, 0, 0, 'energyRepair1', 0, 'I', 0, 1000, '*', 1),
+(21, NULL, 0, 0, 'robotItems', 0, 60, 0, '', 5, 0, 0, 'energyRepair2', 0, 'I', 0, 1800, '*', 1),
+(22, NULL, 0, 0, 'robotItems', 0, 100, 0, '', 7, 0, 0, 'energyRepair3', 0, 'I', 0, 2000, '*', 1),
+(23, NULL, 0, 1, 'robotItems', 0, 0, 0, '', 2, 5, 0, 'attack1', 0, 'A', 0, 2000, '*', -1),
+(24, NULL, 0, 0, 'robotItems', 1, 0, 0, '', 2, 5, 0, 'defence1', 0, 'A', 0, 2000, '*', -1),
+(25, NULL, 5, 0, 'robotItems', 0, 0, 0, '', 1, 5, 0, 'accuracy1', 0, 'A', 0, 1000, '*', -1),
+(26, NULL, 0, 0, 'robotItems', 0, 0, 0, '', 1, 5, 1, 'mobility1', 0, 'A', 0, 1000, '*', -1),
+(27, NULL, 0, 5, 'robotItems', 2, 0, 0, '', 3, 4, 0, 'attackPlus2', 0, 'A', 0, 1200, '*', -1);
 /*!40000 ALTER TABLE `RobotType`
     ENABLE KEYS */;
 UNLOCK TABLES;
@@ -1491,6 +1598,7 @@ CREATE TABLE `StuffType`
 LOCK TABLES `StuffType` WRITE;
 /*!40000 ALTER TABLE `StuffType`
     DISABLE KEYS */;
+
 INSERT INTO `StuffType` (`id`, `type`, `fileName`, `placement`, `price`, `shop_id`, `created`, `info`, `hasColor`,
                          `premium`, `giftable`, `itemOfTheMonth`, `name`, `rainable`, `groupNum`)
 VALUES (1, 'C', 'bant', 'N', 150, 305, NULL, '', 1, 0, 1, '', '', 0, 0),
@@ -2740,6 +2848,29 @@ VALUES (1314, 'C', 'futbolka_cut', 'M', 2000, 314, '2011-02-10 09:59:36', '', 1,
        (2058, 'E', 'cocktail1', '', 6, 3, NULL, '', 0, 0, 1, '', '', 0, 0),
        (2059, 'E', 'cocktail2', '', 8, 3, NULL, '', 0, 0, 1, '', '', 0, 0),
        (2060, 'E', 'cocktail3', '', 29, 3, NULL, '', 0, 0, 1, '', '', 0, 0);
+
+INSERT INTO `StuffType` (`type`, `fileName`, `placement`, `price`, `shop_id`, `created`, `info`, `hasColor`,
+                         `premium`, `giftable`, `itemOfTheMonth`, `name`, `rainable`, `groupNum`)
+VALUES
+    ('P', 'makarony', '', 7, 10, '2015-01-01 00:00', '', 0, 0, 0, '', '', 0, 0),
+    ('P', 'popcorn', '', 8, 10, '2015-01-01 00:00', '', 0, 0, 0, '', '', 0, 0),
+-- Disabled, has no animation ('P', 'jajcya', '', 6, 10, '2015-01-01 00:00', '', 0, 0, 0, '', '', 0, 0),
+    ('P', 'kistka', '', 7, 10, '2015-01-01 00:00', '', 0, 0, 0, '', '', 0, 0),
+-- Disabled, has no animation ('P', 'ravlyky', '', 8, 10, '2015-01-01 00:00', '', 0, 0, 0, '', '', 0, 0),
+    ('P', 'cukerka', '', 6, 10, '2015-01-01 00:00', '', 0, 0, 0, '', '', 0, 0),
+    ('P', 'gameBall', '', 300, 11, '2015-01-01 00:00', '', 0, 0, 0, '', '', 0, 0),
+    ('P', 'gameCircle', '', 300, 11, '2015-01-01 00:00', '', 0, 0, 0, '', '', 0, 0),
+    ('P', 'gameBatut', '', 300, 11, '2015-01-01 00:00', '', 0, 0, 0, '', '', 0, 0),
+    ('P', 'gameScate', '', 300, 11, '2015-01-01 00:00', '', 0, 0, 0, '', '', 0, 0),
+    ('P', 'gameVantus', '', 300, 11, '2015-01-01 00:00', '', 0, 0, 0, '', '', 0, 0),
+    ('P', 'gamePet', '', 300, 11, '2015-01-01 00:00', '', 0, 0, 0, '', '', 0, 0),
+    ('P', 'podushka', '', 300, 12, '2015-01-01 00:00', '', 0, 0, 0, '', '', 0, 0),
+    ('P', 'sleeping', '', 300, 12, '2015-01-01 00:00', '', 0, 0, 0, '', '', 0, 0),
+-- Disabled, has no animation ('P', 'gnizdo', '', 300, 12, '2015-01-01 00:00', '', 0, 0, 0, '', '', 0, 0),
+    ('P', 'knyzhka', '', 300, 12, '2015-01-01 00:00', '', 0, 0, 0, '', '', 0, 0),
+    ('P', 'tapok', '', 300, 12, '2015-01-01 00:00', '', 0, 0, 0, '', '', 0, 0);
+-- Disabled, has no animation ('P', 'maska', '', 300, 12, '2015-01-01 00:00', '', 0, 0, 0, '', '', 0, 0);
+
 /*!40000 ALTER TABLE `StuffType`
     ENABLE KEYS */;
 UNLOCK TABLES;

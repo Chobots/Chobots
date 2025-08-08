@@ -30,7 +30,6 @@ import com.kavalok.robots.RobotUtil;
 import com.kavalok.robots.TeamUtil;
 import com.kavalok.services.common.DataServiceBase;
 import com.kavalok.user.UserAdapter;
-import com.kavalok.utils.ShopAccessUtil;
 
 public class RobotService extends DataServiceBase {
 
@@ -119,9 +118,6 @@ public class RobotService extends DataServiceBase {
     User user = new UserDAO(getSession()).findById(adapter.getUserId());
     Long robotTypeId = typeId.longValue();
     RobotType type = new RobotTypeDAO(getSession()).findById(robotTypeId);
-
-    // Check if user has access to buy from this catalog
-    ShopAccessUtil.checkShopAccess(getSession(), type.getCatalog());
 
     if (type.getPrice() == 0) {
       throw new IllegalStateException("Char cannot buy payed item");

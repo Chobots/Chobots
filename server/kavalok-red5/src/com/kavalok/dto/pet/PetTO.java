@@ -32,18 +32,17 @@ public class PetTO {
   }
 
   public PetTO(Pet pet) {
-
-    body = pet.getBody().getName();
+    body = pet.getBody() != null ? pet.getBody().getName() : null;
     bodyColor = pet.getBodyColor();
-    face = pet.getFace().getName();
+    face = pet.getFace() != null ? pet.getFace().getName() : null;
     faceColor = pet.getFaceColor();
-    top = pet.getTop().getName();
+    top = pet.getTop() != null ? pet.getTop().getName() : null;
     topColor = pet.getTopColor();
-    side = pet.getSide().getName();
+    side = pet.getSide() != null ? pet.getSide().getName() : null;
     sideColor = pet.getSideColor();
-    bottom = pet.getBottom().getName();
+    bottom = pet.getBottom() != null ? pet.getBottom().getName() : null;
     bottomColor = pet.getBottomColor();
-    atHome = pet.getAtHome();
+    atHome = Boolean.TRUE.equals(pet.getAtHome());
 
     health = pet.getHealth();
     food = pet.getFood();
