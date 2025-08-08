@@ -31,7 +31,8 @@ Goals of this project are as follows but not limited to:
  - [ ] Fix partner login
  - [x] Reauthenticate client server moves (including first login) via auth tokens rather than client stored password
  - [ ] Fix Cinema
- - [ ] Add database rows required to fix missions, pets, robots
+ - [x] Add database rows required to fix missions, pets, robots
+ - [ ] Fix questHoover
  - [x] Fix login error message on duplicate login
  - [ ] [Fix chat history bar not displaying](https://github.com/Chobots/Chobots/issues/6)
  - [x] Upgrade to Flash Player 10 target
