@@ -30,6 +30,8 @@ package com.kavalok.utils
 				
 				for each (var part:Sprite in parts)
 				{
+					if (!domain)
+						continue;
 					
 					var assetName:String = ASSET_PREFIX + part.name.substr(PART_PREFIX.length);
 					assetName = assetName.split("_")[0];

@@ -225,13 +225,16 @@ public class StuffServiceNT extends DataServiceNotTransactionBase {
   public List<StuffTypeTO> getStuffTypes(String shopName) {
     long now = System.currentTimeMillis();
 
-    // Check if user has access to this shop
-    ShopAccessUtil.checkShopAccess(getSession(), shopName);
-
     IShopProcessor processor = new DefaultShopProcessor();
 
-    if (shopProcessors.containsKey(shopName) && getAdapter().getPersistent())
+    if (shopProcessors.containsKey(shopName) && getAdapter().getPersistent()) {
       processor = shopProcessors.get(shopName);
+    }
+
+    // Only enforce Shop access for non-robots shops. Robot shops use RobotType.catalog instead of Shop.
+    if (!(processor instanceof RobotShopProcessor)) {
+      ShopAccessUtil.checkShopAccess(getSession(), shopName);
+    }
 
     List<StuffTypeTO> result = processor.getStuffTypes(getSession(), shopName);
 
@@ -241,13 +244,16 @@ public class StuffServiceNT extends DataServiceNotTransactionBase {
   public List<StuffTypeTO> getStuffTypes(String shopName, Integer pageNum, Integer itemsPerPage) {
     long now = System.currentTimeMillis();
 
-    // Check if user has access to this shop
-    ShopAccessUtil.checkShopAccess(getSession(), shopName);
-
     IShopProcessor processor = new DefaultShopProcessor();
 
-    if (shopProcessors.containsKey(shopName) && getAdapter().getPersistent())
+    if (shopProcessors.containsKey(shopName) && getAdapter().getPersistent()) {
       processor = shopProcessors.get(shopName);
+    }
+
+    // Only enforce Shop access for non-robots shops. Robot shops use RobotType.catalog instead of Shop.
+    if (!(processor instanceof RobotShopProcessor)) {
+      ShopAccessUtil.checkShopAccess(getSession(), shopName);
+    }
 
     List<StuffTypeTO> result = processor.getStuffTypes(getSession(), shopName);
     if (pageNum == 0 && result.size() > 0) {

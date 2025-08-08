@@ -101,7 +101,11 @@
 			for each (var itemName:String in itemNames)
 			{
 				if (itemName)
-					price += module.getItemByName(itemName).price;
+				{
+					var petItem:PetItem = module.getItemByName(itemName);
+					if (petItem)
+						price += petItem.price;
+				}
 			}
 			
 			return price;
@@ -113,7 +117,15 @@
 			var currentItemName:String = _pet[_pageSelector.placement];
 			
 			_itemsView.setItems(items);
-			_itemsView.selectedItem = module.getItemByName(currentItemName);
+			var selected:PetItem = module.getItemByName(currentItemName);
+			if (!selected && items && items.length > 0)
+			{
+				selected = items[0];
+			}
+			if (selected)
+			{
+				_itemsView.selectedItem = selected;
+			}
 			
 			_petModel.setModel(PetModels.STAY, Directions.DOWN);
 			

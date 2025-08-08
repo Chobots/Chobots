@@ -6,11 +6,9 @@ import java.util.List;
 import org.hibernate.Session;
 import org.red5.io.utils.ObjectMap;
 
-import com.kavalok.KavalokApplication;
 import com.kavalok.dao.RobotDAO;
 import com.kavalok.dao.RobotSKUDAO;
 import com.kavalok.dao.RobotTypeDAO;
-import com.kavalok.dao.StuffTypeDAO;
 import com.kavalok.db.Robot;
 import com.kavalok.db.RobotSKU;
 import com.kavalok.db.RobotType;
@@ -18,15 +16,13 @@ import com.kavalok.db.User;
 import com.kavalok.dto.robot.RobotTipes;
 import com.kavalok.dto.stuff.StuffTypeTO;
 import com.kavalok.user.UserManager;
-import com.kavalok.utils.ShopAccessUtil;
 
 public class RobotShopProcessor implements IShopProcessor {
 
   @SuppressWarnings("unchecked")
   @Override
   public List<StuffTypeTO> getStuffTypes(Session session, String shopName) {
-    // Check if user has access to this catalog
-    ShopAccessUtil.checkShopAccess(session, shopName);
+    // Robot catalogs are filtered via RobotType.catalog and do not rely on Shop
 
     ObjectMap<String, Integer> robotLevels = getRobotLevels(session);
     List<RobotType> types = new RobotTypeDAO(session).findByCatalog(shopName);
@@ -127,7 +123,7 @@ public class RobotShopProcessor implements IShopProcessor {
 
   @Override
   public Integer getStuffTypesCount(Session session, String shopName) {
-    Integer groupNum = KavalokApplication.getInstance().getStuffGroupNum();
-    return new StuffTypeDAO(session).findByShopNameCount(shopName, groupNum);
+    // Count robot items by catalog via RobotType
+    return new RobotTypeDAO(session).findByCatalog(shopName).size();
   }
 }

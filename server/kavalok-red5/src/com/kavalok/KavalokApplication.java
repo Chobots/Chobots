@@ -400,6 +400,17 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       case "CharService.makePresent":
       case "CharService.savePlayerCard":
       case "CharService.gK":
+      case "RobotService.buyItem":
+      case "RobotServiceNT.getCharRobot":
+      case "RobotServiceNT.getRobotsLite":
+      case "RobotServiceNT.getAllItems":
+      case "RobotService.saveRobots":
+      case "RobotService.createTeam":
+      case "RobotServiceNT.getTopScores":
+      case "PetService.getPetItems":
+      case "PetService.savePet":
+      case "PetService.saveParams":
+      case "PetService.disposePet":
         return 1;
         // Logged in user methods
       case "AdminService.adminLogin":
