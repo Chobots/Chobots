@@ -17,9 +17,9 @@ package com.kavalok.remoting
 		private var _connectEvent : EventSender = new EventSender();
 		private var _disconnectEvent : EventSender = new EventSender();
         private var _timeoutTimer:Timer;
-        private var _timeoutMs:int = 2000;
+        private var _timeoutMs:int = 8000;
         private var _attemptsMade:int = 0;
-        private var _maxAttempts:int = 5;
+        private var _maxAttempts:int = 4;
 		
 		public function ConnectCommand()
 		{
