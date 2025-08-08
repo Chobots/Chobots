@@ -22,10 +22,20 @@ public class ServerDAO extends DAO<Server> {
   }
 
   public Server findByName(String name) {
-    return findByParameter("name", name);
+    if (name.startsWith("Serv")) {
+      String idString = name.substring(4);
+      try {
+        Long id = Long.parseLong(idString);
+        return findByParameter("id", id);
+      } catch (NumberFormatException e) {
+        return null;
+      }
+    }
+
+    return null;
   }
 
-  public Server findByUrl(String url) {
-    return findByParameter("url", url);
+  public Server findByScopeName(String scopeName) {
+    return findByParameter("scopeName", scopeName);
   }
 }

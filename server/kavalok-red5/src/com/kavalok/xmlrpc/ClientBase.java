@@ -25,7 +25,7 @@ public class ClientBase {
 
   protected void createXmlRpc(Server currentServer) {
     if (currentServer != null) {
-      createXmlRpc(currentServer.getIp(), currentServer.getContextPath());
+      createXmlRpc(currentServer.getXMLRPCHost(), currentServer.getContextPath());
     }
   }
 

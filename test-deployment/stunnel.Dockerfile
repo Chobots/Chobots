@@ -13,9 +13,17 @@ RUN openssl req -x509 -nodes -days 3650 \
   -out /certs/fullchain.pem
 
 # Write stunnel configuration for modern TLS only
-RUN echo -e "pid = /var/run/stunnel.pid\n\
+RUN echo -e "pid = /tmp/stunnel.pid\n\
 foreground = yes\n\
-debug = 7\n\
+debug = 3\n\
+setuid = nobody\n\
+setgid = nobody\n\
+socket = l:TCP_NODELAY=1\n\
+socket = r:TCP_NODELAY=1\n\
+socket = l:SO_KEEPALIVE=1\n\
+socket = r:SO_KEEPALIVE=1\n\
+sessionCacheSize = 1000\n\
+sessionCacheTimeout = 300\n\
 \n\
 [rtmps]\n\
 accept = 0.0.0.0:8443\n\
@@ -29,7 +37,8 @@ options = NO_SSLv3\n\
 options = NO_TLSv1\n\
 options = NO_TLSv1_1\n\
 options = NO_COMPRESSION\n\
-ciphers = ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305" > /etc/stunnel/stunnel.conf
+ciphers = ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256\n\
+" > /etc/stunnel/stunnel.conf
 
 CMD ["stunnel", "/etc/stunnel/stunnel.conf"]
 

@@ -23,7 +23,6 @@ package com.kavalok.login
 	import com.kavalok.utils.IdleManager;
 	import com.kavalok.utils.Strings;
 	import com.kavalok.utils.Timers;
-	import com.kavalok.constants.ConnectionConfig;
 
 	import flash.events.NetStatusEvent;
 	import flash.external.ExternalInterface;
@@ -66,15 +65,74 @@ package com.kavalok.login
 			return _server;
 		}
 
+		// Public static method to build default RTMP URL (same logic as the original ConnectionConfig.buildRtmpUrl)
+		public static function buildRtmpUrl():String
+		{
+			try {
+				if (ExternalInterface.available) {
+					var js:String =
+						"function() {" +
+						"  if (typeof window.rtmpConnectionString === 'string' && window.rtmpConnectionString.length > 0) {" +
+						"    return window.rtmpConnectionString;" +
+						"  }" +
+						"  return 'rtmp://' + window.location.hostname + ':8935/kavalok';" +
+						"}";
+
+					var result:String = ExternalInterface.call(js);
+					if (result && result.length > 0) {
+						return result;
+					}
+				}
+			} catch (e:Error) {}
+			return "rtmp://127.0.0.1:8935/kavalok";
+		}
+
+		// Public static method to build RTMP URL with custom path
+		public static function buildRtmpUrlFromPath(serverPath:String):String
+		{
+			try {
+				if (ExternalInterface.available) {
+					var js:String =
+						"function() {" +
+						"  if (typeof window.rtmpConnectionString === 'string' && window.rtmpConnectionString.length > 0) {" +
+						"    return window.rtmpConnectionString;" +
+						"  }" +
+						"  return 'rtmp://' + window.location.hostname + ':8935/" + serverPath + "';" +
+						"}";
+
+					var result:String = ExternalInterface.call(js);
+					if (result && result.length > 0) {
+						return result;
+					}
+				}
+			} catch (e:Error) {}
+			return "rtmp://127.0.0.1:8935/" + serverPath;
+		}
+
 		public function login(startupInfo:StartupInfo):void
 		{
-			_autoLogin=Boolean(startupInfo.login);
-			_server=startupInfo.server;
-			_info=startupInfo;
-			_connectCommand.connectEvent.addListener(onConnectSuccess);
-			BaseRed5Delegate.defaultConnectionUrl = startupInfo.url;
+			_autoLogin = Boolean(startupInfo.login);
+			_server = startupInfo.server;
+			_info = startupInfo;
+			// Use buildRtmpUrl to get the full RTMP URL
+			var targetUrl:String = LoginManager.buildRtmpUrl();
+			BaseRed5Delegate.defaultConnectionUrl = targetUrl;
+			_info.url = targetUrl;
 
-			_connectCommand.execute();
+			var isConnected:Boolean = RemoteConnection.instance.connected;
+			var currentUri:String = isConnected ? RemoteConnection.instance.netConnection.uri : null;
+			var targetUri:String = BaseRed5Delegate.defaultConnectionUrl;
+
+			if (isConnected && currentUri == targetUri)
+			{
+				// Already connected to the desired server; proceed without reconnecting
+				onConnectSuccess();
+			}
+			else
+			{
+				_connectCommand.connectEvent.addListener(onConnectSuccess);
+				_connectCommand.execute();
+			}
 		}
 
 
@@ -112,19 +170,34 @@ package com.kavalok.login
 
 		}
 
-		private function onGetServer(url:String):void
+		private function onGetServer(serverPath:String):void
 		{
-			RemoteConnection.instance.disconnect();
-			var rtmpUrl:String = ConnectionConfig.buildRtmpUrl();
-			BaseRed5Delegate.defaultConnectionUrl = rtmpUrl;
-			_info.url = rtmpUrl;
+			// ServerService.getServerAddress returns just the path (e.g., "kavalok")
+			// We need to build the full URL using the same logic as buildRtmpUrl
+			var isConnected:Boolean = RemoteConnection.instance.connected;
+			var currentUri:String = isConnected ? RemoteConnection.instance.netConnection.uri : null;
+			
+			// Build the full RTMP URL using the server path
+			var fullUrl:String = LoginManager.buildRtmpUrlFromPath(serverPath);
+			
+			// Update target URL
+			BaseRed5Delegate.defaultConnectionUrl = fullUrl;
+			_info.url = fullUrl;
 			_serverSelected = true;
+
+			// Only disconnect if switching to a different server
+			if (isConnected && currentUri != fullUrl)
+			{
+				RemoteConnection.instance.disconnect();
+			}
+
 			login(_info);
 		}
 
 		private function onConnectSuccess():void
 		{
-			_connectCommand.connectEvent.removeListener(onConnectSuccess);
+			// Safely remove listener only if present, since we may call this directly when already connected
+			_connectCommand.connectEvent.removeListenerIfHas(onConnectSuccess);
 			new LoginService(onGetServerProperties).getServerProperties();
 		}
 		
@@ -381,7 +454,7 @@ package com.kavalok.login
 	                parsedDataObj.fileName = String(nameResults[2])+".as";
 	            }
 	            parsedDataObj.packageName = nameResults[1];
-	            parsedDataObj.className = nameResults[2];
+	            parsedDataObj.className = String(nameResults[2]);
 	            parsedDataObj.functionName = String(nameResults[3]);
 	        } else {
 	            //match a contructor with $iinit
@@ -402,9 +475,9 @@ package com.kavalok.login
 	                    if (!isFileNameFound) {
 	                        parsedDataObj.fileName = String(nameResults[2])+".as";
 	                    }
-	                    parsedDataObj.packageName = String(nameResults[1]);
-	                    parsedDataObj.className = String(nameResults[2]);
-	                    parsedDataObj.functionName = String(nameResults[2]);
+	                parsedDataObj.packageName = String(nameResults[1]);
+	                parsedDataObj.className = String(nameResults[2]);
+	                parsedDataObj.functionName = String(nameResults[2]);
 	                } else {
 	                    //can't find a match - this is a catch all, you never know, 
 	                    //if you find situations where this does not work please , 

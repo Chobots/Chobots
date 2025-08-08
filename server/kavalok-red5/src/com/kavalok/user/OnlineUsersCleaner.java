@@ -35,7 +35,7 @@ public class OnlineUsersCleaner extends TimerTask {
       strategy.beforeCall();
       logger.debug("Online users processor start");
       String path = KavalokApplication.getInstance().getCurrentServerPath();
-      Server server = new ServerDAO(strategy.getSession()).findByUrl(path);
+      Server server = new ServerDAO(strategy.getSession()).findByScopeName(path);
       UserDAO userDAO = new UserDAO(strategy.getSession());
       List<Long> dbIds = new ArrayList<Long>();
       List<UserServer> userServers =

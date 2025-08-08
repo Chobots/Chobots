@@ -12,7 +12,7 @@ import com.kavalok.utils.ReflectUtil;
 public class ServerService extends DataServiceNotTransactionBase {
 
   public String getServerAddress(String name) {
-    return new ServerDAO(getSession()).findByName(name).getUrl();
+    return new ServerDAO(getSession()).findByName(name).getScopeName();
   }
 
   @SuppressWarnings("unchecked")

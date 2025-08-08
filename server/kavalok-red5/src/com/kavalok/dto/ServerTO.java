@@ -19,7 +19,7 @@ public class ServerTO {
   public ServerTO(Server server) {
     super();
     id = server.getId().intValue();
-    url = server.getUrl();
+    url = server.getScopeName();
     name = server.getName();
     available = server.isAvailable();
     running = server.isRunning();

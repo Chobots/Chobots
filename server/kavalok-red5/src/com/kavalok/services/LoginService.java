@@ -266,12 +266,8 @@ public class LoginService extends DataServiceBase {
     if (currentUs != null) {
       Server currentServer = currentUs.getServer();
       if (!currentServer.getId().equals(server.getId())) {
+        // User has an active session on a different server instance; kick the old one
         new UserUtil().kickOut(user, false, getSession());
-      } else {
-        UserAdapter adapter = UserManager.getInstance().getUser(user.getLogin());
-        if (adapter != null) {
-          adapter.executeCommand("KickOutCommand", false);
-        }
       }
     }
 
@@ -286,9 +282,20 @@ public class LoginService extends DataServiceBase {
     }
 
     UserManager manager = UserManager.getInstance();
+    IClient currentClient = new Red5().getClient();
+    UserAdapter currentAdapter = null;
+    if (currentClient != null) {
+      Object existing = currentClient.getAttribute(UserManager.ADAPTER);
+      if (existing instanceof UserAdapter) {
+        currentAdapter = (UserAdapter) existing;
+      }
+    }
+
     UserAdapter priorUserAdapter = manager.getUser(user.getLogin());
 
-    if (priorUserAdapter != null) {
+    boolean isSameAdapter = priorUserAdapter != null && currentAdapter != null && priorUserAdapter == currentAdapter;
+
+    if (priorUserAdapter != null && !isSameAdapter) {
       logger.info("Kicking out prior existing session for user: {}", user.getLogin());
       // Kick out the prior session asynchronously to avoid connection issues
       final UserAdapter finalPriorUserAdapter = priorUserAdapter;
@@ -297,8 +304,6 @@ public class LoginService extends DataServiceBase {
           .submit(
               () -> {
                 try {
-                  // Set a flag to prevent statistics update during kick-out to avoid database
-                  // conflicts
                   finalPriorUserAdapter.setPersistent(false);
                   finalPriorUserAdapter.kickOut(SOMEONE_USED_YOUR_LOGIN, false);
                 } catch (Exception e) {
@@ -307,14 +312,15 @@ public class LoginService extends DataServiceBase {
               });
     }
 
-    // Create a new UserAdapter for the current session
-    UserAdapter userAdapter = new UserAdapter();
-    IClient client = new Red5().getClient();
-    if (client != null) {
-      client.setAttribute(UserManager.ADAPTER, userAdapter);
-    } else {
-      logger.error("Failed to get client for new UserAdapter for user: {}", user.getLogin());
-      return createErrorResult(ERROR_UNKNOWN);
+    // Prefer reusing the existing adapter bound to the current client, otherwise create and attach
+    UserAdapter userAdapter = currentAdapter;
+    if (userAdapter == null) {
+      if (currentClient == null) {
+        logger.error("Failed to get client for new UserAdapter for user: {}", user.getLogin());
+        return createErrorResult(ERROR_UNKNOWN);
+      }
+      userAdapter = new UserAdapter();
+      currentClient.setAttribute(UserManager.ADAPTER, userAdapter);
     }
 
     userAdapter.setLogin(user.getLogin());
@@ -550,17 +556,18 @@ public class LoginService extends DataServiceBase {
     try {
       List<Object[]> serversLoad = new UserServerDAO(getSession()).getServerLoad();
       for (Object[] serverLoad : serversLoad) {
-        String name = (String) serverLoad[0];
+        Long serverId = ((Number) serverLoad[0]).longValue();
         Integer load = Integer.parseInt(serverLoad[1].toString());
-        String url = (String) serverLoad[2];
+        String scopeName = (String) serverLoad[2];
         if (load < KavalokApplication.getInstance().getServerLimit()) {
           Server server = new Server();
-          server.setName(name);
-          server.setUrl(url);
+          server.setId(serverId);
+          server.setScopeName(scopeName);
+          
           RemoteClient client = new RemoteClient(server);
           Integer numConnectedChars = client.getNumConnectedChars(location);
           if (numConnectedChars != null && numConnectedChars < 75) {
-            return name;
+            return server.getName(); 
           }
         }
       }

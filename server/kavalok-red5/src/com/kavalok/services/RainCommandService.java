@@ -68,7 +68,7 @@ public class RainCommandService {
     // Get current server
     ServerDAO serverDAO = new ServerDAO(session);
     Server currentServer =
-        serverDAO.findByUrl(KavalokApplication.getInstance().getCurrentServerPath());
+        serverDAO.findByScopeName(KavalokApplication.getInstance().getCurrentServerPath());
 
     List<String> connectedUsers;
     String userLocation;

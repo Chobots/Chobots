@@ -259,7 +259,7 @@ public class RemoteServer extends DefaultTransactionStrategy {
 
   public void doSendCommandToAll(byte[] command, byte[] locales) {
     String path = KavalokApplication.getInstance().getCurrentServerPath();
-    Server server = new ServerDAO(getSession()).findByUrl(path);
+    Server server = new ServerDAO(getSession()).findByScopeName(path);
 
     UserServerDAO usDAO = new UserServerDAO(getSession());
     List<UserServer> userServers = usDAO.getAllUserServer(server);
