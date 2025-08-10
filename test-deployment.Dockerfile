@@ -28,12 +28,10 @@ RUN apt-get update && apt-get install -y \
     maven \
     && rm -rf /var/lib/apt/lists/*
 
-COPY server/pom.xml /server/pom.xml
 WORKDIR /server
-RUN mvn -f /server/pom.xml dependency:copy-dependencies -DoutputDirectory=/server/lib
 
 COPY server /server
-RUN ant
+RUN ant build-app
 
 # Final image
 FROM openjdk:8-jre-slim
@@ -48,11 +46,8 @@ RUN apt-get update && apt-get install -y \
     gettext \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=server-builder /server/red5.jar /app/red5.jar
-COPY --from=server-builder /server/red5/conf /app/conf
-COPY --from=server-builder /server/red5/webapps /app/webapps
-COPY --from=server-builder /server/lib /app/lib
-
+COPY --from=server-builder /server/red5-1.0.2 /opt/red5
+RUN chmod +x /opt/red5/red5.sh
 
 COPY --from=client-builder /client/bin /usr/share/nginx/html/game
 COPY --from=client-builder /client/website /usr/share/nginx/html

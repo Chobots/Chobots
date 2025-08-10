@@ -2,7 +2,7 @@ package com.kavalok.billing.transaction;
 
 import org.hibernate.Session;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 import com.kavalok.dao.StuffTypeDAO;
 import com.kavalok.dao.TransactionDAO;
@@ -14,7 +14,7 @@ import com.kavalok.transactions.DefaultTransactionStrategy;
 import com.kavalok.user.UserUtil;
 
 public class TransactionProcessor implements Runnable {
-  private static Logger logger = LoggerFactory.getLogger(TransactionProcessor.class);
+  private static Logger logger = Red5LoggerFactory.getLogger(TransactionProcessor.class);
 
   private Long transactionId;
 

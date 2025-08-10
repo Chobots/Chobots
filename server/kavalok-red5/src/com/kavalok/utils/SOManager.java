@@ -3,9 +3,8 @@ package com.kavalok.utils;
 import java.util.ArrayList;
 
 import org.red5.server.api.so.ISharedObject;
-import org.red5.server.api.so.ISharedObjectServiceListener;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 import com.kavalok.sharedObjects.ClassFactory;
 import com.kavalok.sharedObjects.CombatListener;
@@ -18,9 +17,9 @@ import com.kavalok.sharedObjects.SOListener;
 import com.kavalok.sharedObjects.SpaceRacingSOListener;
 import com.kavalok.sharedObjects.TradeListener;
 
-public class SOManager implements ISharedObjectServiceListener {
+public class SOManager {
 
-  public static Logger logger = LoggerFactory.getLogger(SOManager.class);
+  public static Logger logger = Red5LoggerFactory.getLogger(SOManager.class);
 
   private ArrayList<ListenerEntry> factories = new ArrayList<ListenerEntry>();
 
@@ -47,8 +46,11 @@ public class SOManager implements ISharedObjectServiceListener {
     factories.add(new ListenerEntry(prefix, factory));
   }
 
-  @Override
   public void onSharedObjectCreate(ISharedObject sharedObject) {
+    // Avoid duplicate initialization if a listener is already attached
+    if (SOListener.getListener(sharedObject) != null) {
+      return;
+    }
     SOListener listener = null;
     for (ListenerEntry entry : factories) {
       if (sharedObject.getName().startsWith(entry.getPrefix())) {

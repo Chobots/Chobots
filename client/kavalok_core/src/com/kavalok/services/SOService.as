@@ -16,6 +16,10 @@ package com.kavalok.services
 			doCall("getNumConnectedChars", arguments);
 		}
 		
+		public function releaseSharedObject(sharedObjectId : String) : void {
+			doCall("releaseSharedObject", arguments);
+		}
+		
 		
 	}
 }

@@ -9,7 +9,7 @@ import java.util.TimerTask;
 
 import org.red5.server.api.IClient;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 import com.kavalok.KavalokApplication;
 import com.kavalok.dao.ServerDAO;
@@ -26,7 +26,7 @@ public class OnlineUsersCleaner extends TimerTask {
 
   public static final int DELAY = 30 * 60 * 1000;
 
-  public static Logger logger = LoggerFactory.getLogger(OnlineUsersCleaner.class);
+  public static Logger logger = Red5LoggerFactory.getLogger(OnlineUsersCleaner.class);
 
   @Override
   public void run() {

@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.red5.logging.Red5LoggerFactory;
 import org.slf4j.Logger;
 
 import com.kavalok.utils.HttpUtil;
@@ -18,7 +19,7 @@ public class TransactionProcessorServlet extends HttpServlet {
   private static final long serialVersionUID = 9166772327665369872L;
 
   private static Logger logger =
-      org.slf4j.LoggerFactory.getLogger(TransactionProcessorServlet.class);
+      Red5LoggerFactory.getLogger(TransactionProcessorServlet.class);
 
   @Override
   protected void service(HttpServletRequest request, HttpServletResponse response)

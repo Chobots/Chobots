@@ -45,7 +45,7 @@
     <property name="current_session_context_class">thread</property>
     <!-- this will show us all sql statements -->
     <property name="hibernate.show_sql">false</property>
-    <property name="hbm2ddl.auto">update</property>
+    <property name="hibernate.hbm2ddl.auto">update</property>
     <property name="hibernate.validator.apply_to_ddl">false</property>
     <property name="hibernate.validator.autoregister_listeners">false</property>
     <property name="hibernate.hbm2ddl.halt_on_error">false</property>

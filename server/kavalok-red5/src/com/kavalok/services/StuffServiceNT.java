@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 import com.kavalok.KavalokApplication;
 import com.kavalok.dao.QuestDAO;
@@ -56,7 +56,7 @@ public class StuffServiceNT extends DataServiceNotTransactionBase {
         }
       };
 
-  private static final Logger logger = LoggerFactory.getLogger(StuffServiceNT.class);
+  private static final Logger logger = Red5LoggerFactory.getLogger(StuffServiceNT.class);
 
   public StuffServiceNT() {
     super();

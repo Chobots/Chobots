@@ -15,7 +15,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.red5.io.utils.ObjectMap;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 import com.kavalok.KavalokApplication;
 import com.kavalok.dao.BanDAO;
@@ -67,7 +67,7 @@ public class CharService extends DataServiceBase {
 
   private static final int DANCES_COUNT = 3;
 
-  private static final Logger logger = LoggerFactory.getLogger(CharService.class);
+  private static final Logger logger = Red5LoggerFactory.getLogger(CharService.class);
 
   private static Object friendSynchronizer = new Object();
 
@@ -680,12 +680,10 @@ public class CharService extends DataServiceBase {
     return new KeysTO(getAdapter().newSecurityKey(), MessageService.KEY);
   }
 
-  public GameEnterTO enterGame(Object charName) {
-    return null;
-  }
-
   public GameEnterTO enterGame(String charName) {
-    long nowTot = System.currentTimeMillis();
+    System.out.println("DEBUG: enterGame method called with charName: " + charName);
+    try {
+      long nowTot = System.currentTimeMillis();
 
     long start = System.currentTimeMillis();
 
@@ -709,11 +707,27 @@ public class CharService extends DataServiceBase {
     start = System.currentTimeMillis();
     UserDAO userDAO = new UserDAO(getSession());
     User user = userDAO.findByLogin(charName.toLowerCase());
+    
+    // Add logging to debug the issue
+    if (user == null) {
+      System.out.println("ERROR: User not found for login: " + charName.toLowerCase());
+      return null;
+    }
+    
+    System.out.println("INFO: Found user: " + user.getLogin() + " with ID: " + user.getId());
     finish = System.currentTimeMillis();
 
     start = System.currentTimeMillis();
     GameCharDAO charDAO = new GameCharDAO(getSession());
     GameChar gameChar = user.getGameChar();
+    
+    // Add logging to check GameChar
+    if (gameChar == null) {
+      System.out.println("ERROR: GameChar is null for user: " + user.getLogin());
+      return null;
+    }
+    
+    System.out.println("INFO: Found GameChar for user: " + user.getLogin() + ", GameChar ID: " + gameChar.getId());
     finish = System.currentTimeMillis();
 
     start = System.currentTimeMillis();
@@ -841,6 +855,11 @@ public class CharService extends DataServiceBase {
     userAdapter.loadCharStuffs(getCharStuffs(charClothesAndStuffs));
     result.setAge(UserUtil.getAge(user));
     return result;
+    } catch (Exception e) {
+      System.out.println("ERROR: Exception in enterGame for user: " + charName);
+      e.printStackTrace();
+      return null;
+    }
   }
 
   private void populateStaticData(GameEnterTO result) {
@@ -871,7 +890,7 @@ public class CharService extends DataServiceBase {
     result.setMusicVolume(user.getMusicVolume());
     result.setSoundVolume(user.getSoundVolume());
     result.setShowTips(user.getShowTips());
-    result.setShowCharNames(gameChar.getShowCharNames());
+    result.setShowCharNames(gameChar.getShowCharNames() != null ? gameChar.getShowCharNames() : false);
     result.setDances(user.getDancesData());
     result.setSuperUser(user.getSuperUser());
     result.setUserId(user.getId());

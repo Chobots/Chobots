@@ -1,10 +1,10 @@
 package com.kavalok.xmlrpc;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 public class RpcThread implements Runnable {
-  private static Logger logger = LoggerFactory.getLogger(RpcThread.class);
+  private static Logger logger = Red5LoggerFactory.getLogger(RpcThread.class);
 
   private ClientBase client;
   private String method;

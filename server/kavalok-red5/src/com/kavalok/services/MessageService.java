@@ -8,7 +8,6 @@ import java.util.List;
 import org.hibernate.ObjectNotFoundException;
 import org.red5.io.utils.ObjectMap;
 import org.red5.server.api.so.ISharedObject;
-import org.red5.threadmonitoring.ThreadMonitorServices;
 
 import com.kavalok.KavalokApplication;
 import com.kavalok.dao.AllowedWordDAO;
@@ -213,7 +212,6 @@ public class MessageService extends DataServiceNotTransactionBase {
 
   public void sendCommand(
       Integer userId, ObjectMap<String, Object> command, Boolean offline, Boolean showInLog) {
-    ThreadMonitorServices.setJobDetails("MessageService.sendCommand begining");
 
     UserDAO dao = new UserDAO(getSession());
     long userIdL = userId.longValue();
@@ -266,15 +264,9 @@ public class MessageService extends DataServiceNotTransactionBase {
 
     if (!userServer.getId().equals(KavalokApplication.getInstance().getServer().getId())) {
       // sending remote command because recipient is on another server
-      ThreadMonitorServices.setJobDetails(
-          "MessageService.sendCommand {0} command {1} to server {2} for user {3}",
-          "remote", command, userServer.getContextPath(), user.getLogin());
       new RemoteClient(getSession(), user, userServer).sendCommand(command);
     } else {
       // sending command in local instance because recipient is on same server
-      ThreadMonitorServices.setJobDetails(
-          "MessageService.sendCommand {0} command {1} to server {2} for user {3}",
-          "local", command, userServer.getContextPath(), user.getLogin());
       UserAdapter adapter = UserManager.getInstance().getUser(user.getLogin());
       if (adapter != null) adapter.executeCommand(command);
     }

@@ -4,7 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 import com.kavalok.dao.GameCharDAO;
 import com.kavalok.dao.StuffItemDAO;
@@ -17,7 +17,7 @@ import com.kavalok.user.UserManager;
 
 public class MagicServiceNT extends DataServiceNotTransactionBase {
 
-  private static final Logger logger = LoggerFactory.getLogger(MagicServiceNT.class);
+  private static final Logger logger = Red5LoggerFactory.getLogger(MagicServiceNT.class);
 
   public Integer getMagicPeriod() {
     Long userId = getAdapter().getUserId();

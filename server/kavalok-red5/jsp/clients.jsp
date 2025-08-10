@@ -1,6 +1,6 @@
 <%@ page import="java.util.Iterator, java.util.Date,
 org.red5.server.api.IClient, com.kavalok.KavalokApplication,
-org.red5.server.api.IScope, java.util.Set, org.red5.server.so.SharedObjectScope,
+java.util.Set, org.red5.server.so.SharedObjectScope,
 com.kavalok.user.UserAdapter, com.kavalok.user.UserManager" %>
 <pre>
 <%
@@ -15,8 +15,6 @@ com.kavalok.user.UserAdapter, com.kavalok.user.UserManager" %>
  	String name = sharedObjNames.next();
  	out.println("sharedObjName: "+name);
  	SharedObjectScope so = (SharedObjectScope)KavalokApplication.getInstance().getSharedObject(name);
- 	out.println("so.listenets "+so.getListeners().size());
- 	out.println("so.listenets "+so.getListeners());
  	out.println("so.TotalListeners "+so.getStatistics().getTotalListeners());
  	out.println("so.MaxListeners "+so.getStatistics().getMaxListeners());
  	out.println("so.ActiveListeners "+so.getStatistics().getActiveListeners());

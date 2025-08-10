@@ -5,14 +5,16 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Collections;
 
 import org.red5.io.utils.ObjectMap;
 import org.red5.server.api.IAttributeStore;
+import org.red5.server.api.scope.IBasicScope;
 import org.red5.server.api.so.ISharedObject;
 import org.red5.server.api.so.ISharedObjectBase;
 import org.red5.server.api.so.ISharedObjectListener;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 import com.kavalok.messages.MessageChecker;
 import com.kavalok.transactions.TransactionUtil;
@@ -39,13 +41,13 @@ public class SOListener implements ISharedObjectListener {
 
   public static final String SEND = "oS";
 
-  private static Logger logger = LoggerFactory.getLogger(SOListener.class);
+  private static Logger logger = Red5LoggerFactory.getLogger(SOListener.class);
 
   public static SOListener getListener(ISharedObject sharedObject) {
     return (SOListener) sharedObject.getAttribute(LISTENER);
   }
 
-  protected ArrayList<String> connectedUsers = new ArrayList<String>();
+  protected List<String> connectedUsers = Collections.synchronizedList(new ArrayList<String>());
 
   protected ISharedObject sharedObject;
 
@@ -73,7 +75,11 @@ public class SOListener implements ISharedObjectListener {
   }
 
   public ObjectMap<String, Object> getState() {
-    return state;
+    synchronized (state) {
+      ObjectMap<String, Object> copy = new ObjectMap<String, Object>();
+      copy.putAll(state);
+      return copy;
+    }
   }
 
   public void initialize(ISharedObject sharedObject) {
@@ -82,21 +88,42 @@ public class SOListener implements ISharedObjectListener {
   }
 
   public List<String> getConnectedChars() {
-    return connectedUsers;
+    synchronized (connectedUsers) {
+      return new ArrayList<String>(connectedUsers);
+    }
+  }
+
+  /**
+   * Manually release the shared object when it's no longer needed.
+   * This should be called when the shared object is no longer required.
+   */
+  public void releaseSharedObject() {
+    if (sharedObject != null && sharedObject.isAcquired()) {
+      sharedObject.release();
+    }
   }
 
   public void onSharedObjectClear(ISharedObjectBase arg0) {}
 
   public void onSharedObjectConnect(ISharedObjectBase sharedObject) {
     UserAdapter adapter = UserManager.getInstance().getCurrentUser();
-    String roomName = ((org.red5.server.api.IBasicScope) sharedObject).getName();
+    String roomName = ((IBasicScope) sharedObject).getName();
 
     // Connection permission checks are now handled by ISharedObjectSecurity.isConnectionAllowed
-    connectedUsers.add(adapter.getLogin());
-    ArrayList<Object> list = new ArrayList<Object>();
-    list.add(adapter.getLogin());
-
-    sharedObject.sendMessage(CONNECT_HANDLER, list);
+    synchronized (connectedUsers) {
+      if (!connectedUsers.contains(adapter.getLogin())) {
+        connectedUsers.add(adapter.getLogin());
+      }
+    }
+    
+    // Use standard shared object message format for AMF3 compatibility
+    ArrayList<Object> args = new ArrayList<Object>();
+    args.add(adapter.getLogin()); // clientId
+    args.add(CONNECT_HANDLER); // method
+    LinkedHashMap<Integer, Object> methodArgs = new LinkedHashMap<Integer, Object>();
+    methodArgs.put(0, adapter.getLogin()); // character ID as first parameter
+    args.add(methodArgs);
+    sharedObject.sendMessage(SOListener.SEND, args);
     // IServiceCapableConnection connection = (IServiceCapableConnection)
     // Red5.getConnectionLocal();
     // logger.debug("Restore state ".concat(this.sharedObject.getName()));
@@ -128,26 +155,37 @@ public class SOListener implements ISharedObjectListener {
   public void processDisconnect() {
     UserAdapter adapter = UserManager.getInstance().getCurrentUser();
     try {
-      synchronized (this) {
-        if (!connectedUsers.contains(adapter.getLogin())) return;
+      if (!connectedUsers.contains(adapter.getLogin())) return;
 
-        connectedUsers.remove(adapter.getLogin());
-      }
+      connectedUsers.remove(adapter.getLogin());
 
+      // Use standard shared object message format for AMF3 compatibility
       ArrayList<Object> args = new ArrayList<Object>();
-      args.add(adapter.getLogin());
+      args.add(adapter.getLogin()); // clientId
+      args.add(DISCONECT_HANDLER); // method
+      LinkedHashMap<Integer, Object> methodArgs = new LinkedHashMap<Integer, Object>();
+      methodArgs.put(0, adapter.getLogin()); // character ID as first parameter
+      args.add(methodArgs);
 
       lockedStates.unlockStates(adapter.getLogin());
 
-      for (Object clientStateObject : state.values()) {
-        ObjectMap<String, Object> clientState = (ObjectMap<String, Object>) clientStateObject;
-        String key = String.format(CHAR_STATE_FORMAT, adapter.getLogin());
-        if (clientState.containsKey(key)) {
-          clientState.remove(key);
+      synchronized (state) {
+        for (Object clientStateObject : state.values()) {
+          ObjectMap<String, Object> clientState = (ObjectMap<String, Object>) clientStateObject;
+          String key = String.format(CHAR_STATE_FORMAT, adapter.getLogin());
+          if (clientState.containsKey(key)) {
+            clientState.remove(key);
+          }
         }
       }
 
-      sharedObject.sendMessage(DISCONECT_HANDLER, args);
+      sharedObject.sendMessage(SOListener.SEND, args);
+      
+      // Check if no more users are connected and release the shared object if needed
+      if (connectedUsers.isEmpty() && sharedObject.isAcquired()) {
+        sharedObject.release();
+      }
+      
       // logger.info("location {} char {} exit", ((IBasicScope)
       // sharedObject).getName(), adapter.getLogin());
     } catch (Exception e) {
@@ -156,70 +194,95 @@ public class SOListener implements ISharedObjectListener {
   }
 
   @SuppressWarnings("unchecked")
-  public void onSharedObjectSend(ISharedObjectBase arg0, String methodName, List args) {}
+  public void onSharedObjectSend(ISharedObjectBase arg0, String methodName, List args) {
+    handleSharedObjectSend(methodName, args);
+  }
 
   @SuppressWarnings("unchecked")
   private LinkedHashMap<Integer, Object> getMethodArgs(List args) {
-    if (args.size() > 2 && args.get(2) instanceof LinkedHashMap) {
-      return (LinkedHashMap<Integer, Object>) args.get(2);
+    if (args == null) {
+      logger.warn("getMethodArgs: args is null");
+      return new LinkedHashMap<Integer, Object>();
+    }
+    
+    if (args.size() > 2) {
+      Object arg2 = args.get(2);
+      if (arg2 instanceof LinkedHashMap) {
+        return (LinkedHashMap<Integer, Object>) arg2;
+      }
+      if (arg2 instanceof List) {
+        // Red5 0.8.x may provide method args as a List instead of a LinkedHashMap; adapt
+        LinkedHashMap<Integer, Object> methodArgs = new LinkedHashMap<Integer, Object>();
+        List list = (List) arg2;
+        for (int i = 0; i < list.size(); i++) {
+          methodArgs.put(i, list.get(i));
+        }
+        return methodArgs;
+      }
     }
     logger.warn("getMethodArgs: args too small or wrong type: " + args);
     return new LinkedHashMap<Integer, Object>();
   }
 
-  protected void executeServerMethods(
+  protected boolean executeServerMethods(
       String clientId, String methodName, LinkedHashMap<Integer, Object> args) {
 
     if (methodName == null) {
-      return;
+      return false;
     }
 
     try {
       Boolean interrup = (Boolean) ReflectUtil.callMethod(this, methodName, args.values());
       if (interrup != null && interrup) {
         logger.warn("interrup");
-        return;
+        return true; // handled and should interrupt client delivery
       }
+      return true; // handled but no interrupt requested
     } catch (NoSuchMethodException e) {
-      // OK
+      // No server-side handler for this method
     } catch (Exception e) {
       logger.error(e.getMessage(), e);
     }
+    return false; // not handled on server
   }
 
   @SuppressWarnings("unchecked")
   protected void processSendState(
       LinkedHashMap<Integer, Object> methodArgs, String clientId, String stateName) {
-    ObjectMap<String, Object> stateObject = getStateObject(clientId, stateName);
+    synchronized (state) {
+      ObjectMap<String, Object> stateObject = getStateObject(clientId, stateName);
 
-    if (lockedStates.canReset(clientId, stateName)) {
-      if (methodArgs.size() == 3) {
-        Boolean lockState = (Boolean) methodArgs.get(2);
-        if (lockState) {
-          lockedStates.lockState(clientId, stateName);
-        } else {
-          lockedStates.unlockState(clientId, stateName);
+      if (lockedStates.canReset(clientId, stateName)) {
+        if (methodArgs.size() == 3) {
+          Boolean lockState = (Boolean) methodArgs.get(2);
+          if (lockState) {
+            lockedStates.lockState(clientId, stateName);
+          } else {
+            lockedStates.unlockState(clientId, stateName);
+          }
         }
+        ObjectMap<String, Object> newStateObject = (ObjectMap<String, Object>) methodArgs.get(1);
+        if (newStateObject == null) {
+          ObjectMap<String, Object> clientState = (ObjectMap<String, Object>) state.get(clientId);
+          clientState.remove(stateName);
+        } else
+          for (Map.Entry<String, Object> newStateEntry : newStateObject.entrySet()) {
+            stateObject.put(newStateEntry.getKey(), newStateEntry.getValue());
+          }
+        methodArgs.remove(2);
       }
-      ObjectMap<String, Object> newStateObject = (ObjectMap<String, Object>) methodArgs.get(1);
-      if (newStateObject == null) {
-        ObjectMap<String, Object> clientState = (ObjectMap<String, Object>) state.get(clientId);
-        clientState.remove(stateName);
-      } else
-        for (Map.Entry<String, Object> newStateEntry : newStateObject.entrySet()) {
-          stateObject.put(newStateEntry.getKey(), newStateEntry.getValue());
-        }
-      methodArgs.remove(2);
     }
   }
 
   @SuppressWarnings("unchecked")
   protected ObjectMap<String, Object> getStateObject(String clientId, String stateName) {
-    forceKey(state, clientId);
-    ObjectMap<String, Object> clientState = (ObjectMap<String, Object>) state.get(clientId);
-    forceKey(clientState, stateName);
-    ObjectMap<String, Object> stateObject = (ObjectMap<String, Object>) clientState.get(stateName);
-    return stateObject;
+    synchronized (state) {
+      forceKey(state, clientId);
+      ObjectMap<String, Object> clientState = (ObjectMap<String, Object>) state.get(clientId);
+      forceKey(clientState, stateName);
+      ObjectMap<String, Object> stateObject = (ObjectMap<String, Object>) clientState.get(stateName);
+      return stateObject;
+    }
   }
 
   protected Long getUserId() {
@@ -233,8 +296,10 @@ public class SOListener implements ISharedObjectListener {
   }
 
   private void forceKey(ObjectMap<String, Object> map, String key) {
-    if (!map.containsKey(key)) {
-      map.put(key, new ObjectMap<String, Object>());
+    synchronized (map) {
+      if (!map.containsKey(key)) {
+        map.put(key, new ObjectMap<String, Object>());
+      }
     }
   }
 
@@ -280,27 +345,60 @@ public class SOListener implements ISharedObjectListener {
 
   }
 
-  @Override
-  public void onSharedObjectDestroy(ISharedObjectBase so) {
-    so.removeSharedObjectListener(this);
+  @SuppressWarnings("unchecked")
+  public void beforeSharedObjectSend(ISharedObjectBase arg0, String methodName, List args) {
+    // Kept for Red5 0.7.x compatibility; 0.8.x uses onSharedObjectSend instead
+    handleSharedObjectSend(methodName, args);
   }
 
   @SuppressWarnings("unchecked")
-  @Override
-  public void beforeSharedObjectSend(ISharedObjectBase arg0, String methodName, List args) {
+  private void handleSharedObjectSend(String methodName, List args) {
     if (SEND_STATE.equals(methodName) || SEND.equals(methodName)) {
+      // Add bounds checking for AMF3 compatibility
+      if (args == null || args.size() < 2) {
+        logger.warn("handleSharedObjectSend: insufficient arguments for " + methodName + ": " + args);
+        return;
+      }
+      
       String clientId = (String) args.get(0);
       String clientMethodName = (String) args.get(1);
       LinkedHashMap<Integer, Object> methodArgs = getMethodArgs(args);
+      
       if (methodName.equals(SEND_STATE)) {
         String stateName = (String) methodArgs.get(0);
-        processSendState(methodArgs, clientId, stateName);
+        // Create a defensive copy to avoid concurrent modification during serialization
+        LinkedHashMap<Integer, Object> methodArgsCopy = new LinkedHashMap<Integer, Object>(methodArgs);
+        processSendState(methodArgsCopy, clientId, stateName);
+        
+        // Convert methodArgs back to a simple Array for client dispatch
+        ArrayList<Object> flattenedArgs = new ArrayList<Object>();
+        for (int i = 0; i < methodArgsCopy.size(); i++) {
+          flattenedArgs.add(methodArgsCopy.get(i));
+        }
+        
+        // Forward sanitized state updates to clients
+        if (args.size() >= 3) {
+          args.set(2, flattenedArgs);
+        }
+      } else { // SEND (oS)
+        // Create a defensive copy to avoid concurrent modification during serialization
+        LinkedHashMap<Integer, Object> methodArgsCopy = new LinkedHashMap<Integer, Object>(methodArgs);
+        boolean handled = executeServerMethods(clientId, clientMethodName, methodArgsCopy);
+        if (handled) {
+          // Server handled this method; prevent client invocation by sending PREVENT marker
+          ArrayList<Object> preventArgs = new ArrayList<Object>();
+          preventArgs.add("PREVENT");
+          if (args.size() >= 3) {
+            args.set(2, preventArgs);
+          }
+        }
+        // if not handled, allow it to reach clients as-is
       }
-
-      executeServerMethods(clientId, clientMethodName, methodArgs);
     }
     if (methodName.equals(CLEAR)) {
-      state.clear();
+      synchronized (state) {
+        state.clear();
+      }
       lockedStates.clear();
       connectedUsers.clear();
     }

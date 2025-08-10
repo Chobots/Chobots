@@ -1,6 +1,6 @@
 <%@ page import="java.util.Iterator, java.util.Date,
 org.red5.server.api.IClient, com.kavalok.KavalokApplication,
-org.red5.server.api.IScope, java.util.Set, org.red5.server.so.SharedObjectScope,
+java.util.Set, org.red5.server.so.SharedObjectScope,
 com.kavalok.user.UserAdapter, com.kavalok.user.UserManager" %><%Iterator<IClient> clients = KavalokApplication.getInstance().getClients().iterator();   int i=0;
    while (clients.hasNext()) {
      IClient client = clients.next();

@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.hibernate.Session;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 import com.kavalok.dao.UserDAO;
 import com.kavalok.db.User;
@@ -19,7 +19,7 @@ import com.kavalok.xmlrpc.AdminClient;
 import com.kavalok.xmlrpc.RemoteClient;
 
 public class MessageChecker implements ISessionDependent {
-  private static Logger logger = LoggerFactory.getLogger(MessageChecker.class);
+  private static Logger logger = Red5LoggerFactory.getLogger(MessageChecker.class);
 
   private Session session;
 

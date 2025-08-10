@@ -12,7 +12,7 @@ import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Restrictions;
 import org.red5.io.utils.ObjectMap;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 import com.kavalok.KavalokApplication;
 import com.kavalok.dao.AdminDAO;
@@ -87,7 +87,7 @@ public class AdminService extends DataServiceBase {
 
   private static final String PASSW_INVALID = "invalidCurrentPassword";
 
-  private static final Logger logger = LoggerFactory.getLogger(AdminService.class);
+  private static final Logger logger = Red5LoggerFactory.getLogger(AdminService.class);
 
   public String changePassword(String oldPassword, String newPassword) {
     UserDAO userDAO = new UserDAO(getSession());

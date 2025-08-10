@@ -17,7 +17,6 @@ import java.sql.Struct;
 import java.util.Map;
 import java.util.Properties;
 
-import org.red5.threadmonitoring.ThreadMonitorServices;
 
 public class Connection implements java.sql.Connection {
   private java.sql.Connection wrapper;
@@ -35,7 +34,6 @@ public class Connection implements java.sql.Connection {
   }
 
   public void commit() throws SQLException {
-    ThreadMonitorServices.setJobDetails("Connection.commit");
     wrapper.commit();
   }
 
@@ -188,18 +186,14 @@ public class Connection implements java.sql.Connection {
   }
 
   public void rollback() throws SQLException {
-    ThreadMonitorServices.setJobDetails("Connection.rollback");
     wrapper.rollback();
   }
 
   public void rollback(Savepoint savepoint) throws SQLException {
-    ThreadMonitorServices.setJobDetails("Connection.rollback(Savepoint savepoint {0})", savepoint);
     wrapper.rollback(savepoint);
   }
 
   public void setAutoCommit(boolean autoCommit) throws SQLException {
-    ThreadMonitorServices.setJobDetails(
-        "Connection.setAutoCommit(boolean autoCommit {0})", autoCommit);
     wrapper.setAutoCommit(autoCommit);
   }
 

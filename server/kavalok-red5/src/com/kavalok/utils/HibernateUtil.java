@@ -9,14 +9,14 @@ import java.io.ObjectOutputStream;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AnnotationConfiguration;
+import org.red5.logging.Red5LoggerFactory;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.kavalok.KavalokApplication;
 
 public class HibernateUtil {
 
-  private static Logger logger = LoggerFactory.getLogger(HibernateUtil.class);
+  private static Logger logger = Red5LoggerFactory.getLogger(HibernateUtil.class);
 
   private static String CONFIG_FILE_LOCATION = "/hibernate.cfg.xml";
 

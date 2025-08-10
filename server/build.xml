@@ -8,39 +8,15 @@
 	
 	<!-- Other properties -->
 	<property name="java.output.dir" value="bin/java"/>
-	<property name="deploy.dir" value="red5/webapps/"/>
-	<property name="runtime_libs.dir" value="red5/lib/"/>
+	<property name="deploy.dir" value="red5-1.0.2/webapps/"/>
+	<property name="runtime_libs.dir" value="red5-1.0.2/lib/"/>
 	<property name="deploy.subdir" value="kavalok"/>
 	<property name="host.address" value="127.0.0.1"/>
 	<property name="host.ip" value="127.0.0.1"/>
 
 	<target name="build">
-		<antcall target="build-red5"/>
 		<antcall target="build-java"/>
 		<antcall target="deploy-java"/>
-	</target>
-
-	<target name="build-red5">
-		<delete dir="java_output/red5"/>
-		<mkdir dir="java_output/red5"/>
-		<javac source="1.8" target="1.8" srcdir="red5/src" destdir="java_output/red5" encoding="utf8" debug="true" includeantruntime="false">
-			<classpath>
-				<fileset dir="lib" includes="**/*.jar"/>
-			</classpath>
-		</javac>
-		<manifestclasspath property="red5.jar.classpath" jarfile="red5.jar">
-			<classpath>
-				<fileset dir="lib" includes="**"/>
-			</classpath>
-		</manifestclasspath>
-		<jar destfile="red5.jar">
-			<fileset dir="java_output/red5"/>
-			<fileset dir="red5" includes="conf/**"/>
-			<manifest>
-				<attribute name="Main-Class" value="org.red5.server.Standalone"/>
-				<attribute name="Class-Path" value="conf/${red5.jar.classpath}"/>
-			</manifest>
-		</jar>
 	</target>
 
 	<target name="build-java">
@@ -48,8 +24,9 @@
 		<mkdir dir="${java.output.dir}"/>
 		<javac source="1.8" target="1.8" includeantruntime="false" srcdir="kavalok-red5/src" destdir="${java.output.dir}" encoding="utf8" debug="true">
 			<classpath>
-				<fileset dir="lib" includes="**/*.jar, **/*.xml, log4j.properties" excludes="**/*.txt"/>
-				<fileset dir="." includes="red5.jar"/>
+				<fileset dir="red5-1.0.2/lib" includes="**/*.jar"/>
+				<fileset dir="kavalok-red5/lib" includes="**/*.jar"/>
+				<fileset dir="red5-1.0.2" includes="red5-server.jar"/>
 			</classpath>
 		</javac>
 		<copy todir="${java.output.dir}">
@@ -57,20 +34,26 @@
 		</copy>
 	</target>
 
-	<target name="deploy-java">
+	<target name="deploy-java" depends="build-java">
 		<delete dir="${deploy.dir}/${deploy.subdir}" quiet="true"/>
-		<copy todir="${deploy.dir}/${deploy.subdir}/jsp">
-			<fileset dir="kavalok-red5/jsp"/>
+		<copy todir="${deploy.dir}/${deploy.subdir}">
+			<fileset dir="kavalok-red5" includes="**/*"/>
 		</copy>
-		<copy todir="${deploy.dir}/${deploy.subdir}/WEB-INF">
-			<fileset dir="kavalok-red5/WEB-INF"/>
-		</copy>
-		<copy todir="${deploy.dir}/${deploy.subdir}/WEB-INF/lib">
-			<fileset dir="lib" includes="hibernate-core-*.jar, slf4j-api-*.jar, logback-classic-*.jar, log4j-over-slf4j-*.jar, xml-apis-*.jar, xmlrpc-client-*.jar, xmlrpc-common-*.jar, xmlrpc-server-*.jar"/>
-		</copy>
+		
+		<!-- Copy compiled classes and properties files -->
 		<copy todir="${deploy.dir}/${deploy.subdir}/WEB-INF/classes">
 			<fileset dir="${java.output.dir}"/>
 		</copy>
+		
+		<!-- Copy red5-web.xml and properties to the classes directory where Red5 expects them -->
+		<copy todir="${deploy.dir}/${deploy.subdir}/WEB-INF/classes">
+			<fileset dir="kavalok-red5/WEB-INF" includes="red5-web.xml,red5-web.properties"/>
+		</copy>
+
+		<!-- Ensure JSP work directory exists for compilation -->
+		<mkdir dir="${deploy.dir}/${deploy.subdir}/WEB-INF/work"/>
+
+		<!-- Do NOT copy parent context files here; they are provided by the Red5 server runtime -->
 
 		<replace file="${deploy.dir}/${deploy.subdir}/WEB-INF/classes/kavalok.properties" token="{host.ip}" value="${host.ip}"/>
 		<replace file="${deploy.dir}/${deploy.subdir}/WEB-INF/classes/application.properties" token="{host.address}" value="${host.address}"/>
@@ -79,6 +62,13 @@
 		<replace file="${deploy.dir}/${deploy.subdir}/WEB-INF/classes/hibernate.cfg.xml" token="{database.user}" value="${database.user}"/>
 		<replace file="${deploy.dir}/${deploy.subdir}/WEB-INF/classes/hibernate.cfg.xml" token="{database.password}" value="${database.password}"/>
 		<replace file="${deploy.dir}/${deploy.subdir}/WEB-INF/red5-web.properties" token="{context.path}" value="/${deploy.subdir}"/>
+		<replace file="${deploy.dir}/${deploy.subdir}/WEB-INF/classes/red5-web.properties" token="{context.path}" value="/${deploy.subdir}"/>
 		<replace file="${deploy.dir}/${deploy.subdir}/WEB-INF/web.xml" token="{context.path}" value="/${deploy.subdir}"/>
+	</target>
+
+	<!-- Build only the application and deploy it into the local red5 webapps dir -->
+	<target name="build-app">
+		<antcall target="build-java"/>
+		<antcall target="deploy-java"/>
 	</target>
 </project>

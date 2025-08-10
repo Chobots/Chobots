@@ -1,21 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
-   	<bean id="placeholderConfig" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-	    <property name="location" value="/WEB-INF/red5-web.properties" />
-	</bean>
-	
-	<bean id="web.context" class="org.red5.server.Context" autowire="byType" />
-	
-	<bean id="web.scope" class="org.red5.server.WebScope"
-		 init-method="register">
+  <!-- Let WarLoaderServlet wire these to parent beans -->
+  <bean id="web.context" class="org.red5.server.Context">
+    <property name="clientRegistry" ref="global.clientRegistry" />
+    <property name="serviceInvoker" ref="global.serviceInvoker" />
+    <property name="mappingStrategy" ref="global.mappingStrategy" />
+  </bean>
+
+  	<bean id="web.scope" class="org.red5.server.scope.WebScope" init-method="register">
 		<property name="server" ref="red5.server" />
 		<property name="parent" ref="global.scope" />
 		<property name="context" ref="web.context" />
 		<property name="handler" ref="web.handler" />
-		<property name="contextPath" value="${webapp.contextPath}" />
-		<property name="virtualHosts" value="${webapp.virtualHosts}" />
+		<property name="contextPath" value="/kavalok" />
+		<property name="virtualHosts" value="*" />
+		<property name="persistenceClass">
+			<value>org.red5.server.persistence.RamPersistence</value>
+		</property>
 	</bean>
 
-	<bean id="web.handler" class="com.kavalok.KavalokApplication"  singleton="true" />
+  <bean id="web.handler" class="com.kavalok.KavalokApplication" />
 </beans>

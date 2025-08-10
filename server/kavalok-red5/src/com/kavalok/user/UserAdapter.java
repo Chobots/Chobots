@@ -10,13 +10,13 @@ import java.util.Stack;
 import java.util.concurrent.Executors;
 
 import org.hibernate.Session;
-import org.red5.server.api.IBasicScope;
+import org.red5.server.api.scope.IBasicScope;
 import org.red5.server.api.IClient;
 import org.red5.server.api.Red5;
 import org.red5.server.api.service.IServiceCapableConnection;
 import org.red5.server.api.so.ISharedObject;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 import com.kavalok.KavalokApplication;
 import com.kavalok.dao.GameCharDAO;
@@ -36,7 +36,7 @@ import com.kavalok.services.common.SimpleEncryptor;
 
 public class UserAdapter {
 
-  private static final Logger logger = LoggerFactory.getLogger(UserAdapter.class);
+  private static final Logger logger = Red5LoggerFactory.getLogger(UserAdapter.class);
   private static final int MESSAGES_TO_LOG_COUNT = 100;
 
   private static final int MONEY_STATS_CACHE_MAX_SIZE = 20;

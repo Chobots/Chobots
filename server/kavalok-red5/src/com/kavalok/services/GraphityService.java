@@ -6,7 +6,7 @@ import java.util.List;
 import org.hibernate.Session;
 import org.red5.io.utils.ObjectMap;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 import com.kavalok.dao.UserDAO;
 import com.kavalok.db.User;
@@ -18,7 +18,7 @@ import com.kavalok.utils.SOUtil;
 
 public class GraphityService extends ServiceBase {
 
-  private static final Logger logger = LoggerFactory.getLogger(GraphityService.class);
+  private static final Logger logger = Red5LoggerFactory.getLogger(GraphityService.class);
 
   private static final String CLIENT_ID = "WallClient";
 

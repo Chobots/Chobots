@@ -53,10 +53,9 @@ public class InfoPanelListener extends SOListener {
     }
   }
 
-  @Override
   public void onSharedObjectDestroy(ISharedObjectBase so) {
     try {
-      super.onSharedObjectDestroy(so);
+      // base class does not define destroy hook in 0.8.0; just ensure timer cleanup
     } finally {
       timer.cancel();
     }

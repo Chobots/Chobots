@@ -5,15 +5,23 @@ import java.util.LinkedHashMap;
 
 import org.red5.io.utils.ObjectMap;
 import org.red5.server.api.so.ISharedObject;
+import org.red5.logging.Red5LoggerFactory;
+import org.slf4j.Logger;
 
 import com.kavalok.KavalokApplication;
 import com.kavalok.sharedObjects.SOListener;
 
 public class SOUtil {
 
+  private static final Logger logger = Red5LoggerFactory.getLogger(SOUtil.class);
+
   public static final Integer getNumConnectedChars(String sharedObjectId) {
     ISharedObject sharedObject = KavalokApplication.getInstance().getSharedObject(sharedObjectId);
     if (sharedObject != null) {
+      // Acquire the shared object to prevent premature garbage collection
+      if (!sharedObject.isAcquired()) {
+        sharedObject.acquire();
+      }
       SOListener listener = SOListener.getListener(sharedObject);
       return listener.getConnectedChars().size();
     } else {
@@ -39,10 +47,13 @@ public class SOUtil {
 
     ISharedObject so = KavalokApplication.getInstance().getSharedObject(sharedObjectId);
     if (so != null) {
+      // Acquire the shared object to prevent premature garbage collection
+      if (!so.isAcquired()) {
+        so.acquire();
+      }
       so.sendMessage(SOListener.SEND_STATE, args);
     } else {
-      org.slf4j.LoggerFactory.getLogger(SOUtil.class)
-          .warn("Shared object not found: " + sharedObjectId);
+      logger.warn("Shared object not found: " + sharedObjectId);
     }
   }
 
@@ -51,11 +62,14 @@ public class SOUtil {
     ISharedObject so = KavalokApplication.getInstance().getSharedObject(sharedObjectId);
 
     if (so != null) {
+      // Acquire the shared object to prevent premature garbage collection
+      if (!so.isAcquired()) {
+        so.acquire();
+      }
       callSharedObject(so, clientId, method, params);
     } else {
       // Log warning when shared object is not found
-      org.slf4j.LoggerFactory.getLogger(SOUtil.class)
-          .warn("Shared object not found: " + sharedObjectId);
+      logger.warn("Shared object not found: " + sharedObjectId);
     }
   }
 
@@ -66,8 +80,7 @@ public class SOUtil {
       String stateName,
       ObjectMap<String, Object> state) {
     if (so == null) {
-      org.slf4j.LoggerFactory.getLogger(SOUtil.class)
-          .warn("Cannot send state to null shared object");
+      logger.warn("Cannot send state to null shared object");
       return;
     }
 
@@ -86,8 +99,7 @@ public class SOUtil {
   public static void callSharedObject(
       ISharedObject so, String clientId, String method, Object... params) {
     if (so == null) {
-      org.slf4j.LoggerFactory.getLogger(SOUtil.class)
-          .warn("Cannot call shared object method " + method + " on null shared object");
+      logger.warn("Cannot call shared object method " + method + " on null shared object");
       return;
     }
 

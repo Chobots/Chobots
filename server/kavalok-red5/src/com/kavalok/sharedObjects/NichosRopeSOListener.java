@@ -42,11 +42,10 @@ public class NichosRopeSOListener extends SOListener {
     return true;
   }
 
-  @Override
   public void onSharedObjectDestroy(ISharedObjectBase so) {
     stopTimer = true;
     try {
-      super.onSharedObjectDestroy(so);
+      // base class does not define destroy hook in 0.8.0; just ensure timer cleanup
     } finally {
       timer.cancel();
       nichosRopeTimer.cancel();

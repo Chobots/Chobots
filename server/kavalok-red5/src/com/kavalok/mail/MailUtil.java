@@ -9,7 +9,7 @@ import java.util.Properties;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.load.Persister;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 import com.kavalok.services.LoginService;
 import com.kavalok.utils.ReflectUtil;
@@ -46,7 +46,7 @@ public class MailUtil {
 
   public static final String ADMIN_ADDRESS = "new-user@chobots.com";
 
-  private static Logger logger = LoggerFactory.getLogger(MailUtil.class);
+  private static Logger logger = Red5LoggerFactory.getLogger(MailUtil.class);
 
   private static HashMap<String, Email> emails = new HashMap<String, Email>();
 
