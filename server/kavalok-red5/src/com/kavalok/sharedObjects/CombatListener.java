@@ -279,7 +279,6 @@ public class CombatListener extends SOListener {
     return new Integer(value.intValue());
   }
 
-  @Override
   public void onSharedObjectDestroy(ISharedObjectBase so) {}
 
   public ObjectMap<Long, CombatPlayer> getPlayers() {

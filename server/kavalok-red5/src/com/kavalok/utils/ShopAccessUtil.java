@@ -3,6 +3,9 @@ package com.kavalok.utils;
 import org.hibernate.Session;
 
 import com.kavalok.dao.ShopDAO;
+import org.red5.logging.Red5LoggerFactory;
+import org.slf4j.Logger;
+
 import com.kavalok.dao.UserDAO;
 import com.kavalok.db.Shop;
 import com.kavalok.db.User;
@@ -12,6 +15,8 @@ import com.kavalok.user.UserAdapter;
 import com.kavalok.user.UserManager;
 
 public class ShopAccessUtil {
+
+  private static final Logger logger = Red5LoggerFactory.getLogger(ShopAccessUtil.class);
 
   /**
    * Gets the user's permission level based on their status
@@ -44,8 +49,7 @@ public class ShopAccessUtil {
         }
       }
     } catch (Exception e) {
-      org.slf4j.LoggerFactory.getLogger(ShopAccessUtil.class)
-          .error("Error checking user privileges", e);
+      logger.error("Error checking user privileges", e);
     } finally {
       if (session != null && session.isOpen()) {
         session.close();

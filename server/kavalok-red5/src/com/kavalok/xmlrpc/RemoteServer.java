@@ -10,7 +10,7 @@ import org.apache.xmlrpc.server.XmlRpcServer;
 import org.red5.io.utils.ObjectMap;
 import org.red5.server.api.so.ISharedObject;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 import com.kavalok.KavalokApplication;
 import com.kavalok.cache.StuffTypeCache;
@@ -33,7 +33,7 @@ import com.kavalok.utils.SOUtil;
 
 public class RemoteServer extends DefaultTransactionStrategy {
 
-  private static final Logger logger = LoggerFactory.getLogger(RemoteServer.class);
+  private static final Logger logger = Red5LoggerFactory.getLogger(RemoteServer.class);
 
   protected XmlRpcServer rpcServer;
 

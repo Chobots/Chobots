@@ -9,7 +9,7 @@ import java.util.Map;
 import org.apache.commons.beanutils.BeanUtils;
 import org.red5.io.utils.ObjectMap;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 import com.kavalok.dto.membership.SKUTO;
 import com.kavalok.dto.stuff.StuffTypeTO;
@@ -47,7 +47,7 @@ public class MembershipPageService {
     itemsOfTheMonth.add(null);
     itemsOfTheMonth.add(null);
 
-    Logger logger = LoggerFactory.getLogger("membershipJSP");
+    Logger logger = Red5LoggerFactory.getLogger(MembershipPageService.class);
 
     StuffServiceNT stuffService = new StuffServiceNT();
     try {

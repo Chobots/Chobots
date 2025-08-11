@@ -207,7 +207,6 @@ package com.kavalok.remoting
 			forceClientState(clientId);
 			if(state != null)
 			{
-//				deserializeState(state);
 				forceClientState(clientId);
 				if(_states[clientId][stateName] == null)
 				{
@@ -221,8 +220,13 @@ package com.kavalok.remoting
 				args=[stateName];
 			}
 
+			// Sanitize extra lock flag from server (third argument) for 0.8 compatibility
+			var callArgs:Array = args;
+			if (callArgs && callArgs.length > 2)
+				callArgs = callArgs.slice(0, 2);
+
 			if (method != null)
-				callClient(clientId, method, args);
+				callClient(clientId, method, callArgs);
 		}
 		
 		//onSend: shorten for traffic optimization

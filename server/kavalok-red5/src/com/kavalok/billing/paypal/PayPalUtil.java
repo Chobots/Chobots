@@ -13,7 +13,7 @@ import java.util.Map;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 import com.kavalok.billing.transaction.BillingTransactionUtil;
 import com.kavalok.billing.transaction.TransactionProcessor;
@@ -32,7 +32,7 @@ public class PayPalUtil {
 
   // useTest ? strSandbox : strLive;
 
-  private static Logger logger = LoggerFactory.getLogger("paypalbilling");
+  private static Logger logger = Red5LoggerFactory.getLogger(PayPalUtil.class);
 
   // the function filters junk off acquired parameters
   private static String getValue(Map<String, String> params, String name) {

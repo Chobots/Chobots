@@ -12,7 +12,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 import com.kavalok.KavalokApplication;
 import com.sun.mail.smtp.SMTPTransport;
@@ -21,7 +21,7 @@ public final class Emailer {
 
   private static final String RETURN_PATH_FORMAT = "bounce+chp.e%1$s@em1.chobots.com";
 
-  private static Logger logger = LoggerFactory.getLogger(Emailer.class);
+  private static Logger logger = Red5LoggerFactory.getLogger(Emailer.class);
 
   /** Send a single email. */
   public void sendEmail(Properties properties, String toEmailAddr, String subject, String body) {

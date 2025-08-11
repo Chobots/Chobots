@@ -11,7 +11,6 @@ import org.hibernate.criterion.Example;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
-import org.red5.threadmonitoring.ThreadMonitorServices;
 
 public abstract class DAO<T> implements IDAO<T> {
 
@@ -43,8 +42,6 @@ public abstract class DAO<T> implements IDAO<T> {
   }
 
   public Integer size() {
-    ThreadMonitorServices.setJobDetails(
-        "DAO invocation class: " + this.persistentClass + " method: size()");
     Criteria criteria = getSizeCriteria();
     return ((Number) criteria.uniqueResult()).intValue();
   }
@@ -58,10 +55,6 @@ public abstract class DAO<T> implements IDAO<T> {
   @SuppressWarnings("unchecked")
   public T findById(Long id, boolean lock) {
     T entity;
-    ThreadMonitorServices.setJobDetails(
-        "DAO invocation class: "
-            + this.persistentClass
-            + " method: findById(Long id, boolean lock)");
     if (lock) entity = (T) getSession().load(getPersistentClass(), id, LockMode.UPGRADE);
     else entity = (T) getSession().load(getPersistentClass(), id);
 
@@ -69,17 +62,11 @@ public abstract class DAO<T> implements IDAO<T> {
   }
 
   public T findById(Long id) {
-    ThreadMonitorServices.setJobDetails(
-        "DAO invocation class: " + this.persistentClass + " method: findById(Long id)");
     return findById(id, false);
   }
 
   @SuppressWarnings("unchecked")
   public List<T> findAll(int firstResult, int maxResults) {
-    ThreadMonitorServices.setJobDetails(
-        "DAO invocation class: "
-            + this.persistentClass
-            + " method: findAll(int firstResult, int maxResults)");
     Criteria criteria = createCriteria();
     criteria.setFirstResult(firstResult);
     criteria.setMaxResults(maxResults);
@@ -88,25 +75,17 @@ public abstract class DAO<T> implements IDAO<T> {
 
   @SuppressWarnings("unchecked")
   public List<T> findAll(int maxResults) {
-    ThreadMonitorServices.setJobDetails(
-        "DAO invocation class: " + this.persistentClass + " method: findAll(int maxResults)");
     Criteria criteria = createCriteria();
     criteria.setMaxResults(maxResults);
     return criteria.list();
   }
 
   public List<T> findAll() {
-    ThreadMonitorServices.setJobDetails(
-        "DAO invocation class: " + this.persistentClass + " method: findAll()");
     return findByCriteria();
   }
 
   @SuppressWarnings("unchecked")
   public List<T> findByExample(T exampleInstance, String[] excludeProperty) {
-    ThreadMonitorServices.setJobDetails(
-        "DAO invocation class: "
-            + this.persistentClass
-            + " method: findByExample(T exampleInstance, String[] excludeProperty)");
     Criteria crit = createCriteria();
     Example example = Example.create(exampleInstance);
     for (String exclude : excludeProperty) {
@@ -117,60 +96,38 @@ public abstract class DAO<T> implements IDAO<T> {
   }
 
   public T makePersistent(T entity) {
-    ThreadMonitorServices.setJobDetails(
-        "DAO invocation class: " + this.persistentClass + " method: makePersistent(T entity)");
     getSession().saveOrUpdate(entity);
     return entity;
   }
 
   public void makeTransient(Long id) {
-    ThreadMonitorServices.setJobDetails(
-        "DAO invocation class: " + this.persistentClass + " method: makeTransient(Long id)");
     makeTransient(findById(id, false));
   }
 
   public void makeTransient(T entity) {
-    ThreadMonitorServices.setJobDetails(
-        "DAO invocation class: " + this.persistentClass + " method: makeTransient(T entity)");
     getSession().delete(entity);
   }
 
   public void flush() {
-    ThreadMonitorServices.setJobDetails(
-        "DAO invocation class: " + this.persistentClass + " method: flush()");
     getSession().flush();
   }
 
   public void clear() {
-    ThreadMonitorServices.setJobDetails(
-        "DAO invocation class: " + this.persistentClass + " method: clear()");
     getSession().clear();
   }
 
   @SuppressWarnings("unchecked")
   protected List<T> findAllByParameters(String[] names, Object[] values) {
-    ThreadMonitorServices.setJobDetails(
-        "DAO invocation class: "
-            + this.persistentClass
-            + " method: findAllByParameters(String[] names, Object[] values)");
     return createCriteria(names, values).list();
   }
 
   @SuppressWarnings("unchecked")
   protected List<T> findAllByParameterValues(String name, Object[] values) {
-    ThreadMonitorServices.setJobDetails(
-        "DAO invocation class: "
-            + this.persistentClass
-            + " method: findAllByParameterValues(String name, Object[] values)");
     return createInCriteria(name, values).list();
   }
 
   @SuppressWarnings("unchecked")
   protected T findByParameters(String[] names, Object[] values) {
-    ThreadMonitorServices.setJobDetails(
-        "DAO invocation class: "
-            + this.persistentClass
-            + " method: findByParameters(String[] names, Object[] values)");
     Criteria criteria = createCriteria(names, values);
     return (T) criteria.uniqueResult();
   }
@@ -196,18 +153,10 @@ public abstract class DAO<T> implements IDAO<T> {
   }
 
   protected List<T> findAllByParameter(String name, Object value) {
-    ThreadMonitorServices.setJobDetails(
-        "DAO invocation class: "
-            + this.persistentClass
-            + " method: findAllByParameter(String name, Object value)");
     return findAllByParameters(new String[] {name}, new Object[] {value});
   }
 
   protected T findByParameter(String name, Object value) {
-    ThreadMonitorServices.setJobDetails(
-        "DAO invocation class: "
-            + this.persistentClass
-            + " method: findByParameter(String name, Object value)");
     return findByParameters(new String[] {name}, new Object[] {value});
   }
 
@@ -218,10 +167,6 @@ public abstract class DAO<T> implements IDAO<T> {
 
   @SuppressWarnings("unchecked")
   protected List<T> findByCriteria(Criterion... criterion) {
-    ThreadMonitorServices.setJobDetails(
-        "DAO invocation class: "
-            + this.persistentClass
-            + " method: findByCriteria(Criterion... criterion)");
     Criteria crit = createCriteria();
     for (Criterion c : criterion) {
       crit.add(c);
@@ -231,10 +176,6 @@ public abstract class DAO<T> implements IDAO<T> {
 
   @SuppressWarnings("unchecked")
   protected T findByCriteriaUnique(Criterion... criterion) {
-    ThreadMonitorServices.setJobDetails(
-        "DAO invocation class: "
-            + this.persistentClass
-            + " method: findByCriteriaUnique(Criterion... criterion)");
     Criteria crit = createCriteria();
     for (Criterion c : criterion) {
       crit.add(c);

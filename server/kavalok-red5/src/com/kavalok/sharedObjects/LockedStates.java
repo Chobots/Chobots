@@ -3,6 +3,7 @@ package com.kavalok.sharedObjects;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Collections;
 
 import com.kavalok.user.UserAdapter;
 import com.kavalok.user.UserManager;
@@ -12,11 +13,11 @@ public class LockedStates {
   private HashMap<String, HashMap<String, String>> lockedStates =
       new HashMap<String, HashMap<String, String>>();
 
-  public void clear() {
+  public synchronized void clear() {
     lockedStates.clear();
   }
 
-  public void unlockStates(String charId) {
+  public synchronized void unlockStates(String charId) {
     for (String client : lockedStates.keySet()) {
       HashMap<String, String> clientStates = lockedStates.get(client);
       ArrayList<String> statesToRemove = new ArrayList<String>();
@@ -31,7 +32,7 @@ public class LockedStates {
     }
   }
 
-  public void lockState(String client, String state) {
+  public synchronized void lockState(String client, String state) {
     if (!lockedStates.containsKey(client)) {
       lockedStates.put(client, new HashMap<String, String>());
     }
@@ -40,7 +41,7 @@ public class LockedStates {
     clientStates.put(state, adapter.getLogin());
   }
 
-  public void unlockState(String client, String state) {
+  public synchronized void unlockState(String client, String state) {
     if (!lockedStates.containsKey(client)) return;
 
     HashMap<String, String> clientStates = lockedStates.get(client);
@@ -49,7 +50,7 @@ public class LockedStates {
     }
   }
 
-  public boolean canReset(String client, String state) {
+  public synchronized boolean canReset(String client, String state) {
     if (!lockedStates.containsKey(client)) return true;
     HashMap<String, String> clientStates = lockedStates.get(client);
     if (!clientStates.containsKey(state)) return true;

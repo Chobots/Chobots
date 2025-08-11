@@ -8,14 +8,14 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 public class RainTokenManager {
   private static RainTokenManager instance;
   private final Map<String, RainToken> tokens = new ConcurrentHashMap<>();
   private final String serverSecret;
   private final long tokenLifetimeMs = 60000;
-  private static final Logger logger = LoggerFactory.getLogger(RainTokenManager.class);
+  private static final Logger logger = Red5LoggerFactory.getLogger(RainTokenManager.class);
 
   private RainTokenManager(String serverSecret) {
     this.serverSecret = serverSecret;

@@ -7,7 +7,7 @@ import org.hibernate.Session;
 import org.red5.io.utils.ObjectMap;
 import org.red5.server.api.so.ISharedObject;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 import com.kavalok.KavalokApplication;
 import com.kavalok.dao.ServerDAO;
@@ -23,7 +23,7 @@ import com.kavalok.xmlrpc.RemoteServer;
 
 public class RainCommandService {
 
-  private static final Logger logger = LoggerFactory.getLogger(RainCommandService.class);
+  private static final Logger logger = Red5LoggerFactory.getLogger(RainCommandService.class);
 
   /**
    * Generates rain tokens and sends rain commands to all connected users.

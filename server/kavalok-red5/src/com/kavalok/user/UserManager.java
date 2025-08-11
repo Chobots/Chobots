@@ -7,14 +7,14 @@ import java.util.Set;
 import org.red5.server.api.IClient;
 import org.red5.server.api.Red5;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 import com.kavalok.KavalokApplication;
 
 public class UserManager {
   public static String ADAPTER = "adapter";
 
-  private static final Logger logger = LoggerFactory.getLogger(UserManager.class);
+  private static final Logger logger = Red5LoggerFactory.getLogger(UserManager.class);
 
   private static UserManager instance;
 

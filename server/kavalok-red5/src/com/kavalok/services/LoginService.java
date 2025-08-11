@@ -11,7 +11,7 @@ import org.red5.io.utils.ObjectMap;
 import org.red5.server.api.IClient;
 import org.red5.server.api.Red5;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 import com.kavalok.KavalokApplication;
 import com.kavalok.dao.BlackIPDAO;
@@ -65,7 +65,7 @@ public class LoginService extends DataServiceBase {
 
   private static String ERROR_LOGIN_DISABLED = "disabled";
 
-  private static final Logger logger = LoggerFactory.getLogger(LoginService.class);
+  private static final Logger logger = Red5LoggerFactory.getLogger(LoginService.class);
 
   private static Integer prefixedCont = 0;
 

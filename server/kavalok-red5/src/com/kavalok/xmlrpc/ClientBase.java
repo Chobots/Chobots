@@ -13,7 +13,7 @@ import org.apache.xmlrpc.client.XmlRpcCommonsTransport;
 import org.apache.xmlrpc.client.XmlRpcCommonsTransportFactory;
 import org.apache.xmlrpc.client.XmlRpcTransport;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 import com.kavalok.db.Server;
 
@@ -21,7 +21,7 @@ public class ClientBase {
 
   private static final String URL_FORMAT = "http://%1$s:5080/%2$s/xmlrpc";
 
-  private static final Logger logger = LoggerFactory.getLogger(ClientBase.class);
+  private static final Logger logger = Red5LoggerFactory.getLogger(ClientBase.class);
 
   protected XmlRpcClient xmlRpcClient;
 

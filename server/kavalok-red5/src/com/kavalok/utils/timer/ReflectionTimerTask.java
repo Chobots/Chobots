@@ -7,13 +7,13 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 import com.kavalok.utils.ReflectUtil;
 
 public class ReflectionTimerTask extends TimerTask {
 
-  private static final Logger logger = LoggerFactory.getLogger(ReflectionTimerTask.class);
+  private static final Logger logger = Red5LoggerFactory.getLogger(ReflectionTimerTask.class);
 
   private Object target;
 

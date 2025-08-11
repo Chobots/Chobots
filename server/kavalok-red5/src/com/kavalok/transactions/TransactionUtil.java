@@ -2,7 +2,6 @@ package com.kavalok.transactions;
 
 import java.util.List;
 
-import org.red5.threadmonitoring.ThreadMonitorServices;
 
 import com.kavalok.KavalokApplication;
 import com.kavalok.utils.ReflectUtil;
@@ -11,9 +10,6 @@ public class TransactionUtil {
 
   public static Object callTransaction(
       ITransactionStrategy service, String method, List<Object> args) {
-    ThreadMonitorServices.setJobDetails(
-        "TransactionUtil.callTransaction(ITransactionStrategy service {0}, String method {1}, List<Object> args {2})",
-        service, method, args);
     try {
       service.beforeCall();
       Object result = ReflectUtil.callMethod(service, method, args);
@@ -38,9 +34,6 @@ public class TransactionUtil {
 
   public static Object callTransaction(
       ISessionDependent service, String method, List<Object> args) {
-    ThreadMonitorServices.setJobDetails(
-        "TransactionUtil.callTransaction(ISessionDependent service {0}, String method {1}, List<Object> args {2})",
-        service, method, args);
     DefaultTransactionStrategy strategy = new DefaultTransactionStrategy();
     try {
       strategy.beforeCall();

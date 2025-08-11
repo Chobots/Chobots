@@ -2,7 +2,7 @@ package com.kavalok.services;
 
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.kavalok.dao.ShopDAO;
 import com.kavalok.db.Shop;

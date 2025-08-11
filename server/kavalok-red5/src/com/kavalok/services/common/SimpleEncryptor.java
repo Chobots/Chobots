@@ -5,12 +5,12 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 import com.kavalok.mail.MailUtil;
 
 public class SimpleEncryptor {
-  private static Logger logger = LoggerFactory.getLogger(SimpleEncryptor.class);
+  private static Logger logger = Red5LoggerFactory.getLogger(SimpleEncryptor.class);
 
   private static final int KEY_LENGTH = 16;
 

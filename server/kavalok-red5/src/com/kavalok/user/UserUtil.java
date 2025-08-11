@@ -20,7 +20,7 @@ import java.util.Random;
 import org.hibernate.Session;
 import org.red5.io.utils.ObjectMap;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 import com.kavalok.KavalokApplication;
 import com.kavalok.dao.BanDAO;
@@ -78,7 +78,7 @@ public class UserUtil {
 
   private static final String PARAMETERS_SEPARATOR = "&";
 
-  private static Logger logger = LoggerFactory.getLogger(MailSender.class);
+  private static Logger logger = Red5LoggerFactory.getLogger(MailSender.class);
 
   public static final String ACTIVATION_POSTFIX = "login=%s&activationKey=%s&chatEnabled=%s";
 

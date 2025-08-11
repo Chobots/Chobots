@@ -11,11 +11,12 @@ import java.util.Timer;
 
 import org.hibernate.Session;
 import org.red5.server.adapter.MultiThreadedApplicationAdapter;
+import org.red5.server.api.scope.IBasicScope;
 import org.red5.server.api.IConnection;
-import org.red5.server.api.IScope;
+import org.red5.server.api.scope.IScope;
 import org.red5.server.api.so.ISharedObject;
+import org.red5.logging.Red5LoggerFactory;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.kavalok.cache.ShopCacheCleaner;
 import com.kavalok.dao.AdminDAO;
@@ -44,12 +45,13 @@ import com.kavalok.user.UserManager;
 import com.kavalok.utils.HibernateUtil;
 import com.kavalok.utils.ReflectUtil;
 import com.kavalok.utils.SOManager;
+import com.kavalok.sharedObjects.SOListener;
 
 import net.sf.cglib.core.ReflectUtils;
 
 public class KavalokApplication extends MultiThreadedApplicationAdapter {
 
-  public static Logger logger = LoggerFactory.getLogger(KavalokApplication.class);
+  public static Logger logger = Red5LoggerFactory.getLogger(KavalokApplication.class);
 
   private boolean started = false;
 
@@ -100,16 +102,61 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
   }
 
   public ISharedObject createSharedObject(String name) {
-    if (!hasSharedObject(name)) createSharedObject(scope, name, false);
-    return getSharedObject(name);
+    if (!hasSharedObject(name)) {
+      createSharedObject(scope, name, false);
+      ISharedObject so = getSharedObject(name);
+      new SOManager().onSharedObjectCreate(so);
+      // Acquire the shared object to prevent premature garbage collection
+      if (so != null) {
+        so.acquire();
+      }
+      return so;
+    }
+    ISharedObject so = getSharedObject(name);
+    // Acquire the shared object to prevent premature garbage collection
+    if (so != null && !so.isAcquired()) {
+      so.acquire();
+    }
+    return so;
   }
 
   public ISharedObject getSharedObject(String name) {
     return getSharedObject(scope, name);
   }
 
+  /**
+   * Release a shared object when it's no longer needed.
+   * This should be called when the shared object is no longer required to allow proper cleanup.
+   */
+  public void releaseSharedObject(String name) {
+    ISharedObject so = getSharedObject(name);
+    if (so != null && so.isAcquired()) {
+      so.release();
+    }
+  }
+
   public String getCurrentServerPath() {
     return serverPath;
+  }
+
+  @Override
+  public boolean addChildScope(IBasicScope childScope) {
+    // Ensure that any shared object created by Red5 gets our listener attached
+    try {
+      if (childScope instanceof ISharedObject) {
+        ISharedObject so = (ISharedObject) childScope;
+        if (SOListener.getListener(so) == null) {
+          new SOManager().onSharedObjectCreate(so);
+        }
+        // Acquire the shared object to prevent premature garbage collection
+        if (!so.isAcquired()) {
+          so.acquire();
+        }
+      }
+    } catch (Exception e) {
+      logger.error("Failed to initialize shared object listener for scope: " + childScope.getName(), e);
+    }
+    return super.addChildScope(childScope);
   }
 
   @Override
@@ -131,7 +178,8 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       logger.error(e.getMessage(), e);
     }
 
-    addListener(getScope(), new SOManager());
+    // Hook shared object creation by overriding createSharedObject and calling SOManager
+    // The SO initialization will be handled in createSharedObject below
 
     HibernateUtil.getSessionFactory();
     WordsCache.getInstance(); // load words
@@ -210,17 +258,24 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       strategy.beforeCall();
       ServerDAO serverDAO = new ServerDAO(strategy.getSession());
       Server server = serverDAO.findByScopeName(getCurrentServerPath());
-      setServerName(server.getName());
+      
+      if (server == null) {
+        logger.warn("Server not found in database for scope: " + getCurrentServerPath() + ". Creating new server record.");
+        throw new RuntimeException("Server not found in database for scope: " + getCurrentServerPath());
+      } else {
+        setServerName(server.getName());
 
-      UserServerDAO usDAO = new UserServerDAO(strategy.getSession());
-      List<UserServer> list = usDAO.getAllUserServer(server);
-      for (Iterator<UserServer> iterator = list.iterator(); iterator.hasNext(); ) {
-        UserServer userServer = (UserServer) iterator.next();
-        usDAO.makeTransient(userServer);
+        UserServerDAO usDAO = new UserServerDAO(strategy.getSession());
+        List<UserServer> list = usDAO.getAllUserServer(server);
+        for (Iterator<UserServer> iterator = list.iterator(); iterator.hasNext(); ) {
+          UserServer userServer = (UserServer) iterator.next();
+          usDAO.makeTransient(userServer);
+        }
+        server.setRunning(available);
+
+        serverDAO.makePersistent(server);
       }
-      server.setRunning(available);
-
-      serverDAO.makePersistent(server);
+      
       setServer(server);
       strategy.afterCall();
     } catch (Exception e) {

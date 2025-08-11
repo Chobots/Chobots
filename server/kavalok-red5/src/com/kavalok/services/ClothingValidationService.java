@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.red5.io.utils.ObjectMap;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 import com.kavalok.dao.StuffItemDAO;
 import com.kavalok.dao.UserDAO;
@@ -27,7 +27,7 @@ import com.kavalok.user.UserManager;
  */
 public class ClothingValidationService extends DataServiceBase {
 
-  private static final Logger logger = LoggerFactory.getLogger(ClothingValidationService.class);
+  private static final Logger logger = Red5LoggerFactory.getLogger(ClothingValidationService.class);
 
   /**
    * Validates that a user owns the clothing items they're trying to broadcast.

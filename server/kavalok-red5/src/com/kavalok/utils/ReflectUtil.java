@@ -6,10 +6,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.LinkedHashMap;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 import com.kavalok.cache.StuffTypeWrapper;
 import com.kavalok.db.RobotType;
@@ -21,7 +22,7 @@ import net.sf.cglib.core.ReflectUtils;
 
 public final class ReflectUtil {
 
-  public static Logger logger = LoggerFactory.getLogger(ReflectUtil.class);
+  public static Logger logger = Red5LoggerFactory.getLogger(ReflectUtil.class);
 
   @SuppressWarnings("unchecked")
   public static List convertBeansByConstructor(List source, Class type) {
@@ -93,11 +94,67 @@ public final class ReflectUtil {
 
   public static Object callMethod(Object context, String methodName, Collection<Object> args)
       throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    
+    // First try with exact types
     List<Class<?>> argsTypes = getTypes(args);
-
-    Method method =
-        context.getClass().getMethod(methodName, (Class<?>[]) argsTypes.toArray(new Class<?>[] {}));
-    return method.invoke(context, args.toArray());
+    Method method = findMethod(context.getClass(), methodName, argsTypes);
+    if (method != null) {
+      return method.invoke(context, args.toArray());
+    }
+    
+    // Fallback: try to convert ArrayList to LinkedHashMap for encrypted parameters
+    Object[] convertedArgs = convertArgsForEncryption(args);
+    List<Class<?>> convertedTypes = getTypes(java.util.Arrays.asList(convertedArgs));
+    method = findMethod(context.getClass(), methodName, convertedTypes);
+    if (method != null) {
+      return method.invoke(context, convertedArgs);
+    }
+    
+    // If still not found, throw the original exception
+    Method originalMethod = context.getClass().getMethod(methodName, (Class<?>[]) argsTypes.toArray(new Class<?>[] {}));
+    return originalMethod.invoke(context, args.toArray());
+  }
+  
+  private static Method findMethod(Class<?> clazz, String methodName, List<Class<?>> argsTypes) {
+    Method[] methods = clazz.getMethods();
+    for (Method method : methods) {
+      if (method.getName().equals(methodName)) {
+        Class<?>[] paramTypes = method.getParameterTypes();
+        if (paramTypes.length == argsTypes.size()) {
+          boolean compatible = true;
+          for (int i = 0; i < paramTypes.length; i++) {
+            if (argsTypes.get(i) != null && !paramTypes[i].isAssignableFrom(argsTypes.get(i))) {
+              compatible = false;
+              break;
+            }
+          }
+          if (compatible) {
+            return method;
+          }
+        }
+      }
+    }
+    return null;
+  }
+  
+  private static Object[] convertArgsForEncryption(Collection<Object> args) {
+    Object[] result = new Object[args.size()];
+    int i = 0;
+    for (Object arg : args) {
+      if (arg instanceof ArrayList) {
+        // Convert ArrayList to LinkedHashMap for encrypted parameters
+        ArrayList<?> list = (ArrayList<?>) arg;
+        LinkedHashMap<Integer, Object> map = new LinkedHashMap<Integer, Object>();
+        for (int j = 0; j < list.size(); j++) {
+          map.put(j, list.get(j));
+        }
+        result[i] = map;
+      } else {
+        result[i] = arg;
+      }
+      i++;
+    }
+    return result;
   }
 
   public static Object callGetter(Object context, String property)

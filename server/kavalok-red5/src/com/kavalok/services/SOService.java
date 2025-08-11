@@ -17,7 +17,26 @@ public class SOService extends ServiceBase {
 
   public StateInfoTO getState(String sharedObjectId) {
     ISharedObject sharedObject = KavalokApplication.getInstance().getSharedObject(sharedObjectId);
+    
+    // Handle case where shared object has been garbage collected
+    if (sharedObject == null) {
+      // Return empty state when shared object is not available
+      return new StateInfoTO(new org.red5.io.utils.ObjectMap<String, Object>(), new java.util.ArrayList<String>());
+    }
+    
+    // Acquire the shared object to prevent premature garbage collection
+    if (!sharedObject.isAcquired()) {
+      sharedObject.acquire();
+    }
+    
     SOListener listener = SOListener.getListener(sharedObject);
+    
+    // Additional null check for listener
+    if (listener == null) {
+      // Return empty state when listener is not available
+      return new StateInfoTO(new org.red5.io.utils.ObjectMap<String, Object>(), new java.util.ArrayList<String>());
+    }
+    
     return new StateInfoTO(listener.getState(), listener.getConnectedChars());
   }
 
@@ -31,6 +50,22 @@ public class SOService extends ServiceBase {
 
       RemoteClient client = new RemoteClient(server);
       return client.getNumConnectedChars(sharedObjectId);
+    }
+  }
+
+  /**
+   * Manually release a shared object when it's no longer needed.
+   * This should be called when the shared object is no longer required.
+   */
+  public void releaseSharedObject(String sharedObjectId) {
+    ISharedObject sharedObject = KavalokApplication.getInstance().getSharedObject(sharedObjectId);
+    if (sharedObject != null) {
+      SOListener listener = SOListener.getListener(sharedObject);
+      if (listener != null) {
+        listener.releaseSharedObject();
+      }
+      // Also release through the application
+      KavalokApplication.getInstance().releaseSharedObject(sharedObjectId);
     }
   }
 }

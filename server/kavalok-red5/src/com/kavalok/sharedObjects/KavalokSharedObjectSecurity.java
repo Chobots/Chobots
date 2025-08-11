@@ -5,10 +5,11 @@ import java.util.Map;
 
 import org.hibernate.Session;
 import org.red5.io.utils.ObjectMap;
+import org.red5.server.api.scope.IScope;
 import org.red5.server.api.so.ISharedObject;
 import org.red5.server.api.so.ISharedObjectSecurity;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 import com.kavalok.dao.UserDAO;
 import com.kavalok.db.User;
@@ -23,7 +24,7 @@ import com.kavalok.utils.HibernateUtil;
  */
 public class KavalokSharedObjectSecurity implements ISharedObjectSecurity {
 
-  private static Logger logger = LoggerFactory.getLogger(KavalokSharedObjectSecurity.class);
+  private static Logger logger = Red5LoggerFactory.getLogger(KavalokSharedObjectSecurity.class);
 
   public KavalokSharedObjectSecurity() {}
 
@@ -32,7 +33,7 @@ public class KavalokSharedObjectSecurity implements ISharedObjectSecurity {
 
   @Override
   public boolean isCreationAllowed(
-      org.red5.server.api.IScope scope, String name, boolean persistent) {
+      IScope scope, String name, boolean persistent) {
     // Allow creation by default
     return true;
   }

@@ -5,11 +5,11 @@ import java.util.Properties;
 import javax.mail.SendFailedException;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.red5.logging.Red5LoggerFactory;
 
 public class MailSender implements Runnable {
 
-  private static Logger logger = LoggerFactory.getLogger(MailSender.class);
+  private static Logger logger = Red5LoggerFactory.getLogger(MailSender.class);
 
   private Email email;
 
