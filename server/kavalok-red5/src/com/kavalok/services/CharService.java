@@ -681,7 +681,6 @@ public class CharService extends DataServiceBase {
   }
 
   public GameEnterTO enterGame(String charName) {
-    System.out.println("DEBUG: enterGame method called with charName: " + charName);
     try {
       long nowTot = System.currentTimeMillis();
 
@@ -714,20 +713,12 @@ public class CharService extends DataServiceBase {
       return null;
     }
     
-    System.out.println("INFO: Found user: " + user.getLogin() + " with ID: " + user.getId());
     finish = System.currentTimeMillis();
 
     start = System.currentTimeMillis();
     GameCharDAO charDAO = new GameCharDAO(getSession());
     GameChar gameChar = user.getGameChar();
     
-    // Add logging to check GameChar
-    if (gameChar == null) {
-      System.out.println("ERROR: GameChar is null for user: " + user.getLogin());
-      return null;
-    }
-    
-    System.out.println("INFO: Found GameChar for user: " + user.getLogin() + ", GameChar ID: " + gameChar.getId());
     finish = System.currentTimeMillis();
 
     start = System.currentTimeMillis();

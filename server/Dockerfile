@@ -21,10 +21,10 @@ RUN ant build-app
 
 FROM openjdk:8-jre-slim
 
-COPY red5-1.0.2 /opt/red5
+COPY red5-1.0.6 /opt/red5
 WORKDIR /opt/red5
 
-COPY --from=builder /server/red5-1.0.2/webapps/kavalok/ webapps/kavalok
+COPY --from=builder /server/red5-1.0.6/webapps/kavalok/ webapps/kavalok
 
 RUN chmod +x red5.sh
 CMD ["./red5.sh"]

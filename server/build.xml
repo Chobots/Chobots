@@ -8,8 +8,8 @@
 	
 	<!-- Other properties -->
 	<property name="java.output.dir" value="bin/java"/>
-	<property name="deploy.dir" value="red5-1.0.2/webapps/"/>
-	<property name="runtime_libs.dir" value="red5-1.0.2/lib/"/>
+	<property name="deploy.dir" value="red5-1.0.6/webapps/"/>
+	<property name="runtime_libs.dir" value="red5-1.0.6/lib/"/>
 	<property name="deploy.subdir" value="kavalok"/>
 	<property name="host.address" value="127.0.0.1"/>
 	<property name="host.ip" value="127.0.0.1"/>
@@ -24,9 +24,9 @@
 		<mkdir dir="${java.output.dir}"/>
 		<javac source="1.8" target="1.8" includeantruntime="false" srcdir="kavalok-red5/src" destdir="${java.output.dir}" encoding="utf8" debug="true">
 			<classpath>
-				<fileset dir="red5-1.0.2/lib" includes="**/*.jar"/>
+				<fileset dir="red5-1.0.6/lib" includes="**/*.jar"/>
 				<fileset dir="kavalok-red5/lib" includes="**/*.jar"/>
-				<fileset dir="red5-1.0.2" includes="red5-server.jar"/>
+				<fileset dir="red5-1.0.6" includes="red5-server.jar"/>
 			</classpath>
 		</javac>
 		<copy todir="${java.output.dir}">

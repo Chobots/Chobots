@@ -45,6 +45,14 @@ public class CompetitionDataService extends DataServiceNotTransactionBase {
     return list;
   }
 
+  // Overloaded method to handle Double parameters from Flash client
+  public List<CompetitionResultTO> getMyCompetitionResult(
+      String competitionName, Double firstResult, Double maxResults) {
+    return getMyCompetitionResult(competitionName, 
+        firstResult != null ? firstResult.intValue() : null, 
+        maxResults != null ? maxResults.intValue() : null);
+  }
+
   @SuppressWarnings("unchecked")
   public PagedResult<CompetitionResultTO> getCompetitionResults(
       String competitionName, Integer firstResult, Integer maxResults) {
@@ -55,6 +63,15 @@ public class CompetitionDataService extends DataServiceNotTransactionBase {
         ReflectUtil.convertBeansByConstructor(list, CompetitionResultTO.class);
     return new PagedResult<CompetitionResultTO>(
         competitionResultDAO.sizeOfCompetitionResults(competition).intValue(), result);
+  }
+
+  // Overloaded method to handle Double parameters from Flash client
+  @SuppressWarnings("unchecked")
+  public PagedResult<CompetitionResultTO> getCompetitionResults(
+      String competitionName, Double firstResult, Double maxResults) {
+    return getCompetitionResults(competitionName, 
+        firstResult != null ? firstResult.intValue() : null, 
+        maxResults != null ? maxResults.intValue() : null);
   }
 
   @SuppressWarnings("unchecked")
