@@ -29,4 +29,4 @@ COPY --from=builder /server/red5-1.0.6/webapps/kavalok/ webapps/kavalok
 RUN chmod +x red5.sh
 CMD ["./red5.sh"]
 
-EXPOSE 8935 5080
+EXPOSE 8935 8443 5080
