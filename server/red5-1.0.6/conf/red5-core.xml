@@ -172,7 +172,7 @@
 Notes to self: 
 https://www.openssl.org/docs/apps/ciphers.html#TLS-v1.2-cipher-suites 
 https://www.sslshopper.com/article-how-to-disable-weak-ciphers-and-ssl-2-in-tomcat.html
-
+-->
     <bean id="rtmpsMinaIoHandler" class="org.red5.server.net.rtmps.RTMPSMinaIoHandler">
         <property name="handler" ref="rtmpHandler" />
         <property name="codecFactory" ref="rtmpCodecFactory" />
@@ -217,7 +217,6 @@ https://www.sslshopper.com/article-how-to-disable-weak-ciphers-and-ssl-2-in-tomc
         <property name="ioThreads" value="${rtmp.io_threads}" />
         <property name="tcpNoDelay" value="${rtmp.tcp_nodelay}" />
     </bean>
--->
 
    <!-- Enable when you need it. - - >
         <bean id="rtmpProxyTransport" class="org.red5.server.net.rtmp.RTMPMinaTransport" init-method="start" destroy-method="stop">
