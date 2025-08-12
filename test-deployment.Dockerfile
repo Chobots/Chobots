@@ -7,6 +7,9 @@ ARG DATABASE_NAME
 ARG DATABASE_USER
 ARG DATABASE_PASSWORD
 ARG CAPROVER_GIT_COMMIT_SHA=${CAPROVER_GIT_COMMIT_SHA}
+ARG RTMP_USE_TLS=true
+ARG RTMP_HOSTNAME=tls.test-server.chobots.org
+ARG RTMP_PORT=8443
 
 ENV DATABASE_HOST=$DATABASE_HOST
 ENV DATABASE_NAME=$DATABASE_NAME
@@ -20,6 +23,12 @@ RUN apt-get update && apt-get install -y ant \
 # Build client
 COPY client /client
 WORKDIR /client
+
+# Process the ActionScript file to inject RTMP configuration
+RUN sed -i "s/\${RTMP_USE_TLS}/$RTMP_USE_TLS/g" kavalok_core/src/com/kavalok/login/LoginManager.as && \
+    sed -i "s/\${RTMP_HOSTNAME}/$RTMP_HOSTNAME/g" kavalok_core/src/com/kavalok/login/LoginManager.as && \
+    sed -i "s/\${RTMP_PORT}/$RTMP_PORT/g" kavalok_core/src/com/kavalok/login/LoginManager.as
+
 RUN chmod +x flex/bin/fcsh
 RUN ant
 

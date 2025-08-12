@@ -66,48 +66,29 @@ package com.kavalok.login
 			return _server;
 		}
 
-		// Public static method to build default RTMP URL (same logic as the original ConnectionConfig.buildRtmpUrl)
+		private static function buildRtmpUrlInternal(serverPath:String = "kavalok"):String
+		{
+			// Build-time configuration - these will be replaced during Docker build
+			const RTMP_USE_TLS:Boolean = ${RTMP_USE_TLS};
+			const RTMP_HOSTNAME:String = "${RTMP_HOSTNAME}";
+			const RTMP_PORT:String = "${RTMP_PORT}";
+			
+			if (RTMP_USE_TLS) {
+				return "rtmps://" + RTMP_HOSTNAME + ":" + RTMP_PORT + "/" + serverPath;
+			} else {
+				return "rtmp://" + RTMP_HOSTNAME + ":" + RTMP_PORT + "/" + serverPath;
+			}
+		}
+
 		public static function buildRtmpUrl():String
 		{
-			try {
-				if (ExternalInterface.available) {
-					var js:String =
-						"function() {" +
-						"  if (typeof window.rtmpConnectionString === 'string' && window.rtmpConnectionString.length > 0) {" +
-						"    return window.rtmpConnectionString;" +
-						"  }" +
-						"  return 'rtmp://' + window.location.hostname + ':8935/kavalok';" +
-						"}";
-
-					var result:String = ExternalInterface.call(js);
-					if (result && result.length > 0) {
-						return result;
-					}
-				}
-			} catch (e:Error) {}
-			return "rtmp://127.0.0.1:8935/kavalok";
+			return buildRtmpUrlInternal("kavalok");
 		}
 
 		// Public static method to build RTMP URL with custom path
 		public static function buildRtmpUrlFromPath(serverPath:String):String
 		{
-			try {
-				if (ExternalInterface.available) {
-					var js:String =
-						"function() {" +
-						"  if (typeof window.rtmpConnectionString === 'string' && window.rtmpConnectionString.length > 0) {" +
-						"    return window.rtmpConnectionString;" +
-						"  }" +
-						"  return 'rtmp://' + window.location.hostname + ':8935/" + serverPath + "';" +
-						"}";
-
-					var result:String = ExternalInterface.call(js);
-					if (result && result.length > 0) {
-						return result;
-					}
-				}
-			} catch (e:Error) {}
-			return "rtmp://127.0.0.1:8935/" + serverPath;
+			return buildRtmpUrlInternal(serverPath);
 		}
 
 		public function login(startupInfo:StartupInfo):void

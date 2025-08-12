@@ -97,6 +97,7 @@ internal class RemoteConnectionInstance
 		{
 			_netConnection = BaseRed5Delegate.netConnection;
 	        _netConnection.objectEncoding = ObjectEncoding.AMF0;
+	        _netConnection.proxyType = "best";
 	        _netConnection.addEventListener( NetStatusEvent.NET_STATUS , onNetStatus);
 	        _netConnection.client = this;
 		}
@@ -108,6 +109,7 @@ internal class RemoteConnectionInstance
 		BaseRed5Delegate.resetNetConnection();
 		_netConnection = BaseRed5Delegate.netConnection;
 		_netConnection.objectEncoding = ObjectEncoding.AMF0;
+		_netConnection.proxyType = "best";
 		_netConnection.addEventListener(NetStatusEvent.NET_STATUS, onNetStatus);
 		_netConnection.client = this;
 	}

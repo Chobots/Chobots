@@ -16,7 +16,12 @@ services:
             database:
                 condition: service_healthy
     client:
-        build: client
+        build: 
+            context: client
+            args:
+                RTMP_USE_TLS: false
+                RTMP_HOSTNAME: localhost
+                RTMP_PORT: 8935
         ports:
             - 8080:80
         volumes:
