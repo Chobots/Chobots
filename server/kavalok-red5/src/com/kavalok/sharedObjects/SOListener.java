@@ -116,21 +116,9 @@ public class SOListener implements ISharedObjectListener {
       }
     }
     
-    // Use standard shared object message format for AMF3 compatibility
-    ArrayList<Object> args = new ArrayList<Object>();
-    args.add(adapter.getLogin()); // clientId
-    args.add(CONNECT_HANDLER); // method
-    LinkedHashMap<Integer, Object> methodArgs = new LinkedHashMap<Integer, Object>();
-    methodArgs.put(0, adapter.getLogin()); // character ID as first parameter
-    args.add(methodArgs);
-    sharedObject.sendMessage(SOListener.SEND, args);
-    // IServiceCapableConnection connection = (IServiceCapableConnection)
-    // Red5.getConnectionLocal();
-    // logger.debug("Restore state ".concat(this.sharedObject.getName()));
-    // connection.invoke(RESTORE_STATE, new Object[] {
-    // this.sharedObject.getName(), state, getConnectedChars() });
-    // logger.info("location {} char {} enter", ((IBasicScope)
-    // sharedObject).getName(), adapter.getLogin());
+    ArrayList<Object> directArgs = new ArrayList<Object>();
+    directArgs.add(adapter.getLogin());
+    sharedObject.sendMessage(CONNECT_HANDLER, directArgs);
   }
 
   public void onSharedObjectDelete(ISharedObjectBase arg0, String arg1) {
@@ -153,41 +141,37 @@ public class SOListener implements ISharedObjectListener {
 
   @SuppressWarnings("unchecked")
   public void processDisconnect() {
-    UserAdapter adapter = UserManager.getInstance().getCurrentUser();
+    UserAdapter adapter  = UserManager.getInstance().getCurrentUser();
+
+    if (adapter == null || adapter.getLogin() == null) {
+      logger.warn("processDisconnect: unable to resolve disconnecting user; skipping notify");
+      return;
+    }
+
+    String login = adapter.getLogin();
     try {
-      if (!connectedUsers.contains(adapter.getLogin())) return;
+      if (!connectedUsers.contains(login)) return;
 
-      connectedUsers.remove(adapter.getLogin());
-
-      // Use standard shared object message format for AMF3 compatibility
       ArrayList<Object> args = new ArrayList<Object>();
-      args.add(adapter.getLogin()); // clientId
-      args.add(DISCONECT_HANDLER); // method
-      LinkedHashMap<Integer, Object> methodArgs = new LinkedHashMap<Integer, Object>();
-      methodArgs.put(0, adapter.getLogin()); // character ID as first parameter
-      args.add(methodArgs);
+      args.add(login);
+      sharedObject.sendMessage(DISCONECT_HANDLER, args);
 
-      lockedStates.unlockStates(adapter.getLogin());
+      connectedUsers.remove(login);
+      lockedStates.unlockStates(login);
 
       synchronized (state) {
         for (Object clientStateObject : state.values()) {
           ObjectMap<String, Object> clientState = (ObjectMap<String, Object>) clientStateObject;
-          String key = String.format(CHAR_STATE_FORMAT, adapter.getLogin());
+          String key = String.format(CHAR_STATE_FORMAT, login);
           if (clientState.containsKey(key)) {
             clientState.remove(key);
           }
         }
       }
 
-      sharedObject.sendMessage(SOListener.SEND, args);
-      
-      // Check if no more users are connected and release the shared object if needed
       if (connectedUsers.isEmpty() && sharedObject.isAcquired()) {
         sharedObject.release();
       }
-      
-      // logger.info("location {} char {} exit", ((IBasicScope)
-      // sharedObject).getName(), adapter.getLogin());
     } catch (Exception e) {
       logger.error("Error while disconnecting from so", e);
     }
@@ -391,8 +375,16 @@ public class SOListener implements ISharedObjectListener {
           if (args.size() >= 3) {
             args.set(2, preventArgs);
           }
+        } else {
+          // Normalize method arguments for client delivery: convert map to a simple Array
+          ArrayList<Object> flattenedArgs = new ArrayList<Object>();
+          for (int i = 0; i < methodArgsCopy.size(); i++) {
+            flattenedArgs.add(methodArgsCopy.get(i));
+          }
+          if (args.size() >= 3) {
+            args.set(2, flattenedArgs);
+          }
         }
-        // if not handled, allow it to reach clients as-is
       }
     }
     if (methodName.equals(CLEAR)) {
