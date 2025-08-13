@@ -25,9 +25,6 @@ package com.kavalok.gameplay.frame
 
 	public class MessageWindowView 
 	{
-		private static const MAX_RECIPIENT_CHARS:int = 8;
-		private static const OPEN_FRAME:int = 1;
-		private static const CLOSE_FRAME:int = 10;
 		private static const MAX_CHARS:int = KavalokConstants.MAX_CHAT_CHARS;
 		private static const SAFE_CHAT_ADD_HEIGHT : Number = 6;
 		private static const SAFE_CHAT_OPEN_ADD_HEIGHT : Number = 60;
@@ -43,6 +40,7 @@ package com.kavalok.gameplay.frame
 		private var _unsafePosition : Number;
 		private var _safe : Boolean;
 		
+		private var _baseChatLogY:Number = NaN;
 		public function MessageWindowView(content:MessageWindow)
 		{
 			_content = content;
@@ -52,6 +50,9 @@ package com.kavalok.gameplay.frame
 			_safeChatInput.openEvent.addListener(onSafeChatOpen);
 			
 			_chatLogView = new ChatLogView(_content.chatLogWindow.mc_chatLog);
+			_chatLogView.openChange.addListener(onChatLogOpenChange);
+			// remember base position of the chat log window for toggling
+			_baseChatLogY = _content.chatLogWindow.y;
 			content.chatLogWindow.gotoAndStop(content.chatLogWindow.totalFrames);
 			content.sendTextField.text = "";
 			content.sendTextField.maxChars = MAX_CHARS;
@@ -103,6 +104,13 @@ package com.kavalok.gameplay.frame
 		private function resize(newPosition : int) : void
 		{
 			new SpriteTweaner(_content, {y : newPosition}, TWEEN_FRAMES);
+		}
+		
+		private function onChatLogOpenChange(isOpen:Boolean):void
+		{
+			// Move only the chat.ChatLogWindow up to reveal history
+			var targetY:Number = isOpen ? (_baseChatLogY - (_chatLogView.openHeight - _chatLogView.closedHeight)) : _baseChatLogY;
+			new SpriteTweaner(_content.chatLogWindow, { y: targetY }, TWEEN_FRAMES);
 		}
 		
 		private function showSafe(value : Boolean) : void
