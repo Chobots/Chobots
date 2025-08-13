@@ -16,8 +16,6 @@ public class AdminClient extends ClientBase {
 
   private static String adminIP = null;
 
-  private static String adminCPath = null;
-
   public AdminClient(Session session) {
     super();
     this.session = session;
@@ -25,9 +23,8 @@ public class AdminClient extends ClientBase {
       ServerDAO serverDAO = new ServerDAO(this.session);
       Server server = serverDAO.findRunning().get(0);
       adminIP = server.getXMLRPCHost();
-      adminCPath = server.getContextPath();
     }
-    createXmlRpc(adminIP, adminCPath);
+    createXmlRpc(adminIP);
   }
 
   public void logMessage(String message) {
@@ -45,14 +42,14 @@ public class AdminClient extends ClientBase {
   public void logAdminMessage(String login, Integer userId, String message) {
     invokeInNewThread(
         "RemoteServer.logAdminMessage",
-        new Object[] {login, userId, KavalokApplication.getInstance().getServerName(), message});
+        new Object[] {login, userId, KavalokApplication.getInstance().getServer().getName(), message});
   }
 
   public void logBadWord(String login, Integer userId, String word, String message, String type) {
     invokeInNewThread(
         "RemoteServer.logBadWord",
         new Object[] {
-          login, userId, KavalokApplication.getInstance().getServerName(), word, message, type
+          login, userId, KavalokApplication.getInstance().getServer().getName(), word, message, type
         });
   }
 
@@ -63,7 +60,7 @@ public class AdminClient extends ClientBase {
     if (badWordsCache.size() >= 5) {
       invokeInNewThread(
           "RemoteServer.logBadWord",
-          new Object[] {KavalokApplication.getInstance().getServerName(), badWordsCache.toArray()});
+          new Object[] {KavalokApplication.getInstance().getServer().getName(), badWordsCache.toArray()});
       badWordsCache.clear();
     }
   }

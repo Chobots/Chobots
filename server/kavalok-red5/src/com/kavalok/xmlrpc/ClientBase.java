@@ -19,7 +19,7 @@ import com.kavalok.db.Server;
 
 public class ClientBase {
 
-  private static final String URL_FORMAT = "http://%1$s:5080/%2$s/xmlrpc";
+  private static final String URL_FORMAT = "http://%1$s:5080/kavalok/xmlrpc";
 
   private static final Logger logger = Red5LoggerFactory.getLogger(ClientBase.class);
 
@@ -29,14 +29,14 @@ public class ClientBase {
 
   protected void createXmlRpc(Server currentServer) {
     if (currentServer != null) {
-      createXmlRpc(currentServer.getXMLRPCHost(), currentServer.getContextPath());
+      createXmlRpc(currentServer.getXMLRPCHost());
     }
   }
 
-  protected void createXmlRpc(String ip, String contextPath) {
+  protected void createXmlRpc(String ip) {
     try {
       XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
-      serverURL = String.format(URL_FORMAT, ip, contextPath);
+      serverURL = String.format(URL_FORMAT, ip);
       config.setServerURL(new URL(serverURL));
       config.setEnabledForExtensions(true);
       config.setConnectionTimeout(500);

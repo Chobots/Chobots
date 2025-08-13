@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.xmlrpc.server.XmlRpcServer;
 import org.red5.io.utils.ObjectMap;
@@ -15,6 +16,7 @@ import org.red5.logging.Red5LoggerFactory;
 import com.kavalok.KavalokApplication;
 import com.kavalok.cache.StuffTypeCache;
 import com.kavalok.dao.ServerDAO;
+import com.kavalok.dao.StuffTypeDAO;
 import com.kavalok.dao.UserServerDAO;
 import com.kavalok.db.Server;
 import com.kavalok.db.User;
@@ -30,6 +32,10 @@ import com.kavalok.user.UserAdapter;
 import com.kavalok.user.UserManager;
 import com.kavalok.utils.HibernateUtil;
 import com.kavalok.utils.SOUtil;
+import com.kavalok.services.stuff.RainTokenManager;
+import com.kavalok.sharedObjects.SOListener;
+import com.kavalok.db.StuffType;
+import com.kavalok.services.RainCommandService;
 
 public class RemoteServer extends DefaultTransactionStrategy {
 
@@ -258,8 +264,7 @@ public class RemoteServer extends DefaultTransactionStrategy {
   }
 
   public void doSendCommandToAll(byte[] command, byte[] locales) {
-    String path = KavalokApplication.getInstance().getCurrentServerPath();
-    Server server = new ServerDAO(getSession()).findByScopeName(path);
+    Server server = KavalokApplication.getInstance().getServer();
 
     UserServerDAO usDAO = new UserServerDAO(getSession());
     List<UserServer> userServers = usDAO.getAllUserServer(server);
@@ -279,6 +284,66 @@ public class RemoteServer extends DefaultTransactionStrategy {
       if (adapter != null) adapter.executeCommand(commandInstance);
     } catch (Exception e) {
       logger.error(e.getMessage(), e);
+    }
+  }
+
+  /**
+   * Handle rain command on this server for a specific location.
+   * This method is called via XMLRPC from the admin server.
+   * 
+   * @param locationId The location ID where to rain
+   * @param fileName The file name of the item to rain
+   * @param count The number of items to rain per user
+   */
+  public void triggerRainOnLocation(String locationId, String fileName, Integer count) {
+    ArrayList<Object> args = new ArrayList<Object>();
+    args.add(locationId);
+    args.add(fileName);
+    args.add(count);
+    TransactionUtil.callTransaction(this, "doTriggerRainOnLocation", args);
+  }
+
+  /**
+   * Internal method to handle rain command with proper transaction management.
+   * This method is called via TransactionUtil.callTransaction.
+   * 
+   * @param locationId The location ID where to rain
+   * @param fileName The file name of the item to rain
+   * @param count The number of items to rain per user
+   */
+  public void doTriggerRainOnLocation(String locationId, String fileName, Integer count) {
+    try {
+      // Get the shared object for the location
+      ISharedObject sharedObject = KavalokApplication.getInstance().getSharedObject(locationId);
+      if (sharedObject == null) {
+        logger.warn("Shared object not found for location: " + locationId);
+        return;
+      }
+
+      // Get connected users in this location
+      SOListener listener = SOListener.getListener(sharedObject);
+      List<String> connectedUsers = listener.getConnectedChars();
+      
+      if (connectedUsers.isEmpty()) {
+        logger.info("No connected users found in location: " + locationId);
+        return;
+      }
+
+      // Get the stuff type - properly create DAO with session
+      StuffTypeDAO stuffTypeDAO = new StuffTypeDAO(getSession());
+      StuffType stuffType = stuffTypeDAO.findByFileName(fileName);
+
+      if (stuffType == null || !stuffType.getRainable()) {
+        logger.error("Item is not rainable: " + fileName);
+        return;
+      }
+
+      logger.info("Triggering rain for " + connectedUsers.size() + " users in location " + locationId);
+
+      // Use the shared method to send rain commands to users
+      RainCommandService.sendRainCommandsToUsers(connectedUsers, stuffType, count);
+    } catch (Exception e) {
+      logger.error("Error triggering rain on location: " + locationId, e);
     }
   }
 }

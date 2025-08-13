@@ -558,12 +558,10 @@ public class LoginService extends DataServiceBase {
       for (Object[] serverLoad : serversLoad) {
         Long serverId = ((Number) serverLoad[0]).longValue();
         Integer load = Integer.parseInt(serverLoad[1].toString());
-        String scopeName = (String) serverLoad[2];
         if (load < KavalokApplication.getInstance().getServerLimit()) {
           Server server = new Server();
           server.setId(serverId);
-          server.setScopeName(scopeName);
-          
+
           RemoteClient client = new RemoteClient(server);
           Integer numConnectedChars = client.getNumConnectedChars(location);
           if (numConnectedChars != null && numConnectedChars < 75) {

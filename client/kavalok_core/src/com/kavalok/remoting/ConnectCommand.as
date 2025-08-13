@@ -47,6 +47,7 @@ package com.kavalok.remoting
 		private function tryConnect() : void
 		{
             _attemptsMade++;
+			trace("ConnectCommand: Attempt " + _attemptsMade + " - Connecting to: " + BaseRed5Delegate.defaultConnectionUrl);
 			RemoteConnection.instance.connect();
             startTimeout();
 		}
@@ -111,6 +112,7 @@ package com.kavalok.remoting
 
         private function retryConnect():void {
             _attemptsMade++;
+            trace("ConnectCommand: Retry attempt " + _attemptsMade + " - Recreating connection and connecting to: " + BaseRed5Delegate.defaultConnectionUrl);
             RemoteConnection.instance.recreateNetConnection();
             RemoteConnection.instance.connect();
             startTimeout();

@@ -96,10 +96,24 @@ package com.kavalok.login
 			_autoLogin = Boolean(startupInfo.login);
 			_server = startupInfo.server;
 			_info = startupInfo;
-			// Use buildRtmpUrl to get the full RTMP URL
-			var targetUrl:String = LoginManager.buildRtmpUrl();
-			BaseRed5Delegate.defaultConnectionUrl = targetUrl;
-			_info.url = targetUrl;
+			
+			trace("LoginManager: login() called with server: " + _server);
+			trace("LoginManager: _serverSelected: " + _serverSelected);
+			trace("LoginManager: _info.url: " + _info.url);
+			
+			// Only use buildRtmpUrl if no specific server URL has been set
+			if (!_serverSelected || !_info.url || _info.url == LoginManager.buildRtmpUrl()) {
+				var targetUrl:String = LoginManager.buildRtmpUrl();
+				BaseRed5Delegate.defaultConnectionUrl = targetUrl;
+				_info.url = targetUrl;
+				trace("LoginManager: Using default URL: " + targetUrl);
+			} else {
+				// Use the server-specific URL that was already set
+				BaseRed5Delegate.defaultConnectionUrl = _info.url;
+				trace("LoginManager: Using server-specific URL: " + _info.url);
+			}
+
+			trace("LoginManager: Final BaseRed5Delegate.defaultConnectionUrl: " + BaseRed5Delegate.defaultConnectionUrl);
 
 			var isConnected:Boolean = RemoteConnection.instance.connected;
 			var currentUri:String = isConnected ? RemoteConnection.instance.netConnection.uri : null;
@@ -148,27 +162,37 @@ package com.kavalok.login
 			_info.moduleId=location;
 			_info.moduleParams=parameters;
 			_info.server=server;
+			
+			// Reset connection state in Kavalok instance to prevent null reference errors
+			if (Global.kavalokInstance)
+			{
+				Global.kavalokInstance.resetConnectionState();
+			}
+			
 			new ServerService(onGetServer).getServerAddress(server);
 
 		}
 
-		private function onGetServer(serverPath:String):void
+		private function onGetServer(serverUrl:String):void
 		{
-			// ServerService.getServerAddress returns just the path (e.g., "kavalok")
-			// We need to build the full URL using the same logic as buildRtmpUrl
+			// ServerService.getServerAddress now returns the full RTMP/RTMPS URL
 			var isConnected:Boolean = RemoteConnection.instance.connected;
 			var currentUri:String = isConnected ? RemoteConnection.instance.netConnection.uri : null;
 			
-			// Build the full RTMP URL using the server path
-			var fullUrl:String = LoginManager.buildRtmpUrlFromPath(serverPath);
+			trace("LoginManager: Server returned URL: " + serverUrl);
+			trace("LoginManager: Current connection URI: " + currentUri);
 			
-			// Update target URL
-			BaseRed5Delegate.defaultConnectionUrl = fullUrl;
-			_info.url = fullUrl;
+			// Update target URL with the complete URL from server
+			BaseRed5Delegate.defaultConnectionUrl = serverUrl;
+			_info.url = serverUrl;
 			_serverSelected = true;
 
+			trace("LoginManager: Set BaseRed5Delegate.defaultConnectionUrl to: " + BaseRed5Delegate.defaultConnectionUrl);
+			trace("LoginManager: Set _info.url to: " + _info.url);
+			trace("LoginManager: _serverSelected is now: " + _serverSelected);
+
 			// Only disconnect if switching to a different server
-			if (isConnected && currentUri != fullUrl)
+			if (isConnected && currentUri != serverUrl)
 			{
 				RemoteConnection.instance.disconnect();
 			}
