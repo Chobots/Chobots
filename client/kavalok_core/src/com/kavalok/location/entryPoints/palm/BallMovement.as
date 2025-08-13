@@ -57,7 +57,7 @@ package com.kavalok.location.entryPoints.palm
 			_ball.x += _velocity.x * SPEED;
 			_ballY += _velocity.y * SPEED;
 			_ball.y += _velocity.y * SPEED;
-			_ballZ += _velocity.z * SPEED;
+			_ballZ += _velocity.z * SPEED; 
 			_ball.y -= _velocity.z * SPEED * PERSPECTIVE_COEFF;
 			_velocity.z += PalmEntryPoint.GRAV_ACC;
 			

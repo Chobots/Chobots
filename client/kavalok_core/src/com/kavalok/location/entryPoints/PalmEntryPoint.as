@@ -389,7 +389,6 @@ package com.kavalok.location.entryPoints
 				_location.content.addChild(ball);
 				ball.x = xPos;
 				ball.y = yPos;
-				ball.z = START_Z;
 				var resultHandler : Function = charId == clientCharId ? onPalmResult : null;
 				new BallMovement(color, this, getPalm(palmId), ball, new Point3D(powerX, powerY, powerZ), charId, resultHandler);
 			}
