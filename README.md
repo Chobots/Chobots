@@ -27,8 +27,8 @@ Goals of this project are as follows but not limited to:
  - [x] Fix login error message on duplicate login
  - [x] Upgrade to Flash Player 10 target
  - [x] Add database rows required to fix missions, pets, robots
+ - [x] Fix chat history bar not displaying
  - [ ] Fix questHoover
- - [ ] [Fix chat history bar not displaying](https://github.com/Chobots/Chobots/issues/6)
  - [ ] Fully Replicate the .com website
  - [ ] Replicating the .com blog
  - [ ] Produce detailed software architecture documents
