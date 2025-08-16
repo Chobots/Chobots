@@ -71,9 +71,6 @@ public class CharService extends DataServiceBase {
 
   private static Object friendSynchronizer = new Object();
 
-  private static final java.util.concurrent.ConcurrentHashMap<Long, Object> userLocks = 
-      new java.util.concurrent.ConcurrentHashMap<>();
-
   public int getLastOnlineDay(Integer userId) {
     User user = new UserDAO(getSession()).findById(userId.longValue());
     if (user == null) {
@@ -612,18 +609,10 @@ public class CharService extends DataServiceBase {
   }
 
   public void saveCharBody(String body, Integer color) {
-    UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
-    Long userId = userAdapter.getUserId();
-    
-    // Get or create a lock for this specific user
-    Object userLock = userLocks.computeIfAbsent(userId, k -> new Object());
-    
-    synchronized (userLock) {
-      GameChar gameChar = getGameChar();
-      gameChar.setBody(body);
-      gameChar.setColor(color);
-      new GameCharDAO(getSession()).makePersistent(gameChar);
-    }
+    GameChar gameChar = getGameChar();
+    gameChar.setBody(body);
+    gameChar.setColor(color);
+    new GameCharDAO(getSession()).makePersistent(gameChar);
   }
 
   public void savePlayerCard(Integer stuffId) {

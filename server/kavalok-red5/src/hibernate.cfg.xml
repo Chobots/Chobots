@@ -1,126 +1,92 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE hibernate-configuration PUBLIC
-          "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
-          "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
 <hibernate-configuration>
-<session-factory>
-	<property name="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</property>
-	<property name="hibernate.cache.use_second_level_cache">false</property>
-	<property name="hibernate.cache.use_query_cache">false</property>
-	<property name="connection.url">jdbc:mysql://{database.host}/{database.name}</property>
-	<property name="connection.autocommit">true</property> 
-	<property name="connection.autoReconnect">true</property>
-	<property name="connection.characterEncoding">UTF-8</property> 
-	<property name="connection.useUnicode">true</property>	
-	<property name="connection.username">{database.user}</property>
-	<property name="connection.password">{database.password}</property>
-	<property name="connection.driver_class">com.kavalok.monitor.jdbc.Driver</property>
-	<property name="connection.wrapper_driver_class">com.mysql.jdbc.Driver</property>
-    
-	<!-- Using default Hibernate connection provider to avoid ClassCastException -->
-	<!-- Connection pooling will be handled by the application server or default Hibernate provider -->
+    <session-factory>
+        <property name="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</property>
+        <property name="hibernate.cache.use_second_level_cache">false</property>
+        <property name="hibernate.cache.use_query_cache">false</property>
+        <property name="connection.url">jdbc:mysql://{database.host}/{database.name}</property>
+        <property name="connection.autocommit">true</property>
+        <property name="connection.autoReconnect">true</property>
+        <property name="connection.characterEncoding">UTF-8</property>
+        <property name="connection.useUnicode">true</property>
+        <property name="connection.username">{database.user}</property>
+        <property name="connection.password">{database.password}</property>
+        <property name="connection.driver_class">com.kavalok.monitor.jdbc.Driver</property>
+        <property name="connection.wrapper_driver_class">com.mysql.jdbc.Driver</property>
 
-    <!--
-    <property name="dbcp.maxActive">50</property>
-    <property name="dbcp.maxIdle">10</property>
-    <property name="dbcp.maxWait">120000</property>
-    <property name="dbcp.whenExhaustedAction">1</property>
-    <property name="dbcp.testOnBorrow">true</property>
-    <property name="dbcp.testOnReturn">true</property>
-    <property name="dbcp.validationQuery">
-        SELECT 1+1
-    </property>
-    <property name="dbcp.ps.maxActive">0</property>
-    <property name="dbcp.ps.maxIdle">0</property>
-    <property name="dbcp.ps.maxWait">-1</property>
-    <property name="dbcp.ps.whenExhaustedAction">2</property>
-    -->
-	
-	<property name="dialect">org.hibernate.dialect.MySQL5Dialect</property>
- 	<property name="transaction.factory_class">org.hibernate.transaction.JDBCTransactionFactory</property>
-    <!--  thread is the short name for
-      org.hibernate.context.ThreadLocalSessionContext
-      and let Hibernate bind the session automatically to the thread
-    -->
-    <property name="current_session_context_class">thread</property>
-    <!-- this will show us all sql statements -->
-    <property name="hibernate.show_sql">false</property>
-    <property name="hibernate.hbm2ddl.auto">update</property>
-    <property name="hibernate.validator.apply_to_ddl">false</property>
-    <property name="hibernate.validator.autoregister_listeners">false</property>
-    <property name="hibernate.hbm2ddl.halt_on_error">false</property>
-    <property name="hibernate.hbm2ddl.import_files_sql_extractor">org.hibernate.tool.hbm2ddl.MultipleLinesSqlCommandExtractor</property>
-   <mapping class="com.kavalok.db.Config"/>
-   <mapping class="com.kavalok.db.MailServer"/>
-   <mapping class="com.kavalok.db.Server"/>
-   <mapping class="com.kavalok.db.User"/>
-   <mapping class="com.kavalok.db.UserServer"/>
-   <mapping class="com.kavalok.db.Admin"/>
-   <mapping class="com.kavalok.db.Partner"/>
-   <mapping class="com.kavalok.db.LoginFromPartner"/>
-   <mapping class="com.kavalok.db.ClientError"/>
-   <mapping class="com.kavalok.db.PaperMessage"/>
-     <mapping class="com.kavalok.db.GameChar"/>
-     <mapping class="com.kavalok.db.StuffType"/>
-     <mapping class="com.kavalok.db.StuffItem"/>
-     <mapping class="com.kavalok.db.Shop"/>
-     <mapping class="com.kavalok.db.Ban"/>
-     <mapping class="com.kavalok.db.BlockWord"/>
-     <mapping class="com.kavalok.db.SkipWord"/>
-     <mapping class="com.kavalok.db.ReviewWord"/>
-     <mapping class="com.kavalok.db.AllowedWord"/>
-     <mapping class="com.kavalok.db.Message"/>
-     <mapping class="com.kavalok.db.TopScore"/>
-     <mapping class="com.kavalok.db.Competition"/>
-     <mapping class="com.kavalok.db.CompetitionResult"/>
-     <mapping class="com.kavalok.db.statistics.ServerStatistics"/>
-     <mapping class="com.kavalok.db.statistics.LoginStatistics"/>
-     <mapping class="com.kavalok.db.statistics.MoneyStatistics"/>
-     <mapping class="com.kavalok.db.UserReport"/>
-     <mapping class="com.kavalok.db.MarketingInfo"/>
-     <mapping class="com.kavalok.db.Transaction"/>
-     <mapping class="com.kavalok.db.Pet"/>
-     <mapping class="com.kavalok.db.PetItem"/>
-     <mapping class="com.kavalok.db.GuestMarketingInfo"/>
-     <mapping class="com.kavalok.db.Quest"/>
-     <mapping class="com.kavalok.db.CharQuest"/>
-     <mapping class="com.kavalok.db.BlackIP"/>
-     <mapping class="com.kavalok.db.TransactionUserInfo"/>
-     <mapping class="com.kavalok.db.MembershipHistory"/>
-     <mapping class="com.kavalok.db.MembershipInfo"/>
-     <mapping class="com.kavalok.db.InfoPanel"/>
-     <mapping class="com.kavalok.db.UserExtraInfo"/>
-     <mapping class="com.kavalok.db.EmailExtraInfo"/>
-     <mapping class="com.kavalok.db.UserDance"/>
-     <mapping class="com.kavalok.db.SKU"/>
-     <mapping class="com.kavalok.db.RobotType"/>
-     <mapping class="com.kavalok.db.Robot"/>
-     <mapping class="com.kavalok.db.RobotItem"/>
-     <mapping class="com.kavalok.db.RobotSKU"/>
-     <mapping class="com.kavalok.db.RobotTransaction"/>
-     <mapping class="com.kavalok.db.RobotTeam"/>
-	
-	<class-cache 
-		class="com.kavalok.db.Shop"
-		usage="read-only"
-				/>
+        <property name="dialect">org.hibernate.dialect.MySQL5Dialect</property>
+        <property name="transaction.factory_class">org.hibernate.transaction.JDBCTransactionFactory</property>
 
-<!--	<class-cache 
-		class="com.kavalok.db.BlockWord"
-		usage="read-write"
-				/>
-	<class-cache 
-		class="com.kavalok.db.SkipWord"
-		usage="read-write"
-				/>
-	<class-cache 
-		class="com.kavalok.db.AllowedWord"
-		usage="read-write"
-				/>
-	<class-cache 
-		class="com.kavalok.db.BlackIP"
-		usage="read-write"
-				/>-->
+        <property name="current_session_context_class">thread</property>
+        <property name="hibernate.show_sql">false</property>
+        <property name="hibernate.hbm2ddl.auto">update</property>
+        <property name="hibernate.validator.apply_to_ddl">false</property>
+        <property name="hibernate.validator.autoregister_listeners">false</property>
+        <property name="hibernate.hbm2ddl.halt_on_error">false</property>
+        <property name="hibernate.hbm2ddl.import_files_sql_extractor">
+            org.hibernate.tool.hbm2ddl.MultipleLinesSqlCommandExtractor
+        </property>
 
-</session-factory>
+        <property name="hibernate.jdbc.batch_size">0</property>
+        <property name="hibernate.order_inserts">false</property>
+        <property name="hibernate.order_updates">false</property>
+        <property name="hibernate.jdbc.batch_versioned_data">false</property>
+        <property name="hibernate.flush_mode">commit</property>
+        <property name="hibernate.connection.isolation">1</property>
+        <property name="hibernate.connection.release_mode">on_close</property>
+        <mapping class="com.kavalok.db.Config"/>
+        <mapping class="com.kavalok.db.MailServer"/>
+        <mapping class="com.kavalok.db.Server"/>
+        <mapping class="com.kavalok.db.User"/>
+        <mapping class="com.kavalok.db.UserServer"/>
+        <mapping class="com.kavalok.db.Admin"/>
+        <mapping class="com.kavalok.db.Partner"/>
+        <mapping class="com.kavalok.db.LoginFromPartner"/>
+        <mapping class="com.kavalok.db.ClientError"/>
+        <mapping class="com.kavalok.db.PaperMessage"/>
+        <mapping class="com.kavalok.db.GameChar"/>
+        <mapping class="com.kavalok.db.StuffType"/>
+        <mapping class="com.kavalok.db.StuffItem"/>
+        <mapping class="com.kavalok.db.Shop"/>
+        <mapping class="com.kavalok.db.Ban"/>
+        <mapping class="com.kavalok.db.BlockWord"/>
+        <mapping class="com.kavalok.db.SkipWord"/>
+        <mapping class="com.kavalok.db.ReviewWord"/>
+        <mapping class="com.kavalok.db.AllowedWord"/>
+        <mapping class="com.kavalok.db.Message"/>
+        <mapping class="com.kavalok.db.TopScore"/>
+        <mapping class="com.kavalok.db.Competition"/>
+        <mapping class="com.kavalok.db.CompetitionResult"/>
+        <mapping class="com.kavalok.db.statistics.ServerStatistics"/>
+        <mapping class="com.kavalok.db.statistics.LoginStatistics"/>
+        <mapping class="com.kavalok.db.statistics.MoneyStatistics"/>
+        <mapping class="com.kavalok.db.UserReport"/>
+        <mapping class="com.kavalok.db.MarketingInfo"/>
+        <mapping class="com.kavalok.db.Transaction"/>
+        <mapping class="com.kavalok.db.Pet"/>
+        <mapping class="com.kavalok.db.PetItem"/>
+        <mapping class="com.kavalok.db.GuestMarketingInfo"/>
+        <mapping class="com.kavalok.db.Quest"/>
+        <mapping class="com.kavalok.db.CharQuest"/>
+        <mapping class="com.kavalok.db.BlackIP"/>
+        <mapping class="com.kavalok.db.TransactionUserInfo"/>
+        <mapping class="com.kavalok.db.MembershipHistory"/>
+        <mapping class="com.kavalok.db.MembershipInfo"/>
+        <mapping class="com.kavalok.db.InfoPanel"/>
+        <mapping class="com.kavalok.db.UserExtraInfo"/>
+        <mapping class="com.kavalok.db.EmailExtraInfo"/>
+        <mapping class="com.kavalok.db.UserDance"/>
+        <mapping class="com.kavalok.db.SKU"/>
+        <mapping class="com.kavalok.db.RobotType"/>
+        <mapping class="com.kavalok.db.Robot"/>
+        <mapping class="com.kavalok.db.RobotItem"/>
+        <mapping class="com.kavalok.db.RobotSKU"/>
+        <mapping class="com.kavalok.db.RobotTransaction"/>
+        <mapping class="com.kavalok.db.RobotTeam"/>
+
+        <class-cache class="com.kavalok.db.Shop" usage="read-only"/>
+    </session-factory>
 </hibernate-configuration>

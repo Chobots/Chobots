@@ -18,7 +18,9 @@ public class DefaultTransactionStrategy implements ITransactionStrategy {
   @Override
   public void afterCall() {
     if (session.isOpen()) {
-      session.flush();
+      if (session.isDirty()) {
+        session.flush();
+      }
       transaction.commit();
       session.close();
     }

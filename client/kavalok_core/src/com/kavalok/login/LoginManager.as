@@ -502,7 +502,11 @@ package com.kavalok.login
 	}
         public static function showError(info:Object=null):void
 		{
-			Global.isLocked = false;
+			try {
+				Global.isLocked = false;
+			} catch (e:Error) {
+				// Ignore
+			}
 
             var locMess:String = Global.resourceBundles.kavalok.messages.connectionErrorRedirect;
             var defaultMessage:String = locMess ? locMess : "Connection error. Please refresh.";

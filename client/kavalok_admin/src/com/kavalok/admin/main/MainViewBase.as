@@ -78,7 +78,10 @@ package com.kavalok.admin.main
 		}
 		private function onDisconnect() : void
 		{
-			Alert.show("Disconnect");
+			// Return to login screen but hide the login form
+			selectedIndex = 0;
+			login.visible = false;
+			Alert.show("Disconnected please refresh");
 		}
 		private function onServiceFault(fault : Object) : void
 		{
