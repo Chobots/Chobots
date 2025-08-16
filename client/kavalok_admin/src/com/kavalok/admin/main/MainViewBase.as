@@ -1,6 +1,7 @@
 package com.kavalok.admin.main
 {
 	import com.kavalok.admin.login.Login;
+	import com.kavalok.admin.KavalokAdminBase;
 	import com.kavalok.constants.ResourceBundles;
 	import com.kavalok.localization.Localiztion;
 	import com.kavalok.login.AuthenticationManager;
@@ -28,14 +29,15 @@ package com.kavalok.admin.main
 		public function MainViewBase()
 		{
 			super();
-			Localiztion.locale = "enUS";
-			Localiztion.getBundle(ResourceBundles.SERVER_SELECT);
-			Localiztion.getBundle(ResourceBundles.KAVALOK);
 			BaseDelegate.defaultFaultHandler = onServiceFault;
 		}
 		
 		protected function onCreationComplete(event : FlexEvent) : void
 		{
+			// Initialize localization bundles after URL format is set
+			Localiztion.getBundle(ResourceBundles.SERVER_SELECT);
+			Localiztion.getBundle(ResourceBundles.KAVALOK);
+			
 			BaseRed5Delegate.defaultConnectionUrl = LoginManager.buildRtmpUrl();
 			BaseDelegate.defaultFaultHandler = onServiceFault;
 			RemoteConnection.instance.isAdmin = true;

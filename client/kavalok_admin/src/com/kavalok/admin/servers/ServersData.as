@@ -11,13 +11,15 @@ package com.kavalok.admin.servers
 	
 	public class ServersData
 	{
-		private var bundle : ResourceBundle = Localiztion.getBundle(ResourceBundles.SERVER_SELECT);
+		private var bundle : ResourceBundle;
 
 		[Bindable]
 		public var servers : ArrayList = new ArrayList();
 		
 		public function ServersData()
 		{
+			bundle = Localiztion.getBundle(ResourceBundles.SERVER_SELECT);
+			
 			refresh();
 		}
 

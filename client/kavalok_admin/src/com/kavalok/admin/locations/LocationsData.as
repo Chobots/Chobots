@@ -16,10 +16,12 @@
 		[Bindable]
 		public var locations:ArrayList = new ArrayList();
 		
-		private var _bundle:ResourceBundle = Localiztion.getBundle(ResourceBundles.KAVALOK);
+		private var _bundle:ResourceBundle;
 		
 		public function LocationsData()
 		{
+			_bundle = Localiztion.getBundle(ResourceBundles.KAVALOK);
+			
 			refresh();
 		}
 		

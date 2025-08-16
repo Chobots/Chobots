@@ -37,7 +37,7 @@ package com.kavalok.admin.usersman
 		public var permissionLevel : int;
 		
 		
-		private var resourceBundle : ResourceBundle = Localiztion.getBundle(ResourceBundles.SERVER_SELECT);
+		private var resourceBundle : ResourceBundle;
 
 		[Bindable]
 		protected var filtersConfig : ArrayList = new ArrayList();
@@ -55,6 +55,9 @@ package com.kavalok.admin.usersman
 		public function UsersManagementBase()
 		{
 			super();
+			
+			resourceBundle = Localiztion.getBundle(ResourceBundles.SERVER_SELECT);
+			
 			filtersConfig.addItem(new FilterConfig("login", StringFilter, ""));
 			filtersConfig.addItem(new FilterConfig("email", StringFilter, ""));
 		}

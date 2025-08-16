@@ -29,12 +29,13 @@ package com.kavalok.admin.graphity
 		[Bindable]
 		public var wallsList : List;
 		
-		private var resourceBundle : ResourceBundle	=
-			Localiztion.getBundle(ResourceBundles.SERVER_SELECT);
+		private var resourceBundle : ResourceBundle;
 		
 		public function GraphityBase()
 		{
 			super();
+			
+			resourceBundle = Localiztion.getBundle(ResourceBundles.SERVER_SELECT);
 			
 			new ServerService(onGetServers).getServers();
 		}

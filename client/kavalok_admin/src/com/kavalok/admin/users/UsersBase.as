@@ -38,7 +38,7 @@ package com.kavalok.admin.users
 		public var permissionLevel : int;
 		
 		
-		private var resourceBundle : ResourceBundle = Localiztion.getBundle(ResourceBundles.SERVER_SELECT);
+		private var resourceBundle : ResourceBundle;
 
 		[Bindable]
 		protected var serversDataProvider : ServersDataProvider = new ServersDataProvider();
@@ -59,6 +59,9 @@ package com.kavalok.admin.users
 		public function UsersBase()
 		{
 			super();
+			
+			resourceBundle = Localiztion.getBundle(ResourceBundles.SERVER_SELECT);
+			
 			filtersConfig.addItem(new FilterConfig("login", StringFilter, ""));
 			filtersConfig.addItem(new FilterConfig("email", StringFilter, ""));
 			filtersConfig.addItem(new FilterConfig("citizen", BooleanFilter, false));

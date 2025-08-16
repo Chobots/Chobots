@@ -16,7 +16,7 @@ package com.kavalok.admin.statistics
 		private static const COUNT : int = 24;
 
 		[Bindable]
-		protected var bundle : ResourceBundle = Localiztion.getBundle(Modules.SERVER_SELECT);
+		protected var bundle : ResourceBundle;
 
 
 		public var chart : LineChart;
@@ -32,6 +32,9 @@ package com.kavalok.admin.statistics
 		public function LoadStatisticsBase()
 		{
 			super();
+			
+			bundle = Localiztion.getBundle(Modules.SERVER_SELECT);
+			
 			new ServerService(onGetServers).getAllServers();
 		}
 		

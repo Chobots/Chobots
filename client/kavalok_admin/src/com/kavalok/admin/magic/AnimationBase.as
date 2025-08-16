@@ -1,10 +1,11 @@
 ﻿package com.kavalok.admin.magic
 {
+	import com.kavalok.Global;
 	import com.kavalok.location.commands.FlyingPromoCommand;
 	import com.kavalok.location.commands.PlaySwfCommand;
 	import com.kavalok.utils.Strings;
+	import com.kavalok.loaders.SafeURLLoader;
 	import flash.events.Event;
-	import flash.net.URLLoader;
 	import flash.net.URLRequest;
 	import mx.controls.ComboBox;
 	import mx.controls.TextInput;
@@ -40,23 +41,17 @@
 			loadList();
 		}
 		
-		private function getResourceUrl(path:String):String
-		{
-			var swfUrl:String = loaderInfo.url.split('?')[0];
-			return swfUrl.substr(0, swfUrl.lastIndexOf('/') + 1) + path;
-		}
-		
 		private function loadList():void
 		{
-			var loader:URLLoader = new URLLoader();
+			var loader:SafeURLLoader = new SafeURLLoader();
 			loader.addEventListener(Event.COMPLETE, onLoadComplete);
-			loader.load(new URLRequest(getResourceUrl('resources/magic/magic.xml')));
+			loader.load(new URLRequest('resources/magic/magic.xml'));
 		}
 		
 		private function onLoadComplete(e:Event):void 
 		{
 			var list:ArrayList = new ArrayList();
-			var xml:XML = new XML(URLLoader(e.target).data);
+			var xml:XML = new XML(SafeURLLoader(e.target).data);
 			for each (var item:String in xml.item) 
 			{
 				list.addItem(item);
@@ -66,7 +61,17 @@
 		
 		protected function refreshByCombo():void 
 		{
-			animationURL = getResourceUrl(URL_PREFIX + urlCombo.selectedItem);
+			// Use the full URL path with the base prefix, but extract just the path portion
+			var fullUrl:String = Global.urlPrefix + URL_PREFIX + urlCombo.selectedItem;
+			
+			// Extract just the path portion (remove protocol, hostname, port)
+			var urlPath:String = fullUrl;
+			if (fullUrl.indexOf("://") != -1) {
+				// Remove protocol and hostname/port
+				urlPath = fullUrl.substring(fullUrl.indexOf("/", fullUrl.indexOf("://") + 3));
+			}
+			
+			animationURL = urlPath;
 			urlField.text = animationURL;
 		}
 		

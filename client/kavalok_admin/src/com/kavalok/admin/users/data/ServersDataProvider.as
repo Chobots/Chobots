@@ -14,10 +14,12 @@ package com.kavalok.admin.users.data
 		[Bindable]
 		public var list : ArrayList;
 		
-		private var bundle : ResourceBundle = Localiztion.getBundle(ResourceBundles.SERVER_SELECT);
+		private var bundle : ResourceBundle;
 
 		public function ServersDataProvider()
 		{
+			bundle = Localiztion.getBundle(ResourceBundles.SERVER_SELECT);
+			
 			new ServerService(onResult).getServers();
 		}
 		

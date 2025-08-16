@@ -15,7 +15,7 @@ package com.kavalok.admin.log.data
 		private static const USER_ENTER : String = " enter to server <b>{0}</b> <b>{1}</b>";
 		private static const FIRST_LOGIN : String = "FIRST LOGIN!!!";
 		
-		private var _resourceBundle : ResourceBundle = Localiztion.getBundle(ResourceBundles.SERVER_SELECT);
+		private var _resourceBundle : ResourceBundle;
 
 		private var _messageEvent:EventSender = new EventSender();
 		private var _badWordEvent:EventSender = new EventSender();
@@ -25,6 +25,8 @@ package com.kavalok.admin.log.data
 		public function AdminRemoteObject()
 		{
 			super("admin_shared_object");
+			
+			_resourceBundle = Localiztion.getBundle(ResourceBundles.SERVER_SELECT);
 		}
 		
 		public function get charMessageEvent():EventSender { return _charMessageEvent; }
