@@ -1368,18 +1368,17 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `Server`;
-/*!40101 SET @saved_cs_client = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Server` (
-                          `id` bigint(20) NOT NULL AUTO_INCREMENT,
-                          `created` datetime DEFAULT NULL,
-                          `available` tinyint(1) DEFAULT 0,
-                          `running` tinyint(1) DEFAULT 0,
-                          `remoteHost` varchar(255) DEFAULT NULL,
-                          `scopeName` varchar(255) DEFAULT NULL,
-                          PRIMARY KEY (`id`),
-                          UNIQUE KEY `scopeName` (`scopeName`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `created` datetime DEFAULT NULL,
+  `available` tinyint(1) DEFAULT 0,
+  `running` tinyint(1) DEFAULT 0,
+  `remoteHost` varchar(255) DEFAULT NULL,
+  `rtmpPort` int(11) DEFAULT 8935,
+  `tls` tinyint(1) DEFAULT 0,
+  `lanHost` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1389,8 +1388,10 @@ CREATE TABLE `Server` (
 LOCK TABLES `Server` WRITE;
 /*!40000 ALTER TABLE `Server`
     DISABLE KEYS */;
-INSERT INTO `Server` (`id`, `created`, `available`, `running`, `remoteHost`, `scopeName`) VALUES
-    (1, '2025-01-01 00:00:00', 1, 1, NULL, 'kavalok');
+INSERT INTO `Server` (`id`, `created`, `available`, `running`, `remoteHost`, `rtmpPort`, `tls`, `lanHost`) VALUES
+    (1, '2025-01-01 00:00:00', 1, 1, 'localhost', 8935, 0, 'server1');
+INSERT INTO `Server` (`id`, `created`, `available`, `running`, `remoteHost`, `rtmpPort`, `tls`, `lanHost`) VALUES
+    (2, '2025-01-01 00:00:00', 1, 1, 'localhost', 8936, 0, 'server2');
 /*!40000 ALTER TABLE `Server`
     ENABLE KEYS */;
 UNLOCK TABLES;

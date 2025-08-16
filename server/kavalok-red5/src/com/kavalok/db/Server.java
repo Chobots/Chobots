@@ -7,24 +7,16 @@ import javax.validation.constraints.NotNull;
 
 @Entity
 public class Server extends ModelBase {
-
-  private String scopeName;
-
   private String remoteHost;
+  private String lanHost;
 
   private boolean available;
 
   private boolean running;
 
-  @NotNull
-  @Column(unique = true)
-  public String getScopeName() {
-    return scopeName;
-  }
+  private Integer rtmpPort;
 
-  public void setScopeName(String scopeName) {
-    this.scopeName = scopeName;
-  }
+  private boolean tls;
 
   @Column
   public String getRemoteHost() {
@@ -33,6 +25,15 @@ public class Server extends ModelBase {
 
   public void setRemoteHost(String remoteHost) {
     this.remoteHost = remoteHost;
+  }
+
+  @Column
+  public String getLanHost() {
+    return lanHost;
+  }
+
+  public void setLanHost(String lanHost) {
+    this.lanHost = lanHost;
   }
 
   @NotNull
@@ -46,13 +47,8 @@ public class Server extends ModelBase {
   }
 
   @Transient
-  public String getContextPath() {
-    return getScopeName();
-  }
-
-  @Transient
   public String getXMLRPCHost() {
-    return remoteHost != null ? remoteHost : "127.0.0.1";
+    return lanHost != null ? lanHost : (remoteHost != null ? remoteHost : "127.0.0.1");
   }
 
   @Transient
@@ -72,5 +68,24 @@ public class Server extends ModelBase {
 
   public void setRunning(boolean running) {
     this.running = running;
+  }
+
+  @Column(columnDefinition = "integer default 8935")
+  public Integer getRtmpPort() {
+    return rtmpPort;
+  }
+
+  public void setRtmpPort(Integer rtmpPort) {
+    this.rtmpPort = rtmpPort;
+  }
+
+  @NotNull
+  @Column(columnDefinition = "boolean default false")
+  public boolean isTls() {
+    return tls;
+  }
+
+  public void setTls(boolean tls) {
+    this.tls = tls;
   }
 }

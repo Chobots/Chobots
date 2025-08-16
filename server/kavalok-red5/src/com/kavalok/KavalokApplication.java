@@ -83,10 +83,6 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
 
   private static KavalokApplication instance;
 
-  private String serverPath;
-
-  private String serverName;
-
   private Server server;
 
   private java.util.Properties properties;
@@ -135,10 +131,6 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
     }
   }
 
-  public String getCurrentServerPath() {
-    return serverPath;
-  }
-
   @Override
   public boolean addChildScope(IBasicScope childScope) {
     // Ensure that any shared object created by Red5 gets our listener attached
@@ -183,8 +175,7 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
 
     HibernateUtil.getSessionFactory();
     WordsCache.getInstance(); // load words
-    this.serverPath = scope.getName();
-    logger.info("Started (" + this.serverPath + ")");
+    logger.info("Started KavalokApplication");
 
     refreshServerState(true);
 
@@ -257,14 +248,13 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
     try {
       strategy.beforeCall();
       ServerDAO serverDAO = new ServerDAO(strategy.getSession());
-      Server server = serverDAO.findByScopeName(getCurrentServerPath());
+
+      Long serverId = Long.parseLong(System.getenv("KAVALOK_SERVER_ID"));
+      Server server = serverDAO.findById(serverId);
 
       if (server == null) {
-        logger.warn("Server not found in database for scope: " + getCurrentServerPath() + ". Creating new server record.");
-        throw new RuntimeException("Server not found in database for scope: " + getCurrentServerPath());
+        throw new RuntimeException("Server ID " + serverId + " not found in database");
       } else {
-        setServerName(server.getName());
-
         UserServerDAO usDAO = new UserServerDAO(strategy.getSession());
         List<UserServer> list = usDAO.getAllUserServer(server);
         for (Iterator<UserServer> iterator = list.iterator(); iterator.hasNext(); ) {
@@ -290,6 +280,12 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
     Class<?> type = Class.forName(className);
     ITransactionStrategy service = (ITransactionStrategy) ReflectUtils.newInstance(type);
 
+    // Add specific logging for ServerService.getServerAddress calls
+    if ("ServerService".equals(className) && "getServerAddress".equals(method)) {
+      String serverName = args.size() > 0 ? String.valueOf(args.get(0)) : "unknown";
+      logger.info("ServerService.getServerAddress called with server name: {}", serverName);
+    }
+
     Boolean authorized = isAuthorized(className, method);
     if (Boolean.FALSE.equals(authorized)) {
       logger.warn("Unauthorized access attempt to " + className + "." + method);
@@ -301,7 +297,15 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
     }
 
     try {
-      return TransactionUtil.callTransaction(service, method, args);
+      Object result = TransactionUtil.callTransaction(service, method, args);
+      
+      // Add specific logging for ServerService.getServerAddress results
+      if ("ServerService".equals(className) && "getServerAddress".equals(method)) {
+        String serverName = args.size() > 0 ? String.valueOf(args.get(0)) : "unknown";
+        logger.info("ServerService.getServerAddress result for server '{}': {}", serverName, result);
+      }
+      
+      return result;
     } catch (SecurityException e) {
       logger.error("Security violation in " + className + "." + method + ": " + e.getMessage());
       throw e;
@@ -629,14 +633,6 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
 
   public void setSafeModeEnabled(boolean safeModeEnabled) {
     this.safeModeEnabled = safeModeEnabled;
-  }
-
-  public String getServerName() {
-    return serverName;
-  }
-
-  public void setServerName(String serverName) {
-    this.serverName = serverName;
   }
 
   public Server getServer() {

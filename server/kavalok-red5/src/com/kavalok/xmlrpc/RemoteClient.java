@@ -43,14 +43,6 @@ public class RemoteClient extends ClientBase {
     createXmlRpc(currentServer);
   }
 
-  // public RemoteClient(Session session, String charName) {
-  // super();
-  // this.charName = charName;
-  // User user = new UserDAO(session).findByLogin(charName);
-  // Server currentServer = user.getServer();
-  // createXmlRpc(currentServer);
-  // }
-
   public RemoteClient(Server server) {
     createXmlRpc(server);
   }
@@ -160,5 +152,16 @@ public class RemoteClient extends ClientBase {
       System.err.println("Max_KICKOUT_CLIENT_CALL time user: " + charName);
       System.err.println("Max_KICKOUT_CLIENT_CALL time ms: " + maxKickOutTime);
     }
+  }
+
+  /**
+   * Trigger rain on a specific location on the target server.
+   * 
+   * @param locationId The location ID where to rain
+   * @param fileName The file name of the item to rain
+   * @param count The number of items to rain per user
+   */
+  public void triggerRainOnLocation(String locationId, String fileName, int count) {
+    invokeInNewThread("RemoteServer.triggerRainOnLocation", new Object[] {locationId, fileName, count});
   }
 }

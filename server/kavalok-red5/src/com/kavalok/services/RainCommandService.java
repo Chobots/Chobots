@@ -19,6 +19,7 @@ import com.kavalok.services.stuff.RainTokenManager;
 import com.kavalok.sharedObjects.SOListener;
 import com.kavalok.user.UserAdapter;
 import com.kavalok.user.UserManager;
+import com.kavalok.xmlrpc.RemoteClient;
 import com.kavalok.xmlrpc.RemoteServer;
 
 public class RainCommandService {
@@ -66,12 +67,7 @@ public class RainCommandService {
     }
 
     // Get current server
-    ServerDAO serverDAO = new ServerDAO(session);
-    Server currentServer =
-        serverDAO.findByScopeName(KavalokApplication.getInstance().getCurrentServerPath());
-
-    List<String> connectedUsers;
-    String userLocation;
+    Server currentServer = KavalokApplication.getInstance().getServer();
 
     // Get the current user adapter for access type checking
     UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
@@ -80,51 +76,68 @@ public class RainCommandService {
         && serverId != null
         && remoteId != null
         && AccessAdmin.class.equals(userAdapter.getAccessType())) {
-      // Admin rain: target specific location
-      userLocation = remoteId;
-
-      // Get the shared object to access connected users
-      ISharedObject sharedObject = KavalokApplication.getInstance().getSharedObject(userLocation);
-      if (sharedObject == null) {
-        logger.warn("Shared object not found for location: " + userLocation);
-        return;
-      }
-
-      SOListener listener = SOListener.getListener(sharedObject);
-      connectedUsers = listener.getConnectedChars();
+      // Admin rain: target specific location on selected servers
+      triggerAdminRain(session, stuffType, count, serverId, remoteId);
     } else if ("magic".equals(source)) {
       // Magic rain: use current user's location
-      // Get the user's current location from their shared objects
-      List<String> userSharedObjects = userAdapter.getSharedObjects();
-
-      if (userSharedObjects.isEmpty()) {
-        logger.warn("User has no shared objects - cannot determine location");
-        return;
-      }
-
-      // Use the first shared object as the user's current location
-      userLocation = userSharedObjects.get(0);
-
-      // Get the shared object to access connected users
-      ISharedObject sharedObject = KavalokApplication.getInstance().getSharedObject(userLocation);
-      if (sharedObject == null) {
-        logger.warn("Shared object not found for location: " + userLocation);
-        return;
-      }
-
-      SOListener listener = SOListener.getListener(sharedObject);
-      connectedUsers = listener.getConnectedChars();
+      triggerMagicRain(session, stuffType, count, userAdapter);
     } else {
       // Invalid source
       logger.error("Invalid rain source: " + source + ". Only 'admin' and 'magic' are supported.");
+    }
+  }
+
+  private static void triggerAdminRain(
+      Session session, StuffType stuffType, Integer count, Integer serverId, String remoteId) {
+    // Get the list of target servers based on serverId
+    List<Server> targetServers = getServerList(session, serverId);
+    
+    // For each target server, trigger rain on the location
+    for (Server targetServer : targetServers) {
+      try {
+        logger.info("Triggering rain on server " + targetServer.getId() + " for location " + remoteId);
+        
+        // Use RemoteClient to call the triggerRainOnLocation method on the target server
+        RemoteClient remoteClient = new RemoteClient(targetServer);
+        remoteClient.triggerRainOnLocation(remoteId, stuffType.getFileName(), count.intValue());
+        
+        logger.info("Successfully triggered rain on server " + targetServer.getId() + " for location " + remoteId);
+      } catch (Exception e) {
+        logger.error("Failed to trigger rain on server " + targetServer.getId() + " for location " + remoteId, e);
+      }
+    }
+  }
+
+  private static void triggerMagicRain(Session session, StuffType stuffType, Integer count, UserAdapter userAdapter) {
+    // Get the user's current location from their shared objects
+    List<String> userSharedObjects = userAdapter.getSharedObjects();
+
+    if (userSharedObjects.isEmpty()) {
+      logger.warn("User has no shared objects - cannot determine location");
       return;
     }
 
-    // Generate unique tokens and colors for each user, for each item
+    // Use the first shared object as the user's current location
+    String userLocation = userSharedObjects.get(0);
+
+    // Get the shared object to access connected users
+    ISharedObject sharedObject = KavalokApplication.getInstance().getSharedObject(userLocation);
+    if (sharedObject == null) {
+      logger.warn("Shared object not found for location: " + userLocation);
+      return;
+    }
+
+    SOListener listener = SOListener.getListener(sharedObject);
+    List<String> connectedUsers = listener.getConnectedChars();
+
+    // Send rain commands to all connected users
+    sendRainCommandsToUsers(connectedUsers, stuffType, count);
+  }
+
+  public static void sendRainCommandsToUsers(List<String> connectedUsers, StuffType stuffType, Integer count) {
     for (String userLogin : connectedUsers) {
       for (int i = 0; i < count; i++) {
         // Generate unique color for this specific user and item
-        // Use userLogin + itemId + iteration to ensure uniqueness
         int uniqueColor = ThreadLocalRandom.current().nextInt(0xFFFFFF);
 
         // Generate unique token for this specific user and item with the color
@@ -147,5 +160,23 @@ public class RainCommandService {
         }
       }
     }
+  }
+  
+  /**
+   * Get the list of target servers based on serverId.
+   * 
+   * @param session The Hibernate session
+   * @param serverId The server ID (-1 for all available servers, otherwise specific server)
+   * @return List of target servers
+   */
+  private static List<Server> getServerList(Session session, Integer serverId) {
+    List<Server> result;
+    if (serverId.equals(-1)) {
+      result = new ServerDAO(session).findAvailable();
+    } else {
+      result = new java.util.ArrayList<Server>();
+      result.add(new ServerDAO(session).findById(Long.valueOf(serverId), false));
+    }
+    return result;
   }
 }
