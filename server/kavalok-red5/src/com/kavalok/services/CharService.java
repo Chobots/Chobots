@@ -401,9 +401,15 @@ public class CharService extends DataServiceBase {
     if (disableCitizens) {
       now = System.currentTimeMillis();
       for (StuffItem item : items) {
-        if (item.isUsed() && item.getType().getPremium()) {
-          item.setUsed(false);
-          itemDAO.makePersistent(item);
+        try {
+          if (item.isUsed() && item.getType().getPremium()) {
+            item.setUsed(false);
+            itemDAO.makePersistent(item);
+          }
+        } catch (org.hibernate.ObjectNotFoundException e) {
+          // Race condition: StuffType was deleted from database after StuffItem was loaded
+          logger.warn("StuffType for StuffItem {} was deleted from database - skipping orphaned item", item.getId());
+          continue;
         }
       }
       logger.debug("disableCitizens clothes time: {}", (System.currentTimeMillis() - now));
@@ -509,8 +515,14 @@ public class CharService extends DataServiceBase {
       if (item.isUsed()) {
         String type = STUFFTYPES_TYPES_CACHE.get(item.getType_id());
         if (type == null) {
-          type = item.getType().getType();
-          STUFFTYPES_TYPES_CACHE.put(item.getType_id(), type);
+          try {
+            type = item.getType().getType();
+            STUFFTYPES_TYPES_CACHE.put(item.getType_id(), type);
+          } catch (org.hibernate.ObjectNotFoundException e) {
+            // Race condition: StuffType was deleted from database after StuffItem was loaded
+            logger.warn("StuffType for StuffItem {} was deleted from database - skipping orphaned item", item.getId());
+            continue;
+          }
         }
 
         if (StuffTypes.CLOTHES.equals(type)) {
@@ -825,10 +837,16 @@ public class CharService extends DataServiceBase {
     start = System.currentTimeMillis();
     StuffItem playerCard = gameChar.getPlayerCard();
     if (playerCard != null) {
-      if (!user.isCitizen() && Boolean.TRUE.equals(playerCard.getType().getPremium())) {
+      try {
+        if (!user.isCitizen() && Boolean.TRUE.equals(playerCard.getType().getPremium())) {
+          gameChar.setPlayerCard(null);
+        } else {
+          result.setPlayerCard(new StuffItemLightTO(playerCard));
+        }
+      } catch (org.hibernate.ObjectNotFoundException e) {
+        // Race condition: StuffType was deleted from database after StuffItem was loaded
+        logger.warn("StuffType for playerCard {} was deleted from database - removing orphaned item", playerCard.getId());
         gameChar.setPlayerCard(null);
-      } else {
-        result.setPlayerCard(new StuffItemLightTO(playerCard));
       }
     }
     finish = System.currentTimeMillis();

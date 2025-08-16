@@ -515,9 +515,8 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
     }
 
     if (AccessAdmin.class.equals(userAdapter.getAccessType())) {
-      Session session = null;
       try {
-        session = HibernateUtil.getSessionFactory().openSession();
+        Session session = com.kavalok.utils.SessionManager.getCurrentSession();
         AdminDAO adminDAO = new AdminDAO(session);
         Admin admin = adminDAO.findById(userAdapter.getUserId());
 
@@ -530,16 +529,11 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
         }
       } catch (Exception e) {
         logger.error("Error checking admin privileges", e);
-      } finally {
-        if (session != null && session.isOpen()) {
-          session.close();
-        }
       }
     }
 
-    Session session = null;
     try {
-      session = HibernateUtil.getSessionFactory().openSession();
+      Session session = com.kavalok.utils.SessionManager.getCurrentSession();
       UserDAO userDAO = new UserDAO(session);
       User user = userDAO.findById(userAdapter.getUserId());
 
@@ -559,10 +553,6 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       }
     } catch (Exception e) {
       logger.error("Error checking user privileges", e);
-    } finally {
-      if (session != null && session.isOpen()) {
-        session.close();
-      }
     }
 
     return false;

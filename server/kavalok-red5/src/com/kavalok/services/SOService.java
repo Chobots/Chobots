@@ -12,6 +12,7 @@ import com.kavalok.sharedObjects.SOListener;
 import com.kavalok.utils.HibernateUtil;
 import com.kavalok.utils.SOUtil;
 import com.kavalok.xmlrpc.RemoteClient;
+import com.kavalok.utils.SessionManager;
 
 public class SOService extends ServiceBase {
 
@@ -44,9 +45,8 @@ public class SOService extends ServiceBase {
     if (serverName.length() == 0) {
       return SOUtil.getNumConnectedChars(sharedObjectId);
     } else {
-      Session session = HibernateUtil.getSessionFactory().openSession();
+      Session session = SessionManager.getCurrentSession();
       Server server = new ServerDAO(session).findByName((String) serverName);
-      session.close();
 
       RemoteClient client = new RemoteClient(server);
       return client.getNumConnectedChars(sharedObjectId);

@@ -22,7 +22,13 @@ public class GameCharDAO extends DAO<GameChar> {
 
     for (StuffItem item : gameChar.getStuffItems()) {
       if (item.isUsed()) {
-        result.add(item.getType().getFileName());
+        try {
+          result.add(item.getType().getFileName());
+        } catch (org.hibernate.ObjectNotFoundException e) {
+          // Race condition: StuffType was deleted from database after StuffItem was loaded
+          // Log this at debug level since it's expected in some cases
+          continue;
+        }
       }
     }
 

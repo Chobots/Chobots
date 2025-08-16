@@ -145,7 +145,13 @@ public class UserAdapter {
     List<StuffType> result = new ArrayList<StuffType>();
     GameChar gameChar = new GameCharDAO(session).findByUserId(userId);
     for (StuffItem item : gameChar.getStuffItems()) {
-      result.add(item.getType());
+      try {
+        result.add(item.getType());
+      } catch (org.hibernate.ObjectNotFoundException e) {
+        // Race condition: StuffType was deleted from database after StuffItem was loaded
+        logger.warn("StuffType for StuffItem {} was deleted from database - skipping orphaned item", item.getId());
+        continue;
+      }
     }
     return result;
   }
@@ -177,9 +183,15 @@ public class UserAdapter {
     for (String clothingFileName : clothes) {
       // Find the StuffItem by file name and get its ID
       for (StuffItem item : userItems) {
-        if (item.isUsed() && clothingFileName.equals(item.getType().getFileName())) {
-          itemIds.add(item.getId());
-          break;
+        try {
+          if (item.isUsed() && clothingFileName.equals(item.getType().getFileName())) {
+            itemIds.add(item.getId());
+            break;
+          }
+        } catch (org.hibernate.ObjectNotFoundException e) {
+          // Race condition: StuffType was deleted from database after StuffItem was loaded
+          logger.warn("StuffType for StuffItem {} was deleted from database - skipping orphaned item", item.getId());
+          continue;
         }
       }
     }
@@ -191,11 +203,17 @@ public class UserAdapter {
     List<String> validatedClothes = new ArrayList<>();
     for (String clothingFileName : clothes) {
       for (StuffItem item : userItems) {
-        if (item.isUsed()
-            && clothingFileName.equals(item.getType().getFileName())
-            && validItems.containsKey(item.getId())) {
-          validatedClothes.add(clothingFileName);
-          break;
+        try {
+          if (item.isUsed()
+              && clothingFileName.equals(item.getType().getFileName())
+              && validItems.containsKey(item.getId())) {
+            validatedClothes.add(clothingFileName);
+            break;
+          }
+        } catch (org.hibernate.ObjectNotFoundException e) {
+          // Race condition: StuffType was deleted from database after StuffItem was loaded
+          logger.warn("StuffType for StuffItem {} was deleted from database - skipping orphaned item", item.getId());
+          continue;
         }
       }
     }
@@ -323,9 +341,8 @@ public class UserAdapter {
   public void dispose() {
     // Clear loginToken in database when user disconnects
     if (userId != null) {
-      org.hibernate.Session session = null;
       try {
-        session = com.kavalok.utils.HibernateUtil.getSessionFactory().openSession();
+        org.hibernate.Session session = com.kavalok.utils.SessionManager.getCurrentSession();
         com.kavalok.dao.UserDAO userDAO = new com.kavalok.dao.UserDAO(session);
         com.kavalok.db.User user = userDAO.findById(userId);
         if (user != null) {
@@ -334,11 +351,8 @@ public class UserAdapter {
         }
       } catch (Exception e) {
         logger.error("Error clearing loginToken for user " + userId, e);
-      } finally {
-        if (session != null && session.isOpen()) {
-          session.close();
-        }
       }
+      // Don't close session - let SessionManager handle it
     }
 
     client.disconnect();

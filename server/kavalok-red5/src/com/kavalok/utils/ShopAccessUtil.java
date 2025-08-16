@@ -31,9 +31,8 @@ public class ShopAccessUtil {
     }
 
     // Regular user permission checks
-    Session session = null;
     try {
-      session = HibernateUtil.getSessionFactory().openSession();
+      Session session = SessionManager.getCurrentSession();
       UserDAO userDAO = new UserDAO(session);
       User user = userDAO.findById(userAdapter.getUserId());
 
@@ -50,10 +49,6 @@ public class ShopAccessUtil {
       }
     } catch (Exception e) {
       logger.error("Error checking user privileges", e);
-    } finally {
-      if (session != null && session.isOpen()) {
-        session.close();
-      }
     }
 
     // Default to PUBLIC if we can't determine the user's permission

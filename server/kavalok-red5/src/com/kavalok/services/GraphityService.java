@@ -15,6 +15,7 @@ import com.kavalok.user.UserAdapter;
 import com.kavalok.user.UserManager;
 import com.kavalok.utils.HibernateUtil;
 import com.kavalok.utils.SOUtil;
+import com.kavalok.utils.SessionManager;
 
 public class GraphityService extends ServiceBase {
 
@@ -64,9 +65,8 @@ public class GraphityService extends ServiceBase {
       return false;
     }
 
-    Session session = null;
     try {
-      session = HibernateUtil.getSessionFactory().openSession();
+      Session session = SessionManager.getCurrentSession();
       UserDAO userDAO = new UserDAO(session);
       User user = userDAO.findById(adapter.getUserId());
       if (user == null) {
@@ -85,10 +85,6 @@ public class GraphityService extends ServiceBase {
     } catch (Exception e) {
       logger.error("Error checking graphity permission: " + e.getMessage(), e);
       return false;
-    } finally {
-      if (session != null && session.isOpen()) {
-        session.close();
-      }
     }
 
     return false;

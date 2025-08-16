@@ -62,9 +62,15 @@ public class ClothingValidationService extends DataServiceBase {
       List<StuffItem> ownedItems = gameChar.getStuffItems();
       boolean hasClothingItems = false;
       for (StuffItem item : ownedItems) {
-        if (StuffTypes.CLOTHES.equals(item.getType().getType())) {
-          hasClothingItems = true;
-          break;
+        try {
+          if (StuffTypes.CLOTHES.equals(item.getType().getType())) {
+            hasClothingItems = true;
+            break;
+          }
+        } catch (org.hibernate.ObjectNotFoundException e) {
+          // Race condition: StuffType was deleted from database after StuffItem was loaded
+          logger.warn("StuffType for StuffItem {} was deleted from database - skipping orphaned item", item.getId());
+          continue;
         }
       }
 
@@ -127,9 +133,16 @@ public class ClothingValidationService extends DataServiceBase {
       }
 
       // Additional validation: ensure it's actually a clothing item
-      if (!StuffTypes.CLOTHES.equals(ownedItem.getType().getType())) {
+      try {
+        if (!StuffTypes.CLOTHES.equals(ownedItem.getType().getType())) {
+          throw new SecurityException(
+              "User attempting to use non-clothing item as clothing: " + itemId);
+        }
+      } catch (org.hibernate.ObjectNotFoundException e) {
+        // Race condition: StuffType was deleted from database after StuffItem was loaded
+        logger.warn("StuffType for StuffItem {} was deleted from database - user cannot use orphaned item", itemId);
         throw new SecurityException(
-            "User attempting to use non-clothing item as clothing: " + itemId);
+            "Clothing item type no longer exists in database: " + itemId);
       }
 
       // Validation passed - add to validated clothes
@@ -170,9 +183,15 @@ public class ClothingValidationService extends DataServiceBase {
         throw new SecurityException("Clothing item does not exist in database: " + itemId);
       }
 
-      // Validate item type
-      if (!StuffTypes.CLOTHES.equals(item.getType().getType())) {
-        throw new SecurityException("Item is not a clothing item: " + itemId);
+      // Validate item type - handle race condition where StuffType was deleted
+      try {
+        if (!StuffTypes.CLOTHES.equals(item.getType().getType())) {
+          throw new SecurityException("Item is not a clothing item: " + itemId);
+        }
+      } catch (org.hibernate.ObjectNotFoundException e) {
+        // Race condition: StuffType was deleted from database after StuffItem was loaded
+        logger.warn("StuffType for StuffItem {} was deleted from database - removing orphaned item", itemId);
+        throw new SecurityException("Clothing item type no longer exists in database: " + itemId);
       }
 
       validItems.put(itemId, item);
@@ -308,9 +327,15 @@ public class ClothingValidationService extends DataServiceBase {
       List<StuffItem> ownedItems = gameChar.getStuffItems();
       boolean hasClothingItems = false;
       for (StuffItem item : ownedItems) {
-        if (StuffTypes.CLOTHES.equals(item.getType().getType())) {
-          hasClothingItems = true;
-          break;
+        try {
+          if (StuffTypes.CLOTHES.equals(item.getType().getType())) {
+            hasClothingItems = true;
+            break;
+          }
+        } catch (org.hibernate.ObjectNotFoundException e) {
+          // Race condition: StuffType was deleted from database after StuffItem was loaded
+          logger.warn("StuffType for StuffItem {} was deleted from database - skipping orphaned item", item.getId());
+          continue;
         }
       }
 
@@ -350,12 +375,18 @@ public class ClothingValidationService extends DataServiceBase {
     List<StuffItem> ownedItems = gameChar.getStuffItems();
     Map<String, StuffItem> ownedClothingByFileName = new HashMap<>();
     for (StuffItem item : ownedItems) {
-      if (StuffTypes.CLOTHES.equals(item.getType().getType())) {
-        // Use fileName as key since that's what we get from the client
-        String fileName = item.getType().getFileName();
-        if (fileName != null) {
-          ownedClothingByFileName.put(fileName, item);
+      try {
+        if (StuffTypes.CLOTHES.equals(item.getType().getType())) {
+          // Use fileName as key since that's what we get from the client
+          String fileName = item.getType().getFileName();
+          if (fileName != null) {
+            ownedClothingByFileName.put(fileName, item);
+          }
         }
+      } catch (org.hibernate.ObjectNotFoundException e) {
+        // Race condition: StuffType was deleted from database after StuffItem was loaded
+        logger.warn("StuffType for StuffItem {} was deleted from database - skipping orphaned item", item.getId());
+        continue;
       }
     }
 

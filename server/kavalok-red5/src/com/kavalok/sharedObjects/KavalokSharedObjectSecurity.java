@@ -17,6 +17,7 @@ import com.kavalok.services.ClothingValidationService;
 import com.kavalok.user.UserAdapter;
 import com.kavalok.user.UserManager;
 import com.kavalok.utils.HibernateUtil;
+import com.kavalok.utils.SessionManager;
 
 /**
  * Security handler for shared objects that implements permission logic previously contained in
@@ -192,14 +193,8 @@ public class KavalokSharedObjectSecurity implements ISharedObjectSecurity {
                 ClothingValidationService validationService =
                     ClothingValidationService.createValidationService();
 
-                Session session = HibernateUtil.getSessionFactory().openSession();
-                try {
-                  validationService.validateSharedObjectClothingData(clothes, session);
-                } finally {
-                  if (session != null && session.isOpen()) {
-                    session.close();
-                  }
-                }
+                Session session = SessionManager.getCurrentSession();
+                validationService.validateSharedObjectClothingData(clothes, session);
               } catch (SecurityException e) {
                 UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
                 String userLogin = userAdapter.getLogin();
@@ -232,9 +227,8 @@ public class KavalokSharedObjectSecurity implements ISharedObjectSecurity {
       return false;
     }
 
-    Session session = null;
     try {
-      session = HibernateUtil.getSessionFactory().openSession();
+      Session session = SessionManager.getCurrentSession();
       UserDAO userDAO = new UserDAO(session);
       User user = userDAO.findById(adapter.getUserId());
       if (user == null) {
@@ -245,10 +239,6 @@ public class KavalokSharedObjectSecurity implements ISharedObjectSecurity {
     } catch (Exception e) {
       logger.error("Error checking superuser status: " + e.getMessage(), e);
       return false;
-    } finally {
-      if (session != null && session.isOpen()) {
-        session.close();
-      }
     }
   }
 

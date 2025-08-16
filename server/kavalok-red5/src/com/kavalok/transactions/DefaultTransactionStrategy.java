@@ -3,38 +3,38 @@ package com.kavalok.transactions;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
-import com.kavalok.utils.HibernateUtil;
+import com.kavalok.utils.SessionManager;
 
+/**
+ * Default transaction strategy using ThreadLocal session management.
+ * This ensures proper transaction handling across all database operations.
+ */
 public class DefaultTransactionStrategy implements ITransactionStrategy {
 
-  private Session session;
-
-  private Transaction transaction;
-
   public Session getSession() {
-    return session;
+    return SessionManager.getCurrentSession();
   }
 
   @Override
   public void afterCall() {
-    if (session.isOpen()) {
+    Session session = SessionManager.getCurrentSession();
+    if (session != null && session.isOpen()) {
       if (session.isDirty()) {
         session.flush();
       }
-      transaction.commit();
-      session.close();
+      SessionManager.commitTransaction();
+      SessionManager.closeCurrentSession();
     }
   }
 
   @Override
   public void beforeCall() {
-    session = HibernateUtil.getSessionFactory().openSession();
-    transaction = session.beginTransaction();
+    SessionManager.beginTransaction();
   }
 
   @Override
   public void afterError(Throwable e) {
-    transaction.rollback();
-    session.close();
+    SessionManager.rollbackTransaction();
+    SessionManager.closeCurrentSession();
   }
 }
