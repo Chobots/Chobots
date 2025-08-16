@@ -1,5 +1,5 @@
 services:
-    server:
+    server1:
         build: 
             context: server
             args:
@@ -9,9 +9,26 @@ services:
                 DATABASE_PASSWORD: root
         environment:
             - KAVALOK_SECRET_KEY=${KAVALOK_SECRET_KEY}
+            - KAVALOK_SERVER_ID=1
         ports:
            - 8935:1935
            - 5080:5080
+        depends_on:
+            database:
+                condition: service_healthy
+    server2:
+        build:
+            context: server
+            args:
+                DATABASE_HOST: database
+                DATABASE_NAME: chobots
+                DATABASE_USER: root
+                DATABASE_PASSWORD: root
+        environment:
+            - KAVALOK_SECRET_KEY=${KAVALOK_SECRET_KEY}
+            - KAVALOK_SERVER_ID=2
+        ports:
+            - 8936:1935
         depends_on:
             database:
                 condition: service_healthy

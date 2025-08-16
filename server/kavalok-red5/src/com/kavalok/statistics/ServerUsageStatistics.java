@@ -28,8 +28,7 @@ public class ServerUsageStatistics extends TimerTask {
     DefaultTransactionStrategy strategy = new DefaultTransactionStrategy();
     try {
       strategy.beforeCall();
-      String path = KavalokApplication.getInstance().getCurrentServerPath();
-      Server server = new ServerDAO(strategy.getSession()).findByScopeName(path);
+      Server server = KavalokApplication.getInstance().getServer();
       UserDAO userDAO = new UserDAO(strategy.getSession());
       ServerStatistics serverStatistics =
           new ServerStatistics(server, userDAO.countByServer(server));

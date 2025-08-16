@@ -35,7 +35,7 @@ public class ServerDAO extends DAO<Server> {
     return null;
   }
 
-  public Server findByScopeName(String scopeName) {
-    return findByParameter("scopeName", scopeName);
+  public Server findById(Long id) {
+    return findByParameter("id", id);
   }
 }

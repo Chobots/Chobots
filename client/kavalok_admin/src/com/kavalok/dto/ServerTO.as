@@ -17,5 +17,9 @@ package com.kavalok.dto
 
 		public var running : Boolean;
 
+		public var rtmpPort : int;
+
+		public var tls : Boolean;
+
 	}
 }

@@ -88,6 +88,8 @@ package
 		
 		// Listen for connection success
 		RemoteConnection.instance.connectEvent.addListener(onConnectionEstablished);
+		// Listen for disconnection to reset connection state
+		RemoteConnection.instance.disconnectEvent.addListener(onConnectionLost);
 		}
 
 		private function initRemoteObjects():void
@@ -159,13 +161,29 @@ package
 		checkReady();
 	}
 	
+	private function onConnectionLost():void
+	{
+		_connectionEstablished = false;
+	}
+	
+	public function resetConnectionState():void
+	{
+		_connectionEstablished = false;
+	}
+	
 	private function checkReady():void
 	{
 		if (_assetsLoaded && _connectionEstablished)
 		{
-			GraphUtils.detachFromDisplay(_connecting);
-			_connecting.stop();
-			_connecting=null;
+			if (_connecting != null)
+			{
+				if (_connecting.parent != null)
+				{
+					GraphUtils.detachFromDisplay(_connecting);
+				}
+				_connecting.stop();
+				_connecting = null;
+			}
 
 			Global.isLocked = false;
 
@@ -199,7 +217,10 @@ package
 	{
 		if (_connecting != null)
 		{
-			GraphUtils.detachFromDisplay(_connecting);
+			if (_connecting.parent != null)
+			{
+				GraphUtils.detachFromDisplay(_connecting);
+			}
 			_connecting.stop();
 			_connecting = null;
 		}

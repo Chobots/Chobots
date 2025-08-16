@@ -6,7 +6,7 @@ public class ServerTO {
 
   private int id;
 
-  private String url;
+  private String url = "kavalok";
 
   private String name;
 
@@ -16,18 +16,22 @@ public class ServerTO {
 
   private boolean running;
 
+  private Integer rtmpPort;
+
+  private boolean tls;
+
   public ServerTO(Server server) {
     super();
     id = server.getId().intValue();
-    url = server.getScopeName();
     name = server.getName();
     available = server.isAvailable();
     running = server.isRunning();
+    rtmpPort = server.getRtmpPort();
+    tls = server.isTls();
   }
 
   public ServerTO() {
     super();
-    // TODO Auto-generated constructor stub
   }
 
   public int getId() {
@@ -40,10 +44,6 @@ public class ServerTO {
 
   public String getUrl() {
     return url;
-  }
-
-  public void setUrl(String url) {
-    this.url = url;
   }
 
   public String getName() {
@@ -76,5 +76,21 @@ public class ServerTO {
 
   public void setRunning(boolean running) {
     this.running = running;
+  }
+
+  public Integer getRtmpPort() {
+    return rtmpPort;
+  }
+
+  public void setRtmpPort(Integer rtmpPort) {
+    this.rtmpPort = rtmpPort;
+  }
+
+  public boolean isTls() {
+    return tls;
+  }
+
+  public void setTls(boolean tls) {
+    this.tls = tls;
   }
 }
