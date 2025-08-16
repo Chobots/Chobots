@@ -6,24 +6,19 @@ package {
 	import com.kavalok.gameplay.KavalokConstants;
 	import com.kavalok.gameplay.windows.CharWindowView;
 	import com.kavalok.remoting.BaseRed5Delegate;
-	import com.kavalok.remoting.ConnectCommand;
 	import com.kavalok.remoting.RemoteConnection;
 	import com.kavalok.services.CharService;
-	import com.kavalok.utils.Strings;
-	import com.kavalok.utils.URLUtil;
 	import com.kavalok.login.LoginManager;
 	
 	import flash.display.Sprite;
 	import flash.events.Event;
-	import flash.events.TimerEvent;
-	import flash.utils.Timer;
-
+	
 	[SWF(width='235', height='308', backgroundColor='0xFFFFFF', framerate='24')]
 	public class CharWidget extends Sprite
 	{
-		private var _updateTimer:Timer = new Timer(1000 * 60 * 2);
 		private var _window:CharWindowView;
 		private var _char:Char;
+		private var _readyCalled:Boolean = false;
 		
 		public function CharWidget()
 		{
@@ -38,11 +33,6 @@ package {
 		{
 			removeEventListener(Event.ADDED_TO_STAGE, initialize);
 			
-			var swfURL:String = loaderInfo.url.split('&')[0];
-			var urlPrefix:String = swfURL.substr(0, swfURL.lastIndexOf('/') + 1);
-			var mainURL:String = urlPrefix + 'Main.swf';
-			var serverName:String = getServerNameFromURL(swfURL);
-			
 			var info:StartupInfo = new StartupInfo();
 			info.url = LoginManager.buildRtmpUrl();
 			info.locale = loaderInfo.parameters.locale || "enUS";
@@ -52,31 +42,38 @@ package {
 			kavalok.readyEvent.addListener(onReady);
 		}
 		
-		private function getServerNameFromURL(url:String):String
-		{
-			var result:String = URLUtil.getServerName(url);
-			result = result.substring(result.indexOf(".") + 1, result.length);
-			
-			return (result.length > 0) ? result : 'localhost'; 
-		}
-		
 		private function onReady():void
 		{
+			if (_readyCalled)
+			{
+				return;
+			}
+			_readyCalled = true;
+			
+			// For widgets, we need to establish a connection before making service calls
 			BaseRed5Delegate.defaultConnectionUrl = LoginManager.buildRtmpUrl();
-			var command:ConnectCommand = new ConnectCommand();
-			command.connectEvent.addListener(onConnect);
-			command.execute();
+			RemoteConnection.instance.connectEvent.addListener(onConnectionEstablished);
+			RemoteConnection.instance.error.addListener(onConnectionError);
+			RemoteConnection.instance.connect();
 		}
 		
-		private function onConnect():void
+		private function onConnectionEstablished():void
 		{
-			// turn off autoupdate
-			//_updateTimer.addEventListener(TimerEvent.TIMER, onTimer);
-			//_updateTimer.start();
+			RemoteConnection.instance.connectEvent.removeListener(onConnectionEstablished);
+			RemoteConnection.instance.error.removeListener(onConnectionError);
+			// Now we can proceed with loading the character data
 			onTimer();
 		}
 		
-		private function onTimer(e:TimerEvent = null):void
+		private function onConnectionError(error:Object):void
+		{
+			RemoteConnection.instance.connectEvent.removeListener(onConnectionEstablished);
+			RemoteConnection.instance.error.removeListener(onConnectionError);
+			// Try to proceed anyway, but log the error
+			onTimer();
+		}
+		
+		private function onTimer():void
 		{
 			var login:String = loaderInfo.parameters.login;
 			if (!login)

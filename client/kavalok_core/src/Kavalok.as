@@ -63,9 +63,6 @@ package
 
 			Security.allowDomain('*');
 
-			trace(startupInfo);
-			Debug.traceObject(startupInfo);
-
 			SafeLoader.rootUrl = Global.urlPrefix;
 			Localiztion.urlFormat = Global.urlPrefix + KavalokConstants.LOCALIZATION_URL_FORMAT;
 
@@ -86,10 +83,13 @@ package
 		if (!Global.startupInfo.widget)
 			Global.loginManager.login(Global.startupInfo);
 		
-		// Listen for connection success
-		RemoteConnection.instance.connectEvent.addListener(onConnectionEstablished);
-		// Listen for disconnection to reset connection state
-		RemoteConnection.instance.disconnectEvent.addListener(onConnectionLost);
+		// Listen for connection success (only for non-widgets)
+		if (!Global.startupInfo.widget)
+		{
+			RemoteConnection.instance.connectEvent.addListener(onConnectionEstablished);
+			// Listen for disconnection to reset connection state
+			RemoteConnection.instance.disconnectEvent.addListener(onConnectionLost);
+		}
 		}
 
 		private function initRemoteObjects():void
@@ -173,7 +173,10 @@ package
 	
 	private function checkReady():void
 	{
-		if (_assetsLoaded && _connectionEstablished)
+		// For widgets, we only need assets to be loaded, not connection established
+		var shouldBeReady:Boolean = _assetsLoaded && (_connectionEstablished || Global.startupInfo.widget);
+		
+		if (shouldBeReady)
 		{
 			if (_connecting != null)
 			{
