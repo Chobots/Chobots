@@ -258,7 +258,7 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       strategy.beforeCall();
       ServerDAO serverDAO = new ServerDAO(strategy.getSession());
       Server server = serverDAO.findByScopeName(getCurrentServerPath());
-      
+
       if (server == null) {
         logger.warn("Server not found in database for scope: " + getCurrentServerPath() + ". Creating new server record.");
         throw new RuntimeException("Server not found in database for scope: " + getCurrentServerPath());
@@ -275,7 +275,7 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
 
         serverDAO.makePersistent(server);
       }
-      
+
       setServer(server);
       strategy.afterCall();
     } catch (Exception e) {
@@ -466,6 +466,8 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       case "PetService.savePet":
       case "PetService.saveParams":
       case "PetService.disposePet":
+      case "CharService.removeIgnoreChar":
+      case "CharService.setCharFriend":
         return 1;
         // Logged in user methods
       case "AdminService.adminLogin":
@@ -583,13 +585,13 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
     logger.debug("Connection from: {}:{}", conn.getRemoteAddress(), conn.getRemotePort());
     logger.debug("Connection parameters: {}", params);
     logger.debug("Application started: {}", started);
-    
+
     if (!started) {
       logger.error("=== KAVALOK APP CONNECT FAILED ===");
       logger.error("Application not started - rejecting connection");
       return false;
     }
-    
+
     logger.debug("=== KAVALOK APP CONNECT SUCCESSFUL ===");
     logger.debug("Connection accepted");
     return true;

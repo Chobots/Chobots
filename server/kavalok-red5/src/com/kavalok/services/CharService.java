@@ -314,6 +314,8 @@ public class CharService extends DataServiceBase {
     User user = getUser();
     ArrayList<String> result;
 
+    // Todo: Ensure that target char is allowing communications/friend requests
+
     synchronized (friendSynchronizer) {
       if (!user.getFriends().contains(friend)) {
         user.getFriends().add(friend);
