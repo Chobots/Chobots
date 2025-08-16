@@ -6,9 +6,9 @@ This repository is a source code preservation project for the original `.com` ve
 
 # Aims
 
-This project is focused on preserving the game and its source code as faithfully as possible to Chobot's original `.com` version. The goal is to improve the game's stability and ease of operation without altering its original features or behaviour. The `.com` version contained numerous bugs and exploits, and part of this project's objective is to patch these issues to ensure the game can be safely run for archival purposes.
+This project is focused on preserving the game faithfully, to replicate Chobot's original `.com` version. The goal is to improve the game's stability and ease of deployment without significantly altering its original features or behaviour. The `.com` version contained numerous bugs and exploits, and part of this project's objective is to patch these issues to ensure the game can be safely run for archival purposes. The most notable changes are to the infrastrucure setup allowing it to be deployed as modern Docker containers.
 
-This project does not aim to introduce new features or make modifications that did not exist in the original `.com` version. Such enhancements may be addressed by separate projects in future.
+This project does not aim to introduce significant new features or make modifications that are not true to the original `.com` version.
 
 # Roadmap and Goals
 
@@ -27,8 +27,8 @@ Goals of this project are as follows but not limited to:
  - [x] Fix login error message on duplicate login
  - [x] Upgrade to Flash Player 10 target
  - [x] Add database rows required to fix missions, pets, robots
+ - [x] Fix chat history bar not displaying
  - [ ] Fix questHoover
- - [ ] [Fix chat history bar not displaying](https://github.com/Chobots/Chobots/issues/6)
  - [ ] Fully Replicate the .com website
  - [ ] Replicating the .com blog
  - [ ] Produce detailed software architecture documents
