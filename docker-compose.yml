@@ -57,7 +57,13 @@ services:
             "--character-set-server=utf8mb4",
             "--collation-server=utf8mb4_unicode_ci",
             "--sql-mode=STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION",
-            "--bind-address=0.0.0.0"
+            "--bind-address=0.0.0.0",
+            "--wait-timeout=28800",
+            "--interactive-timeout=28800",
+            "--max-connections=200",
+            "--connect-timeout=60",
+            "--net-read-timeout=60",
+            "--net-write-timeout=60"
         ]
         healthcheck:
             test: [ "CMD-SHELL", "mariadb-admin ping -uroot -proot --silent" ]

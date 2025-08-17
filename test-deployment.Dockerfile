@@ -50,6 +50,16 @@ RUN apt-get update && apt-get install -y \
     gettext \
     && rm -rf /var/lib/apt/lists/*
 
+# Add network optimization settings
+RUN echo 'net.core.rmem_max = 16777216' >> /etc/sysctl.conf && \
+    echo 'net.core.wmem_max = 16777216' >> /etc/sysctl.conf && \
+    echo 'net.ipv4.tcp_rmem = 4096 87380 16777216' >> /etc/sysctl.conf && \
+    echo 'net.ipv4.tcp_wmem = 4096 65536 16777216' >> /etc/sysctl.conf && \
+    echo 'net.ipv4.tcp_congestion_control = bbr' >> /etc/sysctl.conf && \
+    echo 'net.ipv4.tcp_window_scaling = 1' >> /etc/sysctl.conf && \
+    echo 'net.ipv4.tcp_timestamps = 1' >> /etc/sysctl.conf && \
+    echo 'net.ipv4.tcp_sack = 1' >> /etc/sysctl.conf
+
 COPY --from=server-builder /server/red5-1.0.6 /opt/red5
 COPY --from=server-builder /server/red5-1.0.6/webapps/kavalok /opt/red5/webapps/kavalok
 RUN chmod +x /opt/red5/red5.sh

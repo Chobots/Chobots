@@ -483,11 +483,13 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       case "AdminService.getWorldConfig":
       case "AdminService.getStuffGroupNum":
       case "LoginService.getServerProperties":
+      case "SystemService.getServerProperties":
       case "SystemService.clientTick":
       case "CharService.getCharViewLogin":
       case "LoginService.login":
       case "LoginService.loginWithToken":
       case "LoginService.register":
+      case "CharService.getLastOnlineDay":  
         // Public methods (no login or permission required)
         return 0;
 

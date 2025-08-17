@@ -135,29 +135,6 @@ public class LoginService extends DataServiceBase {
     return new ServerPropertiesTO();
   }
 
-  //   public String adminLogin(String login, String password) {
-  //     return tryLogin(new AdminDAO(getSession()), login, password);
-  //   }
-  //
-  //   public String partnerLogin(String login, String password) {
-  //     return tryLogin(new PartnerDAO(getSession()), login, password);
-  //   }
-
-  //   @SuppressWarnings("unchecked")
-  //   private String tryLogin(LoginDAOBase dao, String login, String password) {
-  //     LoginModelBase model = dao.findByLogin(login.toLowerCase());
-  //     if (model != null && model instanceof com.kavalok.db.User) {
-  //       com.kavalok.db.User user = (com.kavalok.db.User) model;
-  //       if (user.checkPassword(password, user.getSalt())) {
-  //         UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
-  //         userAdapter.setUserId(model.getId());
-  //         userAdapter.setLogin(login);
-  //         userAdapter.setAccessType(model.getAccessType());
-  //         return SUCCESS;
-  //       }
-  //     }
-  //     return ERROR_UNKNOWN;
-  //   }
 
   private Server getCurrentServer() {
     return KavalokApplication.getInstance().getServer();
@@ -452,69 +429,6 @@ public class LoginService extends DataServiceBase {
             marketingInfo,
             false);
   }
-
-  //   public String registerGirls(
-  //       String login,
-  //       String passw,
-  //       String email,
-  //       String body,
-  //       Integer color,
-  //       Boolean isParent,
-  //       Boolean familyMode,
-  //       String locale,
-  //       Object invitedBy,
-  //       MarketingInfoTO marketingInfo)
-  //       throws FileNotFoundException {
-  //     return registerGirls(
-  //         login,
-  //         passw,
-  //         email,
-  //         body,
-  //         color,
-  //         isParent,
-  //         familyMode,
-  //         locale,
-  //         (String) invitedBy,
-  //         marketingInfo);
-  //   }
-
-  //   public String registerGirls(
-  //       String login,
-  //       String passw,
-  //       String email,
-  //       String body,
-  //       Integer color,
-  //       Boolean isParent,
-  //       Boolean familyMode,
-  //       String locale,
-  //       String invitedBy,
-  //       MarketingInfoTO marketingInfo)
-  //       throws FileNotFoundException {
-  //
-  //     return new UserUtil()
-  //         .register(
-  //             getSession(),
-  //             login,
-  //             passw,
-  //             email,
-  //             body,
-  //             color,
-  //             isParent,
-  //             familyMode,
-  //             locale,
-  //             invitedBy,
-  //             marketingInfo,
-  //             true);
-  //   }
-  //
-  //   public String registerFromPartner(String uid, String body, Integer color, Boolean isParent) {
-  //     LoginFromPartnerDAO dao = new LoginFromPartnerDAO(getSession());
-  //     LoginFromPartner loginFromPartner = dao.findByUid(uid);
-  //     User user = loginFromPartner.getUser();
-  //     GameCharDAO charDAO = new GameCharDAO(getSession());
-  //     new UserUtil().fillUser(charDAO, getSession(), user, body, color, isParent, true);
-  //     return SUCCESS;
-  //   }
 
   public ActivationTO getActivationInfo(String login) {
     UserDAO userDAO = new UserDAO(getSession());

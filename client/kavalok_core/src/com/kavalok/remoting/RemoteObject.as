@@ -269,12 +269,35 @@ package com.kavalok.remoting
 			if(!_stateLoaded)
 				return;
 			
-			Arrays.removeItem(charId, _connectedChars);
-			for each(var client : IClient in _clients)
-			{
-				client.charDisconnect(charId);
+			// Add null checking for AMF3 compatibility
+			if (charId == null) {
+				trace("processCharDisconnect called with null charId");
+				return;
 			}
 			
+			// Ignore own disconnection - this prevents the client from processing its own oCD message
+			if(Global.charManager.charId == charId)
+			{
+				return;
+			}
+			
+			// Ensure _connectedChars is initialized
+			if (_connectedChars == null) {
+				_connectedChars = new Array();
+			}
+			
+			// Safely remove the character from connected chars list
+			var index:int = _connectedChars.indexOf(charId);
+			if (index != -1) {
+				_connectedChars.splice(index, 1);
+			}
+			for each(var client : IClient in _clients)
+			{
+				// Add null checking for client
+				if (client != null) {
+					client.charDisconnect(charId);
+				}
+			}
 		}
 		
 		//oCC: shorten for traffic optimization
@@ -300,19 +323,23 @@ package com.kavalok.remoting
 				return;
 			}
 			
-			if(Global.charManager.charId != charId)
+			// Ignore own connection - this prevents the client from processing its own oCC message
+			if(Global.charManager.charId == charId)
 			{
-				// Ensure _connectedChars is initialized
-				if (_connectedChars == null) {
-					_connectedChars = new Array();
-				}
+				return;
+			}
+			
+			// Ensure _connectedChars is initialized
+			if (_connectedChars == null) {
+				_connectedChars = new Array();
+			}
+			
+			// Check if character is already connected to avoid duplicates
+			if(_connectedChars.indexOf(charId) == -1)
+			{
+				_connectedChars.push(charId);
 				
-				if(_connectedChars.indexOf(charId) == -1)
-				{
-//					throw new IllegalStateError("Char is allready in connected list");
-					_connectedChars.push(charId);
-				}
-				
+				// Notify all clients about the new character connection
 				for each(var client : IClient in _clients)
 				{
 					// Add null checking for client
@@ -321,7 +348,6 @@ package com.kavalok.remoting
 					}
 				}
 			}
-			
 		}
 	
 		public function dispose() : void

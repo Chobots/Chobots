@@ -2,16 +2,28 @@ package com.kavalok.services;
 
 import java.util.Date;
 
-import com.kavalok.services.common.ServiceBase;
+import com.kavalok.dto.ServerPropertiesTO;
+import com.kavalok.services.common.DataServiceNotTransactionBase;
 import com.kavalok.user.UserManager;
+import com.kavalok.user.UserAdapter;
 
-public class SystemService extends ServiceBase {
+/**
+ * Service for system-level operations that don't require database transactions.
+ */
+public class SystemService extends DataServiceNotTransactionBase {
 
-  public Date getSystemDate() {
-    return new Date();
-  }
+    public ServerPropertiesTO getServerProperties() {
+        return new ServerPropertiesTO();
+    }
 
-  public void clientTick() {
-    UserManager.getInstance().getCurrentUser().setLastTick(new Date());
-  }
+    public void clientTick() {
+      UserAdapter userAdapter = UserManager.getInstance().getCurrentUser();
+      if (userAdapter != null) {
+          userAdapter.setLastTick(new Date());
+      }
+    }
+
+    public Date getSystemDate() {
+        return new Date();
+    }
 }
