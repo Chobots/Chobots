@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 if [ -z "$RED5_HOME" ]; then 
   export RED5_HOME=`pwd`; 
