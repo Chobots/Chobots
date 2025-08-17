@@ -20,12 +20,47 @@ fi
 
 if [ "$need_init" -eq 1 ]; then
   echo "Initialising MariaDB data directory..."
+  ROOT_PASSWORD="${MARIADB_ROOT_PASSWORD:-${DATABASE_PASSWORD}}"
   "${MDB_BASE}/usr/bin/mariadb-install-db" \
     --basedir="${MDB_BASE}/usr" \
     --datadir="${MDB_BASE}/var/lib/mysql" \
     --skip-test-db \
     --auth-root-authentication-method=normal \
     --user=mysql >/dev/null
+  
+  # Start MariaDB temporarily to set root password
+  echo "Setting initial root password..."
+  "${MDB_BASE}/usr/bin/mariadbd" \
+    --basedir="${MDB_BASE}/usr" \
+    --datadir="${MDB_BASE}/var/lib/mysql" \
+    --plugin-dir="${MDB_BASE}/usr/lib/mariadb/plugin" \
+    --socket="${MDB_BASE}/run/mysqld/mysqld.sock" \
+    --pid-file="${MDB_BASE}/run/mysqld/mysqld.pid" \
+    --bind-address=0.0.0.0 \
+    --user=mysql &
+  TEMP_MDB_PID=$!
+  
+  # Wait for MariaDB to be ready
+  for i in $(seq 1 30); do
+    if [ -S "${MDB_BASE}/run/mysqld/mysqld.sock" ]; then
+      if "${MDB_BASE}/usr/bin/mariadb-admin" --protocol=SOCKET --socket="${MDB_BASE}/run/mysqld/mysqld.sock" ping >/dev/null 2>&1; then
+        break
+      fi
+    fi
+    sleep 1
+  done
+  
+  # Set root password
+  "${MDB_BASE}/usr/bin/mariadb" --protocol=SOCKET --socket="${MDB_BASE}/run/mysqld/mysqld.sock" <<SQL
+ALTER USER 'root'@'localhost' IDENTIFIED BY '${ROOT_PASSWORD}';
+CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED BY '${ROOT_PASSWORD}';
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+SQL
+  
+  # Stop temporary MariaDB
+  kill -TERM "${TEMP_MDB_PID}" 2>/dev/null || true
+  wait "${TEMP_MDB_PID}" 2>/dev/null || true
 fi
 
 # Start nginx (foreground, backgrounded by this script)
@@ -71,16 +106,7 @@ ROOT_PASSWORD="${MARIADB_ROOT_PASSWORD:-${DATABASE_PASSWORD}}"
 
 echo "Setting up database: ${DB_NAME} with root user"
 
-# Set root password (use DATABASE_PASSWORD as default if MARIADB_ROOT_PASSWORD not provided)
-echo "Setting root password..."
-"${MDB_BASE}/usr/bin/mariadb" --protocol=SOCKET --socket="${MDB_BASE}/run/mysqld/mysqld.sock" <<SQL
-ALTER USER 'root'@'localhost' IDENTIFIED BY '${ROOT_PASSWORD}';
-CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED BY '${ROOT_PASSWORD}';
-GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
-FLUSH PRIVILEGES;
-SQL
-
-# Create database
+# Create database (password already set during initialization)
 echo "Creating database: ${DB_NAME}"
 "${MDB_BASE}/usr/bin/mariadb" --protocol=SOCKET --socket="${MDB_BASE}/run/mysqld/mysqld.sock" -u root -p"${ROOT_PASSWORD}" <<SQL
 CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
