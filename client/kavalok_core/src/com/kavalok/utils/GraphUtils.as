@@ -40,10 +40,14 @@
 			for(var i : uint = 0; i < container.numChildren; i++)
 			{
 				var child : DisplayObject = container.getChildAt(i);
-				minX = Math.min(minX, child.x);
-				minY = Math.min(minY, child.y);
-				maxX = Math.max(maxX, child.x + child.width);
-				maxY = Math.max(maxY, child.y + child.height);
+				
+				// Add null checking for child
+				if (child != null) {
+					minX = Math.min(minX, child.x);
+					minY = Math.min(minY, child.y);
+					maxX = Math.max(maxX, child.x + child.width);
+					maxY = Math.max(maxY, child.y + child.height);
+				}
 			}
 			return new Rectangle(minX, minY, maxX - minX, maxY - minY);
 		}
@@ -354,8 +358,12 @@
 				for(var i : uint = 0; i < content.numChildren; i++)
 				{
 					var child : DisplayObject = content.getChildAt(i);
-					child.x += diffX;
-					child.y += diffY;
+					
+					// Add null checking for child
+					if (child != null) {
+						child.x += diffX;
+						child.y += diffY;
+					}
 				}
 			}
 			

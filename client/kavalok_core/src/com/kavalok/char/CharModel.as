@@ -221,11 +221,14 @@ package com.kavalok.char
 				}
 			}
 			
-			for (i = 0; i < head.numChildren; i++)
-			{
-				part = head.getChildAt(i) as Sprite;
-				if (part) // can be null !!!
-					part.scaleX = part.scaleY = _headScale;
+			// Add null check for head before accessing its children
+			if (head != null) {
+				for (i = 0; i < head.numChildren; i++)
+				{
+					part = head.getChildAt(i) as Sprite;
+					if (part) // can be null !!!
+						part.scaleX = part.scaleY = _headScale;
+				}
 			}
 		}
 		
