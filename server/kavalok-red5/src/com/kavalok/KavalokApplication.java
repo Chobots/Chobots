@@ -472,6 +472,8 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       case "PetService.disposePet":
       case "CharService.removeIgnoreChar":
       case "CharService.setCharFriend":
+      case "GameService.getScore":
+      case "UpdateScoreService.updateScore":
         return 1;
         // Logged in user methods
       case "AdminService.adminLogin":
