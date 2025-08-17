@@ -42,13 +42,6 @@ else
   echo "Nginx failed to start"
 fi
 
-# Start Red5 (background)
-# If 'run' isn't supported, switch to 'sh /opt/red5/red5.sh start'
-echo "Checking Red5 script..."
-ls -la /opt/red5/red5.sh || echo "Red5 script not found!"
-cd /opt/red5 && ./red5.sh run &
-RED5_PID=$!
-
 # Start MariaDB server (background)
 "${MDB_BASE}/usr/bin/mariadbd" \
   --basedir="${MDB_BASE}/usr" \
@@ -92,6 +85,13 @@ echo "Creating database: ${DB_NAME}"
 "${MDB_BASE}/usr/bin/mariadb" --protocol=SOCKET --socket="${MDB_BASE}/run/mysqld/mysqld.sock" -u root -p"${ROOT_PASSWORD}" <<SQL
 CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 SQL
+
+# Start Red5 (background) - only after database is ready
+echo "Starting Red5..."
+echo "Checking Red5 script..."
+ls -la /opt/red5/red5.sh || echo "Red5 script not found!"
+cd /opt/red5 && ./red5.sh run &
+RED5_PID=$!
 
 terminate() {
   echo "Stopping services..."
