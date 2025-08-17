@@ -72,34 +72,25 @@ for i in $(seq 1 60); do
   sleep 1
 done
 
-# Bootstrap database with default values (or override with MARIADB_* env vars)
+# Bootstrap database with root user only
 DB_NAME="${MARIADB_DATABASE:-${DATABASE_NAME}}"
-DB_USER="${MARIADB_USER:-${DATABASE_USER}}"
-DB_PASSWORD="${MARIADB_PASSWORD:-${DATABASE_PASSWORD}}"
+ROOT_PASSWORD="${MARIADB_ROOT_PASSWORD:-${DATABASE_PASSWORD}}"
 
-echo "Setting up database: ${DB_NAME} with user: ${DB_USER}"
+echo "Setting up database: ${DB_NAME} with root user"
 
-# Optional: Set root password if provided
-if [ -n "${MARIADB_ROOT_PASSWORD:-}" ]; then
-  echo "Securing root account..."
-  "${MDB_BASE}/usr/bin/mariadb" --protocol=SOCKET --socket="${MDB_BASE}/run/mysqld/mysqld.sock" <<SQL
-ALTER USER 'root'@'localhost' IDENTIFIED BY '${MARIADB_ROOT_PASSWORD}';
+# Set root password (use DATABASE_PASSWORD as default if MARIADB_ROOT_PASSWORD not provided)
+echo "Setting root password..."
+"${MDB_BASE}/usr/bin/mariadb" --protocol=SOCKET --socket="${MDB_BASE}/run/mysqld/mysqld.sock" <<SQL
+ALTER USER 'root'@'localhost' IDENTIFIED BY '${ROOT_PASSWORD}';
+CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED BY '${ROOT_PASSWORD}';
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
 SQL
-fi
 
 # Create database
 echo "Creating database: ${DB_NAME}"
-"${MDB_BASE}/usr/bin/mariadb" --protocol=SOCKET --socket="${MDB_BASE}/run/mysqld/mysqld.sock" -u root ${MARIADB_ROOT_PASSWORD:+-p"${MARIADB_ROOT_PASSWORD}"} <<SQL
+"${MDB_BASE}/usr/bin/mariadb" --protocol=SOCKET --socket="${MDB_BASE}/run/mysqld/mysqld.sock" -u root -p"${ROOT_PASSWORD}" <<SQL
 CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-SQL
-
-# Create user and grant privileges
-echo "Creating user: ${DB_USER}"
-"${MDB_BASE}/usr/bin/mariadb" --protocol=SOCKET --socket="${MDB_BASE}/run/mysqld/mysqld.sock" -u root ${MARIADB_ROOT_PASSWORD:+-p"${MARIADB_ROOT_PASSWORD}"} <<SQL
-CREATE USER IF NOT EXISTS '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}';
-GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'%';
-FLUSH PRIVILEGES;
 SQL
 
 terminate() {
