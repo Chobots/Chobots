@@ -39,11 +39,18 @@
 			var maxY : Number = Number.MIN_VALUE;
 			for(var i : uint = 0; i < container.numChildren; i++)
 			{
+				// Add bounds checking for AMF3 compatibility
+				if (i >= container.numChildren) break;
+				
 				var child : DisplayObject = container.getChildAt(i);
-				minX = Math.min(minX, child.x);
-				minY = Math.min(minY, child.y);
-				maxX = Math.max(maxX, child.x + child.width);
-				maxY = Math.max(maxY, child.y + child.height);
+				
+				// Add null checking for child
+				if (child != null) {
+					minX = Math.min(minX, child.x);
+					minY = Math.min(minY, child.y);
+					maxX = Math.max(maxX, child.x + child.width);
+					maxY = Math.max(maxY, child.y + child.height);
+				}
 			}
 			return new Rectangle(minX, minY, maxX - minX, maxY - minY);
 		}
@@ -305,6 +312,9 @@
 			
 			for (var i:int = 0; i < object.numChildren; i++)
 			{
+				// Add bounds checking for AMF3 compatibility
+				if (i >= object.numChildren) break;
+				
 				var child:DisplayObject;
 				try
 				{
@@ -353,9 +363,16 @@
 				var diffY : Number = (KavalokConstants.SCREEN_HEIGHT - content.height) / 2;
 				for(var i : uint = 0; i < content.numChildren; i++)
 				{
+					// Add bounds checking for AMF3 compatibility
+					if (i >= content.numChildren) break;
+					
 					var child : DisplayObject = content.getChildAt(i);
-					child.x += diffX;
-					child.y += diffY;
+					
+					// Add null checking for child
+					if (child != null) {
+						child.x += diffX;
+						child.y += diffY;
+					}
 				}
 			}
 			
@@ -451,6 +468,9 @@
 			
 			for (var i:int = 0; i < container.numChildren; i++)
 			{
+				// Add bounds checking for AMF3 compatibility
+				if (i >= container.numChildren) break;
+				
 				result = container.getChildAt(i);
 				
 				if (result is instanceClass)

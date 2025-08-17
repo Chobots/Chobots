@@ -20,6 +20,7 @@ package com.kavalok.remoting
 	import flash.events.TimerEvent;
 	import flash.net.SharedObject;
 	import flash.utils.Timer;
+	import flash.events.AsyncErrorEvent;
 	
 	public class RemoteObject
 	{
@@ -46,6 +47,8 @@ package com.kavalok.remoting
 			_sharedObject = SharedObject.getRemote(id, RemoteConnection.instance.netConnection.uri);
 			_sharedObject.client = this;
 			_sharedObject.addEventListener(SyncEvent.SYNC, onSync);
+			// Add AsyncErrorEvent handling for AMF3 compatibility
+			_sharedObject.addEventListener(AsyncErrorEvent.ASYNC_ERROR, onAsyncError);
 			connectToSO();
 		}
 		
@@ -277,6 +280,12 @@ package com.kavalok.remoting
 		//oCC: shorten for traffic optimization
 		public function oCC(charId : String) : void
 		{
+			// Add null checking for AMF3 compatibility
+			if (charId == null) {
+				trace("oCC called with null charId");
+				return;
+			}
+			
 			processCharConnect(charId);
 		}
 		
@@ -284,8 +293,20 @@ package com.kavalok.remoting
 		{
 			if(!_stateLoaded)
 				return;
+				
+			// Add additional null checking
+			if (charId == null) {
+				trace("processCharConnect called with null charId");
+				return;
+			}
+			
 			if(Global.charManager.charId != charId)
 			{
+				// Ensure _connectedChars is initialized
+				if (_connectedChars == null) {
+					_connectedChars = new Array();
+				}
+				
 				if(_connectedChars.indexOf(charId) == -1)
 				{
 //					throw new IllegalStateError("Char is allready in connected list");
@@ -294,7 +315,10 @@ package com.kavalok.remoting
 				
 				for each(var client : IClient in _clients)
 				{
-					client.charConnect(charId);
+					// Add null checking for client
+					if (client != null) {
+						client.charConnect(charId);
+					}
 				}
 			}
 			
@@ -330,6 +354,14 @@ package com.kavalok.remoting
 				setClientsProperty(item.name);
 			}
 			
+		}
+		
+		// Add AsyncErrorEvent handler for AMF3 compatibility
+		private function onAsyncError(event : AsyncErrorEvent) : void
+		{
+			trace("SharedObject AsyncError: " + event.text);
+			// Log the error but don't throw - this prevents the app from crashing
+			// The error is likely due to AMF3 data structure changes
 		}
 		
 		private function setClientProperty(client : IClient, name : String, value : Object = null) : void

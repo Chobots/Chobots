@@ -7,7 +7,7 @@
         <property name="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</property>
         <property name="hibernate.cache.use_second_level_cache">false</property>
         <property name="hibernate.cache.use_query_cache">false</property>
-        <property name="connection.url">jdbc:mysql://{database.host}/{database.name}</property>
+        <property name="connection.url">jdbc:mysql://{database.host}/{database.name}?autoReconnect=true&amp;useSSL=false&amp;serverTimezone=UTC&amp;allowPublicKeyRetrieval=true&amp;connectTimeout=60000&amp;socketTimeout=60000&amp;useUnicode=true&amp;characterEncoding=UTF-8&amp;failOverReadOnly=false&amp;maxReconnects=3&amp;initialTimeout=10</property>
         <property name="connection.autocommit">true</property>
         <property name="connection.autoReconnect">true</property>
         <property name="connection.characterEncoding">UTF-8</property>
