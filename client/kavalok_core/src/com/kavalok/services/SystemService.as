@@ -1,22 +1,27 @@
 package com.kavalok.services
 {
+	import com.kavalok.remoting.BaseRed5Delegate;
 
-	public class SystemService extends Red5ServiceBase
+	public class SystemService extends BaseRed5Delegate
 	{
-
-		public function SystemService(resultHandler:Function=null, faultHandler:Function=null)
+		public function SystemService(resultHandler:Function=null, faultHandler:Function = null)
 		{
 			super(resultHandler, faultHandler);
 		}
-
-		public function getSystemDate():void
+		
+		public function getServerProperties():void
 		{
-			doCall("getSystemDate", arguments);
+			doCall("getServerProperties", arguments);
 		}
 		
 		public function clientTick():void
 		{
 			doCall("clientTick", arguments);
+		}
+		
+		public function getSystemDate():void
+		{
+			doCall("getSystemDate", arguments);
 		}
 	}
 }

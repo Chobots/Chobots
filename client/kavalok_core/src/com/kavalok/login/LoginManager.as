@@ -19,6 +19,7 @@ package com.kavalok.login
 	import com.kavalok.remoting.RemoteConnection;
 	import com.kavalok.services.LoginService;
 	import com.kavalok.services.ServerService;
+	import com.kavalok.services.SystemService;
 	import com.kavalok.utils.Arrays;
 	import com.kavalok.utils.GraphUtils;
 	import com.kavalok.utils.IdleManager;
@@ -204,7 +205,7 @@ package com.kavalok.login
 		{
 			// Safely remove listener only if present, since we may call this directly when already connected
 			_connectCommand.connectEvent.removeListenerIfHas(onConnectSuccess);
-			new LoginService(onGetServerProperties).getServerProperties();
+			new SystemService(onGetServerProperties).getServerProperties();
 		}
 		
 		private function onGetServerProperties(result:ServerPropertiesTO):void

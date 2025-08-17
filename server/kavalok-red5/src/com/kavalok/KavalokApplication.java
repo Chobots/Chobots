@@ -483,6 +483,7 @@ public class KavalokApplication extends MultiThreadedApplicationAdapter {
       case "AdminService.getWorldConfig":
       case "AdminService.getStuffGroupNum":
       case "LoginService.getServerProperties":
+      case "SystemService.getServerProperties":
       case "SystemService.clientTick":
       case "CharService.getCharViewLogin":
       case "LoginService.login":
