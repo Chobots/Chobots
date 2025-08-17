@@ -63,9 +63,6 @@ package com.kavalok.location.entryPoints
 		{
 			for(var i : int = 0; i < content.numChildren; i++)
 			{
-				// Add bounds checking for AMF3 compatibility
-				if (i >= content.numChildren) break;
-				
 				var child : MovieClip = content.getChildAt(i) as MovieClip;
 				if(child != null && accept(child))
 				{

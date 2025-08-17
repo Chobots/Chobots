@@ -188,9 +188,6 @@ package com.kavalok.location.entryPoints
 		{
 			for(var i : uint = 0; i < container.numChildren; i++)
 			{
-				// Add bounds checking for AMF3 compatibility
-				if (i >= container.numChildren) break;
-				
 				var child : DisplayObject = container.getChildAt(i);
 				if(child is MovieClip && (Strings.startsWidth(child.name, PALM_NAME_PREFIX) || child.name == PALM_NAME))
 				{

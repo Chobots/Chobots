@@ -35,9 +35,6 @@ package com.kavalok.gameplay
 		{
 			for (var i:int = 0; i < container.numChildren; i++)
 			{
-				// Add bounds checking for AMF3 compatibility
-				if (i >= container.numChildren) break;
-				
 				var d:DisplayObject = container.getChildAt(i);
 				
 				if (d.name.indexOf(MAP_PREFIX) != 0) 

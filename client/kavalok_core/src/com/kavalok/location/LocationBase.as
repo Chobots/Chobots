@@ -1039,9 +1039,6 @@ package com.kavalok.location
 		{
 			for (var i:int = 0; i < _content.numChildren; i++)
 			{
-				// Add bounds checking for AMF3 compatibility
-				if (i >= _content.numChildren) break;
-				
 				var mc:MovieClip = _content.getChildAt(i) as MovieClip;
 					
 				if (mc && LocationEntryPoint.accept(mc))

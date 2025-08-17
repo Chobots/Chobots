@@ -33,10 +33,7 @@ package com.kavalok.utils
 		{
 			if (_content.numChildren == 0)
 				return;
-			
-			// Add bounds checking for AMF3 compatibility
-			if (_content.numChildren <= 0) return;
-			
+
 			var prevChild:DisplayObject = _content.getChildAt(0);
 			
 			for (var i:int = 1; i < _content.numChildren; i++)
