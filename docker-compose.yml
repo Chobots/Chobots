@@ -39,6 +39,7 @@ services:
                 RTMP_USE_TLS: false
                 RTMP_HOSTNAME: localhost
                 RTMP_PORT: 8935
+                FLASH_DEBUG_BUILD: false
         ports:
             - 8080:80
         volumes:

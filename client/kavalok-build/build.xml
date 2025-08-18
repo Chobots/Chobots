@@ -8,26 +8,32 @@
     </taskdef>
 
     <property file="build.properties"/>
+    
+    <!-- Read debug value from Docker environment variable FLASH_DEBUG_BUILD -->
+    <property environment="env"/>
+    <condition property="default.swf.debug" value="true" else="false">
+        <equals arg1="${env.FLASH_DEBUG_BUILD}" arg2="true"/>
+    </condition>
 
     <target name="build" depends="delete-deploy-dir,deploy-flash"/>
 
     <target name="delete-deploy-dir">
-        <delete dir="${deploy.flash.dir}" quiet="false"/>
+        <delete dir="../bin" quiet="false"/>
     </target>
 
     <target name="clear">
         <delete dir="${output.dir}"/>
         <mkdir dir="${output.dir}"/>
-        <mkdir dir="${flash.output.dir}"/>
-        <mkdir dir="${flash.output.dir}/${static.lib.dir}"/>
+        <mkdir dir="bin/flash"/>
+        <mkdir dir="bin/flash/static-lib"/>
     </target>
 
     <target name="deploy-flash" depends="build-flash,copy-deploy-flash"/>
 
     <target name="copy-deploy-flash">
-        <echo>Deploying flash to bin: ${deploy.flash.dir}</echo>
-        <copy todir="${deploy.flash.dir}" overwrite="true">
-            <fileset dir="${flash.output.dir}">
+        <echo>Deploying flash to bin</echo>
+        <copy todir="../bin" overwrite="true">
+            <fileset dir="bin/flash">
                 <include name="**/*.swf" />
                 <include name="**/*.xml" />
                 <include name="**/*.jpg" />
@@ -151,11 +157,11 @@ ${log-content}
 
     <target name="build-kavalok-admin">
         <antcall target="compile-swf">
-            <param name="project.output.dir"  value="${flash.output.dir}"/>
+            <param name="project.output.dir"  value="bin/flash"/>
             <param name="project.dir" value="../kavalok_admin"/>
             <param name="output.file"  value="KavalokAdmin.swf"/>
             <param name="input.file" value="KavalokAdmin.mxml"/>
-            <param name="library.path" value="../kavalok_admin/flash-lib,${flash.output.dir},${flash.static.lib}"/>
+            <param name="library.path" value="../kavalok_admin/flash-lib,bin/flash,bin/flash/static-lib"/>
             <param name="external.library.path" value=""/>
             <param name="custom.compiler" value="-include-libraries ../kavalok_admin/flash-lib/datavisualization.swc"/>
         </antcall>
@@ -216,7 +222,7 @@ ${log-content}
 
     <target name="build-graphity">
         <antcall target="compile-swc">
-            <param name="output.swc"  value="${static.lib.dir}/graphity.swc"/>
+            <param name="output.swc"  value="static-lib/graphity.swc"/>
             <param name="source.dir" value="../graphity/src"/>
             <param name="library.dir" value=""/>
         </antcall>
@@ -251,7 +257,7 @@ ${log-content}
         <antcall target="compile-swf">
             <param name="output.file"  value="${swf-name}.swf"/>
             <param name="input.file" value="${swf-name}.as"/>
-            <param name="library.path" value="../${project.name}/flash-lib,${flash.static.lib}"/>
+            <param name="library.path" value="../${project.name}/flash-lib,bin/flash/static-lib"/>
             <param name="external.library.path" value="bin/flash/kavalok_core.swc,bin/flash/localization.swc"/>
             <param name="custom.compiler" value=""/>
         </antcall>
@@ -278,29 +284,43 @@ ${log-content}
     </target>
 
     <target name="compile-swf" depends="copy-resources">
+        <condition property="debug.flag" value="-debug" else="">
+            <equals arg1="${default.swf.debug}" arg2="true"/>
+        </condition>
+        <condition property="production.flags" value="" else="">
+            <equals arg1="${default.swf.debug}" arg2="false"/>
+        </condition>
         <property name="mxmlc.args" value="${custom.compiler}
  -library-path+=${library.path}
- -target-player=10.0.0
+ -target-player=30.0
  -define=CONFIG::VERSION,&quot;0.01&quot;
  -external-library-path+=${external.library.path}
  -output ${project.output.dir}/${output.file}
+ ${production.flags}
  ${project.dir}/src/${input.file}"/>
-        <echo file="fchs-input" append="true">mxmlc ${mxmlc.args} -debug=${default.swf.debug}
+        <echo file="fchs-input" append="true">mxmlc ${mxmlc.args} ${debug.flag}
 clear
 </echo>
     </target>
 
     <target name="compile-swc">
+        <condition property="debug.flag" value="-debug" else="">
+            <equals arg1="${default.swf.debug}" arg2="true"/>
+        </condition>
+        <condition property="production.flags" value="" else="">
+            <equals arg1="${default.swf.debug}" arg2="false"/>
+        </condition>
         <property name="compc.args" value="-source-path ${source.dir}
  -output bin/flash/${output.swc}
- -debug
- -target-player=10.0.0
+ ${debug.flag}
+ -target-player=30.0
  -include-sources ${source.dir}
  -compiler.library-path ${library.dir}
- -compiler.library-path ${flex.sdk}/frameworks/libs
- -compiler.library-path ${flex.sdk}/frameworks/locale/en_US
+ -compiler.library-path ../flex/frameworks/libs
+ -compiler.library-path ../flex/frameworks/locale/en_US
  -compiler.external-library-path bin/flash
- -compiler.external-library-path ${flex.sdk}/${flex.sdk.player}" />
+ -compiler.external-library-path ../flex/frameworks/libs/player/30
+ ${production.flags}" />
         <echo file="fchs-input" append="true">compc ${compc.args}
 clear
 </echo>

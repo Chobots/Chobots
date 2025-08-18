@@ -107,18 +107,11 @@ public class SOListener implements ISharedObjectListener {
 
   public void onSharedObjectConnect(ISharedObjectBase sharedObject) {
     UserAdapter adapter = UserManager.getInstance().getCurrentUser();
-    String roomName = ((IBasicScope) sharedObject).getName();
+    connectedUsers.add(adapter.getLogin());
+    ArrayList<Object> list = new ArrayList<Object>();
+    list.add(adapter.getLogin());
 
-    // Connection permission checks are now handled by ISharedObjectSecurity.isConnectionAllowed
-    synchronized (connectedUsers) {
-      if (!connectedUsers.contains(adapter.getLogin())) {
-        connectedUsers.add(adapter.getLogin());
-      }
-    }
-    
-    ArrayList<Object> directArgs = new ArrayList<Object>();
-    directArgs.add(adapter.getLogin());
-    sharedObject.sendMessage(CONNECT_HANDLER, directArgs);
+    sharedObject.sendMessage(CONNECT_HANDLER, list);
   }
 
   public void onSharedObjectDelete(ISharedObjectBase arg0, String arg1) {

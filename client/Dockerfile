@@ -5,10 +5,14 @@ ARG RTMP_USE_TLS=false
 ARG RTMP_HOSTNAME=localhost
 ARG RTMP_PORT=8935
 
+# Build argument for Flash debug configuration
+ARG FLASH_DEBUG_BUILD=false
+
 # Set environment variables
 ENV RTMP_USE_TLS=$RTMP_USE_TLS
 ENV RTMP_HOSTNAME=$RTMP_HOSTNAME
 ENV RTMP_PORT=$RTMP_PORT
+ENV FLASH_DEBUG_BUILD=$FLASH_DEBUG_BUILD
 
 COPY . /client
 WORKDIR /client
